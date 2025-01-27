@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/core/models/editor_configs/emoji_editor_configs.dart';
+
+import '/core/models/editor_configs/emoji_editor_configs.dart';
 
 /// A widget responsible for preloading fonts for the main editor,
 /// ensuring smooth rendering of text and emoji elements.

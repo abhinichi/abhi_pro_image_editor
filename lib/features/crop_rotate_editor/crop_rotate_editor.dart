@@ -7,13 +7,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/features/crop_rotate_editor/widgets/crop_editor_appbar.dart';
-import 'package:pro_image_editor/features/crop_rotate_editor/widgets/crop_editor_bottombar.dart';
 
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
 import '/core/models/transform_helper.dart';
+import '/features/crop_rotate_editor/widgets/crop_editor_appbar.dart';
+import '/features/crop_rotate_editor/widgets/crop_editor_bottombar.dart';
 import '/features/crop_rotate_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
 import '/features/crop_rotate_editor/widgets/outside_gestures/outside_gesture_listener.dart';
 import '/plugins/defer_pointer/defer_pointer.dart';

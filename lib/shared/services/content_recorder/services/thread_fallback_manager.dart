@@ -1,4 +1,4 @@
-import 'package:pro_image_editor/shared/services/content_recorder/services/thread_manager.dart';
+import '/shared/services/content_recorder/services/thread_manager.dart';
 
 /// Fallback manager for ThreadManager if multithreading isn't required.
 class ThreadFallbackManager extends ThreadManager {

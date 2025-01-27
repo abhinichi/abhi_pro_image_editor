@@ -1,6 +1,6 @@
 // Flutter imports:
 import 'package:flutter/widgets.dart';
-import 'package:pro_image_editor/core/models/layers/layer.dart';
+import '/core/models/layers/layer.dart';
 
 import '/features/main_editor/main_editor.dart';
 import '/shared/widgets/layer/models/layer_item_interaction.dart';

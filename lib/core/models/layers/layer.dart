@@ -1,9 +1,9 @@
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/shared/services/import_export/utils/key_minifier.dart';
 
 import '/shared/services/import_export/types/widget_loader.dart';
+import '/shared/services/import_export/utils/key_minifier.dart';
 import '/shared/utils/parser/double_parser.dart';
 import '/shared/utils/unique_id_generator.dart';
 import '../editor_image.dart';

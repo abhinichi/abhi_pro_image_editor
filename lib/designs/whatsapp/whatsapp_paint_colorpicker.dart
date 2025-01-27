@@ -4,8 +4,9 @@ import 'dart:math';
 // Flutter imports:
 import 'package:flutter/material.dart';
 
-// Project imports:
-import 'package:pro_image_editor/pro_image_editor.dart';
+import '/core/enums/design_mode.dart';
+import '/features/paint_editor/paint_editor.dart';
+import '/shared/widgets/color_picker/bar_color_picker.dart';
 
 /// A stateless widget that provides a color picker for paint in the
 /// WhatsApp theme.
