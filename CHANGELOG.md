@@ -1,5 +1,9 @@
 # Changelog
 
+# 8.1.1
+- **FIX**(crop_rotate_editor): Fixed an issue where the crop-rotate editor would throw multiple errors when reopened. Resolves issue [#236](https://github.com/hm21/pro_image_editor/issues/236) and [#237](https://github.com/hm21/pro_image_editor/issues/237).
+- **PERF**(mediaquery): Replaces MediaQuery.of(...) with MediaQuery.sizeOf(...) to optimize performance and minimize unnecessary widget rebuilds.  
+
 
 # 8.1.0
 - **FEAT**(layer): Added new methods `lockAllLayers` and `unlockAllLayers` to the main editor, enabling direct locking or unlocking of all layers.
