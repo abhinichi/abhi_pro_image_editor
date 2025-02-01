@@ -447,6 +447,7 @@ class PaintEditorState extends State<PaintEditor>
       mode == PaintMode.moveAndZoom,
     );
     _paintCanvas.currentState?.setState(() {});
+    setState(() {});
   }
 
   /// Undoes the last action performed in the paint editor.

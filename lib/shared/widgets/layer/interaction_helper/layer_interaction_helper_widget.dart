@@ -154,13 +154,20 @@ class _LayerInteractionHelperWidgetState
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isInteractive) {
+    String layerId = widget.layerData.id;
+    var deferManager = DeferManager.maybeOf(context);
+
+    if (!widget.isInteractive ||
+        (!widget.selected && deferManager?.selectedLayerId != '')) {
       // Return the child widget directly if the layer is not interactive.
       return widget.child;
     } else if (!widget.selected) {
       // Use a defer pointer if the layer is not selected, preventing
       // interaction.
-      return DeferPointer(child: widget.child);
+      return DeferPointer(
+        key: ValueKey('Defer-${deferManager?.id ?? ''}-$layerId'),
+        child: widget.child,
+      );
     }
 
     List<LayerInteractionItem> children =

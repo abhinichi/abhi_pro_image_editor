@@ -8,13 +8,14 @@ import '/features/main_editor/controllers/main_editor_controllers.dart';
 import '/features/main_editor/services/layer_interaction_manager.dart';
 import '/features/main_editor/services/sizes_manager.dart';
 import '/plugins/defer_pointer/defer_pointer.dart';
+import '/shared/utils/unique_id_generator.dart';
 import '/shared/widgets/extended/extended_mouse_cursor.dart';
 import '/shared/widgets/layer/layer_widget.dart';
 import '../main_editor.dart';
 
 /// A widget that manages and displays layers in the main editor, handling
 /// interactions, configurations, and callbacks for user actions.
-class MainEditorLayers extends StatelessWidget {
+class MainEditorLayers extends StatefulWidget {
   /// Creates a `MainEditorLayers` widget with the necessary configurations,
   /// managers, and callbacks.
   ///
@@ -99,86 +100,100 @@ class MainEditorLayers extends StatelessWidget {
   /// Callback triggered when the context menu is toggled.
   final Function(bool isOpen)? onContextMenuToggled;
 
+  @override
+  State<MainEditorLayers> createState() => _MainEditorLayersState();
+}
+
+class _MainEditorLayersState extends State<MainEditorLayers> {
+  final _deferId = ValueNotifier(generateUniqueId());
+
   // Helper methods for handling layer interactions
   void _handleEditTap(int index, Layer layer) {
     if (layer is TextLayer) {
-      onTextLayerTap(layer);
+      widget.onTextLayerTap(layer);
     } else if (layer is WidgetLayer) {
-      callbacks.stickerEditorCallbacks?.onTapEditSticker
-          ?.call(state, layer, index);
+      widget.callbacks.stickerEditorCallbacks?.onTapEditSticker
+          ?.call(widget.state, layer, index);
     }
   }
 
   void _handleLayerTap(Layer layer) {
-    if (layerInteractionManager.layersAreSelectable(configs) &&
+    if (widget.layerInteractionManager.layersAreSelectable(widget.configs) &&
         layer.interaction.enableSelection) {
-      layerInteractionManager.selectedLayerId =
-          layer.id == layerInteractionManager.selectedLayerId ? '' : layer.id;
-      checkInteractiveViewer();
+      widget.layerInteractionManager.selectedLayerId =
+          layer.id == widget.layerInteractionManager.selectedLayerId
+              ? ''
+              : layer.id;
+      widget.checkInteractiveViewer();
     } else if (layer is TextLayer && layer.interaction.enableEdit) {
-      onTextLayerTap(layer);
+      widget.onTextLayerTap(layer);
     }
   }
 
   void _handleTapUp(Layer layer) {
-    if (layerInteractionManager.hoverRemoveBtn) {
-      state.removeLayer(layer);
+    if (widget.layerInteractionManager.hoverRemoveBtn) {
+      widget.state.removeLayer(layer);
     }
-    controllers.uiLayerCtrl.add(null);
-    callbacks.mainEditorCallbacks?.handleUpdateUI();
-    state.selectedLayerIndex = -1;
-    checkInteractiveViewer();
+    widget.controllers.uiLayerCtrl.add(null);
+    widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
+    widget.state.selectedLayerIndex = -1;
+    widget.checkInteractiveViewer();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _deferId.value = generateUniqueId();
+    });
   }
 
   void _handleTapDown(int index, Layer layer) {
-    state.selectedLayerIndex = index;
-    setTempLayer(layer);
-    checkInteractiveViewer();
+    widget.state.selectedLayerIndex = index;
+    widget.setTempLayer(layer);
+    widget.checkInteractiveViewer();
   }
 
   void _handleScaleRotateDown(int index, Size layerOriginalSize, Layer layer) {
-    state.selectedLayerIndex = index;
-    layerInteractionManager
+    widget.state.selectedLayerIndex = index;
+    widget.layerInteractionManager
       ..rotateScaleLayerSizeHelper = layerOriginalSize
       ..rotateScaleLayerScaleHelper = layer.scale;
-    checkInteractiveViewer();
+    widget.checkInteractiveViewer();
   }
 
   void _handleScaleRotateUp() {
-    layerInteractionManager
+    widget.layerInteractionManager
       ..rotateScaleLayerSizeHelper = null
       ..rotateScaleLayerScaleHelper = null;
-    state.setState(() => state.selectedLayerIndex = -1);
-    checkInteractiveViewer();
-    callbacks.mainEditorCallbacks?.handleUpdateUI();
+    widget.state.setState(() => widget.state.selectedLayerIndex = -1);
+    widget.checkInteractiveViewer();
+    widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
   }
 
   void _handleRemoveLayer(Layer layer) {
-    state.setState(() => state.removeLayer(layer));
-    callbacks.mainEditorCallbacks?.handleUpdateUI();
+    widget.state.setState(() => widget.state.removeLayer(layer));
+    widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
   }
 
   /// Handles mouse hover events to change the cursor style
   void _handleMouseHover(PointerHoverEvent event) {
-    final bool hasHit = activeLayers
+    final bool hasHit = widget.activeLayers
         .any((element) => element is PaintLayer && element.item.hit);
 
-    final activeCursor = mouseCursorsKey.currentState!.currentCursor;
-    final moveCursor = layerInteraction.style.hoverCursor;
+    final activeCursor = widget.mouseCursorsKey.currentState!.currentCursor;
+    final moveCursor = widget.layerInteraction.style.hoverCursor;
 
     if (hasHit && activeCursor != moveCursor) {
-      mouseCursorsKey.currentState!.setCursor(moveCursor);
+      widget.mouseCursorsKey.currentState!.setCursor(moveCursor);
     } else if (!hasHit && activeCursor != SystemMouseCursors.basic) {
-      mouseCursorsKey.currentState!.setCursor(SystemMouseCursors.basic);
+      widget.mouseCursorsKey.currentState!.setCursor(SystemMouseCursors.basic);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      ignoring: selectedLayerIndex >= 0,
+      ignoring: widget.selectedLayerIndex >= 0,
       child: StreamBuilder<bool>(
-        stream: controllers.layerHeroResetCtrl.stream,
+        stream: widget.controllers.layerHeroResetCtrl.stream,
         initialData: false,
         builder: (context, resetLayerSnapshot) {
           // Render an empty container when resetting layers
@@ -194,22 +209,28 @@ class MainEditorLayers extends StatelessWidget {
   Widget _buildLayerRepaintBoundary() {
     return RepaintBoundary(
       child: ExtendedMouseRegion(
-        key: mouseCursorsKey,
+        key: widget.mouseCursorsKey,
         onHover: isDesktop ? _handleMouseHover : null,
-        child: DeferredPointerHandler(
-          child: StreamBuilder(
-            stream: controllers.uiLayerCtrl.stream,
-            builder: (context, snapshot) {
-              return Stack(
-                children: activeLayers
-                    .asMap()
-                    .entries
-                    .map(_buildLayerWidget)
-                    .toList(),
+        child: ValueListenableBuilder(
+            valueListenable: _deferId,
+            builder: (_, deferId, __) {
+              return DeferredPointerHandler(
+                id: deferId,
+                selectedLayerId: widget.layerInteractionManager.selectedLayerId,
+                child: StreamBuilder(
+                  stream: widget.controllers.uiLayerCtrl.stream,
+                  builder: (context, snapshot) {
+                    return Stack(
+                      children: widget.activeLayers
+                          .asMap()
+                          .entries
+                          .map(_buildLayerWidget)
+                          .toList(),
+                    );
+                  },
+                ),
               );
-            },
-          ),
-        ),
+            }),
       ),
     );
   }
@@ -220,22 +241,24 @@ class MainEditorLayers extends StatelessWidget {
     Layer layer = entry.value;
     return LayerWidget(
       key: layer.key,
-      configs: configs,
-      callbacks: callbacks,
-      editorCenterX: sizesManager.editorSize.width / 2,
-      editorCenterY: sizesManager.editorCenterY(selectedLayerIndex),
+      configs: widget.configs,
+      callbacks: widget.callbacks,
+      editorCenterX: widget.sizesManager.editorSize.width / 2,
+      editorCenterY:
+          widget.sizesManager.editorCenterY(widget.selectedLayerIndex),
       layerData: layer,
-      enableHitDetection: layerInteractionManager.enabledHitDetection,
-      selected: layerInteractionManager.selectedLayerId == layer.id,
-      isInteractive: !isSubEditorOpen,
-      highPerformanceMode: layerInteractionManager.freeStyleHighPerformance,
+      enableHitDetection: widget.layerInteractionManager.enabledHitDetection,
+      selected: widget.layerInteractionManager.selectedLayerId == layer.id,
+      isInteractive: !widget.isSubEditorOpen,
+      highPerformanceMode:
+          widget.layerInteractionManager.freeStyleHighPerformance,
       onEditTap: () => _handleEditTap(index, layer),
       onTap: _handleLayerTap,
       onTapUp: () => _handleTapUp(layer),
       onTapDown: () => _handleTapDown(index, layer),
       onScaleRotateDown: (details, layerOriginalSize) =>
           _handleScaleRotateDown(index, layerOriginalSize, layer),
-      onContextMenuToggled: onContextMenuToggled,
+      onContextMenuToggled: widget.onContextMenuToggled,
       onScaleRotateUp: (details) => _handleScaleRotateUp(),
       onRemoveTap: () => _handleRemoveLayer(layer),
     );
