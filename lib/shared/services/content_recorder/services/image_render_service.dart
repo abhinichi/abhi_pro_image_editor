@@ -153,7 +153,7 @@ class ImageRenderService {
     double pixelRatio,
   ) async {
     // If cropping is not required, return the image directly
-    if (!configs.captureOnlyDrawingBounds) {
+    if (!configs.captureOnlyBackgroundImageArea) {
       return boundary.toImage(pixelRatio: pixelRatio);
     }
 
