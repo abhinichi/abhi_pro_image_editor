@@ -1,5 +1,8 @@
 # Changelog
 
+# 8.1.3
+- **PERF**(capture-image): Improved image capture performance by minimizing its impact on the main thread.  
+
 # 8.1.2
 - **FIX**(paint-editor): Ensure bottombar selection updates in UI when changed.
 - **FIX**(paint-editor): Correct appBar canRedo to use the proper function instead of canUndo.
