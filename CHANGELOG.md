@@ -1,5 +1,8 @@
 # Changelog
 
+# 8.1.4
+- **FIX**(generation): Use `captureOnlyBackgroundImageArea` instead of `captureOnlyDrawingBounds` for background cropping.
+
 # 8.1.3
 - **PERF**(capture-image): Improved image capture performance by minimizing its impact on the main thread.  
 
