@@ -149,7 +149,7 @@ class TextEditorConfigs {
     bool? canChangeFontScale,
     bool? showSelectFontStyleBottomBar,
     bool? canToggleBackgroundMode,
-    bool? enableMainEditorScaleFactor,
+    bool? enableMainEditorZoomFactor,
     double? initFontSize,
     TextAlign? initialTextAlign,
     double? initFontScale,
@@ -177,7 +177,7 @@ class TextEditorConfigs {
       canToggleBackgroundMode:
           canToggleBackgroundMode ?? this.canToggleBackgroundMode,
       enableMainEditorZoomFactor:
-          enableMainEditorScaleFactor ?? this.enableMainEditorZoomFactor,
+          enableMainEditorZoomFactor ?? this.enableMainEditorZoomFactor,
       initFontSize: initFontSize ?? this.initFontSize,
       initialTextAlign: initialTextAlign ?? this.initialTextAlign,
       initFontScale: initFontScale ?? this.initFontScale,
