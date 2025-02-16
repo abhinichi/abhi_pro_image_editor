@@ -1,5 +1,6 @@
 // Dart imports:
 import 'dart:math';
+import 'dart:ui';
 
 // Flutter imports:
 import 'package:flutter/gestures.dart';
@@ -150,7 +151,11 @@ class _LayerWidgetState extends State<LayerWidget>
         _layerType = _LayerType.widget;
         break;
       case const (PaintLayer):
-        _layerType = _LayerType.canvas;
+        var layer = widget.layerData as PaintLayer;
+        _layerType = layer.item.mode == PaintMode.blur ||
+                layer.item.mode == PaintMode.pixelate
+            ? _LayerType.censor
+            : _LayerType.canvas;
         break;
       default:
         _layerType = _LayerType.unknown;
@@ -348,6 +353,8 @@ class _LayerWidgetState extends State<LayerWidget>
         return _buildWidgetLayer();
       case _LayerType.canvas:
         return _buildCanvas();
+      case _LayerType.censor:
+        return _buildCensorLayer();
       default:
         return const SizedBox.shrink();
     }
@@ -455,7 +462,25 @@ class _LayerWidgetState extends State<LayerWidget>
       ),
     );
   }
+
+  Widget _buildCensorLayer() {
+    var layer = _layer as PaintLayer;
+    return RepaintBoundary(
+      child: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: paintEditorConfigs.censorConfigs.blurSigmaX,
+            sigmaY: paintEditorConfigs.censorConfigs.blurSigmaY,
+          ),
+          child: SizedBox(
+            width: layer.size.width,
+            height: layer.size.height,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ignore: camel_case_types
-enum _LayerType { emoji, text, widget, canvas, unknown }
+enum _LayerType { emoji, text, widget, canvas, censor, unknown }

@@ -1,9 +1,11 @@
 // Dart imports:
 import 'dart:async';
+import 'dart:ui';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
 
+import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '../controllers/paint_controller.dart';
 import '../enums/paint_editor_enum.dart';
 import '../models/painted_model.dart';
@@ -25,6 +27,7 @@ class PaintCanvas extends StatefulWidget {
     this.freeStyleHighPerformance = false,
     required this.drawAreaSize,
     required this.paintCtrl,
+    required this.paintEditorConfigs,
   });
 
   /// Callback function when the active paint is done.
@@ -47,6 +50,12 @@ class PaintCanvas extends StatefulWidget {
 
   /// Controls high-performance for free-style drawing.
   final bool freeStyleHighPerformance;
+
+  /// Configuration settings for the paint editor.
+  /// This field holds an instance of [PaintEditorConfigs] which contains
+  /// various settings and options used to customize the behavior and
+  /// appearance of the paint editor.
+  final PaintEditorConfigs paintEditorConfigs;
 
   @override
   PaintCanvasState createState() => PaintCanvasState();
@@ -179,43 +188,106 @@ class PaintCanvasState extends State<PaintCanvas> {
       absorbing: _paintCtrl.mode == PaintMode.moveAndZoom,
       child: Stack(
         fit: StackFit.expand,
-        children: [
-          for (final item in _paintCtrl.activePaintItemList)
-            Opacity(
-              opacity: item.opacity,
-              child: CustomPaint(
-                willChange: false,
-                isComplex: item.mode == PaintMode.freeStyle,
-                painter: DrawPaintItem(
-                  item: item,
-                  freeStyleHighPerformance: widget.freeStyleHighPerformance,
-                  enabledHitDetection: _paintCtrl.mode == PaintMode.eraser,
-                ),
+        children: [..._buildPaintings(), _buildActiveItem()],
+      ),
+    );
+  }
+
+  List<Widget> _buildPaintings() {
+    return [
+      for (final item in _paintCtrl.activePaintItemList)
+        if (item.mode == PaintMode.blur || item.mode == PaintMode.pixelate)
+          _buildCensorItem(item)
+        else
+          Opacity(
+            opacity: item.opacity,
+            child: CustomPaint(
+              willChange: false,
+              isComplex: item.mode == PaintMode.freeStyle,
+              painter: DrawPaintItem(
+                item: item,
+                freeStyleHighPerformance: widget.freeStyleHighPerformance,
+                enabledHitDetection: _paintCtrl.mode == PaintMode.eraser,
               ),
             ),
-          StreamBuilder(
-            stream: _activePaintStreamCtrl.stream,
-            builder: (context, snapshot) {
-              return GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onScaleStart: _onScaleStart,
-                onScaleUpdate: _onScaleUpdate,
-                onScaleEnd: _onScaleEnd,
-                child: _paintCtrl.busy
-                    ? Opacity(
-                        opacity: _paintCtrl.opacity,
-                        child: CustomPaint(
-                          size: widget.drawAreaSize,
-                          willChange: true,
-                          isComplex: true,
-                          painter: DrawPaintItem(item: _paintCtrl.paintedModel),
-                        ),
-                      )
-                    : const SizedBox.expand(),
-              );
-            },
+          )
+    ];
+  }
+
+  Widget _buildActiveItem() {
+    return StreamBuilder(
+      stream: _activePaintStreamCtrl.stream,
+      builder: (context, snapshot) {
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onScaleStart: _onScaleStart,
+          onScaleUpdate: _onScaleUpdate,
+          onScaleEnd: _onScaleEnd,
+          child: _paintCtrl.busy
+              ? _paintCtrl.mode == PaintMode.blur ||
+                      _paintCtrl.mode == PaintMode.pixelate
+                  ? Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        _buildCensorItem(_paintCtrl.paintedModel),
+                      ],
+                    )
+                  : Opacity(
+                      opacity: _paintCtrl.opacity,
+                      child: CustomPaint(
+                        size: widget.drawAreaSize,
+                        willChange: true,
+                        isComplex: true,
+                        painter: DrawPaintItem(item: _paintCtrl.paintedModel),
+                      ),
+                    )
+              : const SizedBox.expand(),
+        );
+      },
+    );
+  }
+
+  Widget _buildCensorItem(PaintedModel item) {
+    List<Offset?> offsets = item.offsets;
+    if (offsets.length != 2) return const SizedBox.shrink();
+
+    var topLeft = offsets[0];
+    if (topLeft == null) return const SizedBox.shrink();
+
+    var bottomRight = offsets[1];
+    if (bottomRight == null) return const SizedBox.shrink();
+
+    double width = (bottomRight.dx - topLeft.dx);
+    double height = (bottomRight.dy - topLeft.dy);
+
+    double left = width >= 0 ? topLeft.dx : topLeft.dx + width;
+    double top = height >= 0 ? topLeft.dy : topLeft.dy + height;
+
+    var censorConfigs = widget.paintEditorConfigs.censorConfigs;
+
+    return Positioned(
+      left: left,
+      top: top,
+      width: width.abs(),
+      height: height.abs(),
+      child: RepaintBoundary(
+        child: MouseRegion(
+          onEnter: (event) {
+            item.hit = true;
+          },
+          onExit: (event) {
+            item.hit = false;
+          },
+          child: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: censorConfigs.blurSigmaX,
+                sigmaY: censorConfigs.blurSigmaY,
+              ),
+              child: const SizedBox.expand(),
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

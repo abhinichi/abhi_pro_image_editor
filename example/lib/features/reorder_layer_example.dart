@@ -192,23 +192,32 @@ class _ReorderLayerSheetState extends State<ReorderLayerSheet> {
                       style: const TextStyle(fontSize: 24),
                     )
                   : layer.runtimeType == PaintLayer
-                      ? SizedBox(
-                          height: 40,
-                          child: FittedBox(
-                            alignment: Alignment.centerLeft,
-                            child: CustomPaint(
-                              size: (layer as PaintLayer).size,
-                              willChange: true,
-                              isComplex: layer.item.mode == PaintMode.freeStyle,
-                              painter: DrawPaintItem(
-                                item: layer.item,
-                                scale: layer.scale,
-                                enabledHitDetection: false,
-                                freeStyleHighPerformance: false,
-                              ),
+                      ? Builder(builder: (context) {
+                          var paintLayer = layer as PaintLayer;
+                          bool isCensorLayer =
+                              paintLayer.item.mode == PaintMode.pixelate ||
+                                  paintLayer.item.mode == PaintMode.blur;
+                          return SizedBox(
+                            height: 40,
+                            child: FittedBox(
+                              alignment: Alignment.centerLeft,
+                              child: isCensorLayer
+                                  ? const Icon(Icons.blur_circular)
+                                  : CustomPaint(
+                                      size: paintLayer.size,
+                                      willChange: true,
+                                      isComplex: layer.item.mode ==
+                                          PaintMode.freeStyle,
+                                      painter: DrawPaintItem(
+                                        item: layer.item,
+                                        scale: layer.scale,
+                                        enabledHitDetection: false,
+                                        freeStyleHighPerformance: false,
+                                      ),
+                                    ),
                             ),
-                          ),
-                        )
+                          );
+                        })
                       : layer.runtimeType == WidgetLayer
                           ? SizedBox(
                               height: 40,

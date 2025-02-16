@@ -19,6 +19,7 @@ class I18nPaintEditor {
   ///   rectangle: 'Rectangle',
   ///   circle: 'Circle',
   ///   dashLine: 'Dash Line',
+  ///   blur: 'Blur',
   ///   lineWidth: 'Line Width',
   ///   toggleFill: 'Toggle fill',
   ///   changeOpacity = 'Change opacity',
@@ -38,6 +39,7 @@ class I18nPaintEditor {
     this.rectangle = 'Rectangle',
     this.circle = 'Circle',
     this.dashLine = 'Dash line',
+    this.blur = 'Blur',
     this.lineWidth = 'Line width',
     this.eraser = 'Eraser',
     this.toggleFill = 'Toggle fill',
@@ -79,6 +81,9 @@ class I18nPaintEditor {
 
   /// Text for the "Dash line" paint mode.
   final String dashLine;
+
+  /// Text for the "Blur" paint mode.
+  final String blur;
 
   /// Text for the "Eraser" paint mode.
   final String eraser;
@@ -122,6 +127,7 @@ class I18nPaintEditor {
     String? rectangle,
     String? circle,
     String? dashLine,
+    String? blur,
     String? lineWidth,
     String? eraser,
     String? toggleFill,
@@ -142,6 +148,7 @@ class I18nPaintEditor {
       rectangle: rectangle ?? this.rectangle,
       circle: circle ?? this.circle,
       dashLine: dashLine ?? this.dashLine,
+      blur: blur ?? this.blur,
       lineWidth: lineWidth ?? this.lineWidth,
       eraser: eraser ?? this.eraser,
       toggleFill: toggleFill ?? this.toggleFill,

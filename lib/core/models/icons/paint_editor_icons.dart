@@ -36,6 +36,7 @@ class PaintEditorIcons {
   ///   rectangle: Icons.crop_free,
   ///   circle: Icons.lens_outlined,
   ///   dashLine: Icons.power_input,
+  ///   blur: Icons.blur_circular_rounded,
   /// )
   /// ```
   const PaintEditorIcons({
@@ -52,6 +53,7 @@ class PaintEditorIcons {
     this.rectangle = Icons.crop_free,
     this.circle = Icons.lens_outlined,
     this.dashLine = Icons.power_input,
+    this.blur = Icons.blur_circular_rounded,
     this.applyChanges = Icons.done,
     this.backButton = Icons.arrow_back,
     this.undoAction = Icons.undo,
@@ -101,6 +103,9 @@ class PaintEditorIcons {
   /// The icon for the dashed line drawing tool.
   final IconData dashLine;
 
+  /// The icon for the blur drawing tool.
+  final IconData blur;
+
   /// The icon for the eraser tool.
   final IconData eraser;
 
@@ -136,6 +141,7 @@ class PaintEditorIcons {
     IconData? rectangle,
     IconData? circle,
     IconData? dashLine,
+    IconData? blur,
     IconData? backButton,
     IconData? undoAction,
     IconData? redoAction,
@@ -155,6 +161,7 @@ class PaintEditorIcons {
       rectangle: rectangle ?? this.rectangle,
       circle: circle ?? this.circle,
       dashLine: dashLine ?? this.dashLine,
+      blur: blur ?? this.blur,
       backButton: backButton ?? this.backButton,
       applyChanges: applyChanges ?? this.applyChanges,
       undoAction: undoAction ?? this.undoAction,

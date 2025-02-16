@@ -1,4 +1,6 @@
 // Dart imports:
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'dart:async';
 import 'dart:math';
 
@@ -238,43 +240,56 @@ class PaintEditorState extends State<PaintEditor>
   /// The list is dynamically generated based on the configuration settings in
   /// the [PaintEditorConfigs] object.
   List<PaintModeBottomBarItem> get paintModes => [
-        if (paintEditorConfigs.hasOptionFreeStyle)
+        if (paintEditorConfigs.hasOptionFreeStyle ??
+            paintEditorConfigs.enableModeFreeStyle)
           PaintModeBottomBarItem(
             mode: PaintMode.freeStyle,
             icon: paintEditorConfigs.icons.freeStyle,
             label: i18n.paintEditor.freestyle,
           ),
-        if (paintEditorConfigs.hasOptionArrow)
+        if (paintEditorConfigs.hasOptionArrow ??
+            paintEditorConfigs.enableModeArrow)
           PaintModeBottomBarItem(
             mode: PaintMode.arrow,
             icon: paintEditorConfigs.icons.arrow,
             label: i18n.paintEditor.arrow,
           ),
-        if (paintEditorConfigs.hasOptionLine)
+        if (paintEditorConfigs.hasOptionLine ??
+            paintEditorConfigs.enableModeLine)
           PaintModeBottomBarItem(
             mode: PaintMode.line,
             icon: paintEditorConfigs.icons.line,
             label: i18n.paintEditor.line,
           ),
-        if (paintEditorConfigs.hasOptionRect)
+        if (paintEditorConfigs.hasOptionRect ??
+            paintEditorConfigs.enableModeRect)
           PaintModeBottomBarItem(
             mode: PaintMode.rect,
             icon: paintEditorConfigs.icons.rectangle,
             label: i18n.paintEditor.rectangle,
           ),
-        if (paintEditorConfigs.hasOptionCircle)
+        if (paintEditorConfigs.hasOptionCircle ??
+            paintEditorConfigs.enableModeCircle)
           PaintModeBottomBarItem(
             mode: PaintMode.circle,
             icon: paintEditorConfigs.icons.circle,
             label: i18n.paintEditor.circle,
           ),
-        if (paintEditorConfigs.hasOptionDashLine)
+        if (paintEditorConfigs.hasOptionDashLine ??
+            paintEditorConfigs.enableModeDashLine)
           PaintModeBottomBarItem(
             mode: PaintMode.dashLine,
             icon: paintEditorConfigs.icons.dashLine,
             label: i18n.paintEditor.dashLine,
           ),
-        if (paintEditorConfigs.hasOptionEraser)
+        if (paintEditorConfigs.enableModeBlur)
+          PaintModeBottomBarItem(
+            mode: PaintMode.blur,
+            icon: paintEditorConfigs.icons.blur,
+            label: i18n.paintEditor.blur,
+          ),
+        if (paintEditorConfigs.hasOptionEraser ??
+            paintEditorConfigs.enableModeEraser)
           PaintModeBottomBarItem(
             mode: PaintMode.eraser,
             icon: paintEditorConfigs.icons.eraser,
@@ -830,6 +845,7 @@ class PaintEditorState extends State<PaintEditor>
     return PaintCanvas(
       key: _paintCanvas,
       paintCtrl: paintCtrl,
+      paintEditorConfigs: paintEditorConfigs,
       drawAreaSize: mainBodySize ?? editorBodySize,
       freeStyleHighPerformance: _freeStyleHighPerformance,
       onRemoveLayer: (idList) {

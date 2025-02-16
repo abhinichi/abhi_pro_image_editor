@@ -1,5 +1,8 @@
 # Changelog
 
+## 8.2.0
+- **FEAT**(paint-editor): Add a new 'blur' paint mode to censor specific areas in an image. 
+
 ## 8.1.12
 - **FEAT**(layers): Add missing `showLayers` config to enable/disable layers in paint and crop editor.
 

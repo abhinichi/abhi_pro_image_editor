@@ -1,15 +1,19 @@
-// Project imports:
+// ignore_for_file: deprecated_member_use_from_same_package
+// TODO: Remove deprecated values
+
 import 'package:flutter/widgets.dart';
 
 import '/features/paint_editor/enums/paint_editor_enum.dart';
-import '../custom_widgets/paint_editor_widgets.dart';
-import '../icons/paint_editor_icons.dart';
-import '../styles/paint_editor_style.dart';
-import 'utils/editor_safe_area.dart';
+import '../../custom_widgets/paint_editor_widgets.dart';
+import '../../icons/paint_editor_icons.dart';
+import '../../styles/paint_editor_style.dart';
+import '../utils/editor_safe_area.dart';
+import 'censor_configs.dart';
 
-export '../custom_widgets/paint_editor_widgets.dart';
-export '../icons/paint_editor_icons.dart';
-export '../styles/paint_editor_style.dart';
+export '../../custom_widgets/paint_editor_widgets.dart';
+export '../../icons/paint_editor_icons.dart';
+export '../../styles/paint_editor_style.dart';
+export 'censor_configs.dart';
 
 /// Configuration options for a paint editor.
 ///
@@ -21,19 +25,21 @@ export '../styles/paint_editor_style.dart';
 /// ```dart
 /// PaintEditorConfigs(
 ///   enabled: true,
-///   hasOptionFreeStyle: true,
-///   hasOptionArrow: true,
-///   hasOptionLine: true,
-///   hasOptionRect: true,
-///   hasOptionCircle: true,
-///   hasOptionDashLine: true,
 ///   canToggleFill: true,
 ///   canChangeLineWidth: true,
+///   enableModeFreeStyle = true,
+///   enableModeArrow = true,
+///   enableModeLine = true,
+///   enableModeRect = true,
+///   enableModeCircle = true,
+///   enableModeDashLine = true,
+///   enableModeBlur = true,
+///   enableModeEraser = true,
 ///   initialFill: false,
 ///   showColorPicker: true,
 ///   initialStrokeWidth: 10.0,
 ///   initialColor: const Color(0xffff0000),
-///   initialPaintMode: PaintModeE.freeStyle,
+///   initialPaintMode: PaintMode.freeStyle,
 /// );
 /// ```
 class PaintEditorConfigs {
@@ -46,13 +52,21 @@ class PaintEditorConfigs {
     this.enableZoom = false,
     this.editorMinScale = 1.0,
     this.editorMaxScale = 5.0,
-    this.hasOptionFreeStyle = true,
-    this.hasOptionArrow = true,
-    this.hasOptionLine = true,
-    this.hasOptionRect = true,
-    this.hasOptionCircle = true,
-    this.hasOptionDashLine = true,
-    this.hasOptionEraser = true,
+    this.hasOptionFreeStyle,
+    this.hasOptionArrow,
+    this.hasOptionLine,
+    this.hasOptionRect,
+    this.hasOptionCircle,
+    this.hasOptionDashLine,
+    this.hasOptionEraser,
+    this.enableModeFreeStyle = true,
+    this.enableModeArrow = true,
+    this.enableModeLine = true,
+    this.enableModeRect = true,
+    this.enableModeCircle = true,
+    this.enableModeDashLine = true,
+    this.enableModeBlur = true,
+    this.enableModeEraser = true,
     this.canToggleFill = true,
     this.canChangeLineWidth = true,
     this.canChangeOpacity = true,
@@ -65,6 +79,7 @@ class PaintEditorConfigs {
     this.freeStyleHighPerformanceMoving,
     this.freeStyleHighPerformanceHero = false,
     this.initialPaintMode = PaintMode.freeStyle,
+    this.censorConfigs = const CensorConfigs(),
     this.safeArea = const EditorSafeArea(),
     this.style = const PaintEditorStyle(),
     this.icons = const PaintEditorIcons(),
@@ -87,26 +102,57 @@ class PaintEditorConfigs {
   /// Default value is `false`.
   final bool enableZoom;
 
-  /// Indicating whether the free-style drawing option is available.
-  final bool hasOptionFreeStyle;
+  /// Indicating whether the free-style drawing option is enabled.
+  @Deprecated('Use enableFreeStyle instead.')
+  final bool? hasOptionFreeStyle;
 
-  /// Indicating whether the arrow drawing option is available.
-  final bool hasOptionArrow;
+  /// Indicating whether the arrow drawing option is enabled.
+  @Deprecated('Use enableArrow instead.')
+  final bool? hasOptionArrow;
 
-  /// Indicating whether the line drawing option is available.
-  final bool hasOptionLine;
+  /// Indicating whether the line drawing option is enabled.
+  @Deprecated('Use enableLine instead.')
+  final bool? hasOptionLine;
 
-  /// Indicating whether the rectangle drawing option is available.
-  final bool hasOptionRect;
+  /// Indicating whether the rectangle drawing option is enabled.
+  @Deprecated('Use enableRect instead.')
+  final bool? hasOptionRect;
 
-  /// Indicating whether the circle drawing option is available.
-  final bool hasOptionCircle;
+  /// Indicating whether the circle drawing option is enabled.
+  @Deprecated('Use enableCircle instead.')
+  final bool? hasOptionCircle;
 
-  /// Indicating whether the dash line drawing option is available.
-  final bool hasOptionDashLine;
+  /// Indicating whether the dash line drawing option is enabled.
+  @Deprecated('Use enableDashLine instead.')
+  final bool? hasOptionDashLine;
 
-  /// Indicating whether the eraser option is available.
-  final bool hasOptionEraser;
+  /// Indicating whether the eraser option is enabled.
+  @Deprecated('Use enableEraser instead.')
+  final bool? hasOptionEraser;
+
+  /// Indicating whether the free-style drawing option is enabled.
+  final bool enableModeFreeStyle;
+
+  /// Indicating whether the arrow drawing option is enabled.
+  final bool enableModeArrow;
+
+  /// Indicating whether the line drawing option is enabled.
+  final bool enableModeLine;
+
+  /// Indicating whether the rectangle drawing option is enabled.
+  final bool enableModeRect;
+
+  /// Indicating whether the circle drawing option is enabled.
+  final bool enableModeCircle;
+
+  /// Indicating whether the dash line drawing option is enabled.
+  final bool enableModeDashLine;
+
+  /// Indicating whether the blur drawing option is enabled.
+  final bool enableModeBlur;
+
+  /// Indicating whether the eraser option is enabled.
+  final bool enableModeEraser;
 
   /// Indicating whether the fill option can be toggled.
   final bool canToggleFill;
@@ -172,6 +218,13 @@ class PaintEditorConfigs {
   /// Default value is 5.0.
   final double editorMaxScale;
 
+  /// Configuration settings for the censor tool in the paint editor.
+  ///
+  /// This property holds an instance of [CensorConfigs] which contains
+  /// various settings and options for the censoring functionality within
+  /// the paint editor.
+  final CensorConfigs censorConfigs;
+
   /// Zoom boundary
   ///
   /// A margin for the visible boundaries of the child.
@@ -224,6 +277,14 @@ class PaintEditorConfigs {
     bool? hasOptionCircle,
     bool? hasOptionDashLine,
     bool? hasOptionEraser,
+    bool? enableModeFreeStyle,
+    bool? enableModeArrow,
+    bool? enableModeLine,
+    bool? enableModeRect,
+    bool? enableModeCircle,
+    bool? enableModeDashLine,
+    bool? enableModeBlur,
+    bool? enableModeEraser,
     bool? canToggleFill,
     bool? canChangeLineWidth,
     bool? canChangeOpacity,
@@ -237,6 +298,7 @@ class PaintEditorConfigs {
     double? editorMaxScale,
     double? minScale,
     double? maxScale,
+    CensorConfigs? censorConfigs,
     EditorSafeArea? safeArea,
     EdgeInsets? boundaryMargin,
     PaintEditorStyle? style,
@@ -254,6 +316,14 @@ class PaintEditorConfigs {
       hasOptionCircle: hasOptionCircle ?? this.hasOptionCircle,
       hasOptionDashLine: hasOptionDashLine ?? this.hasOptionDashLine,
       hasOptionEraser: hasOptionEraser ?? this.hasOptionEraser,
+      enableModeFreeStyle: enableModeFreeStyle ?? this.enableModeFreeStyle,
+      enableModeArrow: enableModeArrow ?? this.enableModeArrow,
+      enableModeLine: enableModeLine ?? this.enableModeLine,
+      enableModeRect: enableModeRect ?? this.enableModeRect,
+      enableModeCircle: enableModeCircle ?? this.enableModeCircle,
+      enableModeDashLine: enableModeDashLine ?? this.enableModeDashLine,
+      enableModeBlur: enableModeBlur ?? this.enableModeBlur,
+      enableModeEraser: enableModeEraser ?? this.enableModeEraser,
       canToggleFill: canToggleFill ?? this.canToggleFill,
       canChangeLineWidth: canChangeLineWidth ?? this.canChangeLineWidth,
       showLayers: showLayers ?? this.showLayers,
@@ -267,6 +337,7 @@ class PaintEditorConfigs {
           freeStyleHighPerformanceHero ?? this.freeStyleHighPerformanceHero,
       initialPaintMode: initialPaintMode ?? this.initialPaintMode,
       editorMinScale: editorMinScale ?? this.editorMinScale,
+      censorConfigs: censorConfigs ?? this.censorConfigs,
       editorMaxScale: editorMaxScale ?? this.editorMaxScale,
       boundaryMargin: boundaryMargin ?? this.boundaryMargin,
       minScale: minScale ?? this.minScale,

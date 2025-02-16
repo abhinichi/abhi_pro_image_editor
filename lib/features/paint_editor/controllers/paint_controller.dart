@@ -158,6 +158,7 @@ class PaintController extends ChangeNotifier {
   void undo() {
     if (historyPosition > 0) {
       historyPosition--;
+      _resetHitState();
     }
   }
 
@@ -166,6 +167,13 @@ class PaintController extends ChangeNotifier {
   void redo() {
     if (historyPosition < paintHistory.length) {
       historyPosition++;
+      _resetHitState();
+    }
+  }
+
+  void _resetHitState() {
+    for (var item in activePaintItemList) {
+      item.hit = false;
     }
   }
 

@@ -249,9 +249,9 @@ _flutter.loader.load({
 
 <br/>
 
-The HTML renderer can cause problems on some devices, especially mobile devices. If you don't know the exact type of phone your customers will be using, it is recommended to use the Canvas renderer.
+The HTML renderer is not supported in the image editor and has been completely removed in Flutter version >= `3.29.0`. However, if you are using an older Flutter version < `3.29`, please ensure that you enforce the canvas renderer.
 
-To enable the Canvaskit renderer by default for better compatibility with mobile web devices, you can do the following in your `flutter_bootstrap.js` file.
+To enable the Canvaskit renderer by default, you can do the following in your `flutter_bootstrap.js` file.
 
 <details>
   <summary>Show code example</summary>
