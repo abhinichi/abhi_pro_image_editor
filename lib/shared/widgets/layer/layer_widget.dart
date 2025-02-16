@@ -1,10 +1,10 @@
 // Dart imports:
 import 'dart:math';
-import 'dart:ui';
 
 // Flutter imports:
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/shared/widgets/censor/blur_area_item.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_configs_mixin.dart';
@@ -465,19 +465,9 @@ class _LayerWidgetState extends State<LayerWidget>
 
   Widget _buildCensorLayer() {
     var layer = _layer as PaintLayer;
-    return RepaintBoundary(
-      child: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: paintEditorConfigs.censorConfigs.blurSigmaX,
-            sigmaY: paintEditorConfigs.censorConfigs.blurSigmaY,
-          ),
-          child: SizedBox(
-            width: layer.size.width,
-            height: layer.size.height,
-          ),
-        ),
-      ),
+    return BlurAreaItem(
+      censorConfigs: paintEditorConfigs.censorConfigs,
+      size: layer.size,
     );
   }
 }

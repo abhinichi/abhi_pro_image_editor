@@ -103,31 +103,31 @@ class PaintEditorConfigs {
   final bool enableZoom;
 
   /// Indicating whether the free-style drawing option is enabled.
-  @Deprecated('Use enableFreeStyle instead.')
+  @Deprecated('Use enableModeFreeStyle instead.')
   final bool? hasOptionFreeStyle;
 
   /// Indicating whether the arrow drawing option is enabled.
-  @Deprecated('Use enableArrow instead.')
+  @Deprecated('Use enableModeArrow instead.')
   final bool? hasOptionArrow;
 
   /// Indicating whether the line drawing option is enabled.
-  @Deprecated('Use enableLine instead.')
+  @Deprecated('Use enableModeLine instead.')
   final bool? hasOptionLine;
 
   /// Indicating whether the rectangle drawing option is enabled.
-  @Deprecated('Use enableRect instead.')
+  @Deprecated('Use enableModeRect instead.')
   final bool? hasOptionRect;
 
   /// Indicating whether the circle drawing option is enabled.
-  @Deprecated('Use enableCircle instead.')
+  @Deprecated('Use enableModeCircle instead.')
   final bool? hasOptionCircle;
 
   /// Indicating whether the dash line drawing option is enabled.
-  @Deprecated('Use enableDashLine instead.')
+  @Deprecated('Use enableModeDashLine instead.')
   final bool? hasOptionDashLine;
 
   /// Indicating whether the eraser option is enabled.
-  @Deprecated('Use enableEraser instead.')
+  @Deprecated('Use enableModeEraser instead.')
   final bool? hasOptionEraser;
 
   /// Indicating whether the free-style drawing option is enabled.

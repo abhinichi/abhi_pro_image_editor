@@ -1,11 +1,11 @@
 // Dart imports:
 import 'dart:async';
-import 'dart:ui';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
+import '/shared/widgets/censor/blur_area_item.dart';
 import '../controllers/paint_controller.dart';
 import '../enums/paint_editor_enum.dart';
 import '../models/painted_model.dart';
@@ -263,30 +263,20 @@ class PaintCanvasState extends State<PaintCanvas> {
     double left = width >= 0 ? topLeft.dx : topLeft.dx + width;
     double top = height >= 0 ? topLeft.dy : topLeft.dy + height;
 
-    var censorConfigs = widget.paintEditorConfigs.censorConfigs;
-
     return Positioned(
       left: left,
       top: top,
       width: width.abs(),
       height: height.abs(),
-      child: RepaintBoundary(
-        child: MouseRegion(
-          onEnter: (event) {
-            item.hit = true;
-          },
-          onExit: (event) {
-            item.hit = false;
-          },
-          child: ClipRRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: censorConfigs.blurSigmaX,
-                sigmaY: censorConfigs.blurSigmaY,
-              ),
-              child: const SizedBox.expand(),
-            ),
-          ),
+      child: MouseRegion(
+        onEnter: (event) {
+          item.hit = true;
+        },
+        onExit: (event) {
+          item.hit = false;
+        },
+        child: BlurAreaItem(
+          censorConfigs: widget.paintEditorConfigs.censorConfigs,
         ),
       ),
     );
