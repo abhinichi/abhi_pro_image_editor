@@ -1,5 +1,8 @@
 # Changelog
 
+## 8.3.5
+- **FIX**(layer-stack): Resolved an issue where the outside overlay color on layers depended on the crop_rotate_editor instead of the active subeditor.
+
 ## 8.3.4
 - **FIX**(grounded-design): Resolved an issue in the grounded design where switching between screens caused an error due to the ScrollController.
 

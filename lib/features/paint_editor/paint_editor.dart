@@ -813,6 +813,7 @@ class PaintEditorState extends State<PaintEditor>
                     editorBodySize: editorBodySize,
                     transformConfigs: initialTransformConfigs,
                   ),
+                  overlayColor: paintEditorConfigs.style.background,
                 ),
               _buildPainter(),
               if (paintEditorConfigs.widgets.bodyItemsRecorded != null)

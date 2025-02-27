@@ -477,6 +477,7 @@ class TuneEditorState extends State<TuneEditor>
       configs: configs,
       layers: layers!,
       clipBehavior: Clip.none,
+      overlayColor: tuneEditorConfigs.style.background,
     );
   }
 

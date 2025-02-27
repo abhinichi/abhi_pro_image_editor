@@ -330,6 +330,7 @@ class FilterEditorState extends State<FilterEditor>
                     configs: configs,
                     layers: layers!,
                     clipBehavior: Clip.none,
+                    overlayColor: filterEditorConfigs.style.background,
                   ),
                 if (filterEditorConfigs.widgets.bodyItemsRecorded != null)
                   ...filterEditorConfigs.widgets.bodyItemsRecorded!(

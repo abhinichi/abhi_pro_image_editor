@@ -16,7 +16,7 @@ import 'layer_widget.dart';
 /// This widget manages the display and transformation of multiple layers,
 /// allowing for complex image editing operations such as cropping, rotating,
 /// and layering effects.
-class LayerStack extends StatefulWidget {
+class LayerStack extends StatelessWidget {
   /// Creates a [LayerStack].
   ///
   /// This widget is responsible for rendering a collection of layers within a
@@ -37,6 +37,7 @@ class LayerStack extends StatefulWidget {
     super.key,
     required this.configs,
     required this.layers,
+    required this.overlayColor,
     this.cutOutsideImageArea,
     this.freeStyleHighPerformance = false,
     this.transformHelper = const TransformHelper(
@@ -46,6 +47,9 @@ class LayerStack extends StatefulWidget {
     ),
     this.clipBehavior = Clip.hardEdge,
   });
+
+  /// The outside overlay color for layers.
+  final Color overlayColor;
 
   /// The configuration settings for the image editor.
   ///
@@ -84,76 +88,55 @@ class LayerStack extends StatefulWidget {
   /// elements on the canvas, at the potential cost of rendering quality.
   final bool freeStyleHighPerformance;
 
-  @override
-  State<LayerStack> createState() => _LayerStackState();
-}
-
-/// The state class for [LayerStack].
-///
-/// This class manages the rendering and transformation of layers within the
-/// stack, applying configurations and handling initialization logic.
-
-class _LayerStackState extends State<LayerStack> {
-  late final bool _cutOutsideImageArea;
-
-  @override
-  void initState() {
-    super.initState();
-    // Determine whether to cut content outside the image area based on widget
-    // settings.
-    _cutOutsideImageArea = widget.cutOutsideImageArea ??
-        widget.configs.imageGeneration.captureOnlyBackgroundImageArea ??
-        widget.configs.imageGeneration.cropToImageBounds;
-  }
+  bool get _cutOutsideImageArea =>
+      cutOutsideImageArea ??
+      configs.imageGeneration.captureOnlyBackgroundImageArea ??
+      configs.imageGeneration.cropToImageBounds;
 
   @override
   Widget build(BuildContext context) {
     // Retrieve transformation configurations, if available.
     TransformConfigs? transformConfigs =
-        widget.transformHelper.transformConfigs != null &&
-                widget.transformHelper.transformConfigs!.isNotEmpty
-            ? widget.transformHelper.transformConfigs
+        transformHelper.transformConfigs != null &&
+                transformHelper.transformConfigs!.isNotEmpty
+            ? transformHelper.transformConfigs
             : null;
 
     return Stack(
       children: [
         IgnorePointer(
           child: Transform.scale(
-            scale: widget.transformHelper.scale,
+            scale: transformHelper.scale,
             child: Stack(
                 fit: StackFit.expand,
                 alignment: Alignment.center,
-                clipBehavior: widget.clipBehavior,
-                children: widget.layers.map((layerItem) {
+                clipBehavior: clipBehavior,
+                children: layers.map((layerItem) {
                   return LayerWidget(
-                    configs: widget.configs,
-                    highPerformanceMode: widget.freeStyleHighPerformance,
-                    editorCenterX:
-                        widget.transformHelper.editorBodySize.width / 2,
-                    editorCenterY:
-                        widget.transformHelper.editorBodySize.height / 2,
+                    configs: configs,
+                    highPerformanceMode: freeStyleHighPerformance,
+                    editorCenterX: transformHelper.editorBodySize.width / 2,
+                    editorCenterY: transformHelper.editorBodySize.height / 2,
                     layerData: layerItem,
                   );
                 }).toList()),
           ),
         ),
-        if (widget.configs.imageGeneration.captureOnlyBackgroundImageArea ??
-            widget.configs.imageGeneration.cropToImageBounds)
+        if (configs.imageGeneration.captureOnlyBackgroundImageArea ??
+            configs.imageGeneration.cropToImageBounds)
           RepaintBoundary(
             child: Hero(
               tag: 'crop_layer_painter_hero',
               child: CustomPaint(
                 foregroundPainter: _cutOutsideImageArea
                     ? CropLayerPainter(
-                        opacity: widget.configs.mainEditor.style
-                            .outsideCaptureAreaLayerOpacity,
-                        backgroundColor:
-                            widget.configs.cropRotateEditor.style.background,
+                        opacity: configs
+                            .mainEditor.style.outsideCaptureAreaLayerOpacity,
+                        backgroundColor: overlayColor,
                         imgRatio: transformConfigs?.cropRect.size.aspectRatio ??
-                            widget.transformHelper.mainImageSize.aspectRatio,
-                        isRoundCropper: widget
-                                .configs.cropRotateEditor.roundCropper ??
-                            widget.configs.cropRotateEditor.enableRoundCropper,
+                            transformHelper.mainImageSize.aspectRatio,
+                        isRoundCropper: configs.cropRotateEditor.roundCropper ??
+                            configs.cropRotateEditor.enableRoundCropper,
                         is90DegRotated:
                             transformConfigs?.is90DegRotated ?? false,
                       )

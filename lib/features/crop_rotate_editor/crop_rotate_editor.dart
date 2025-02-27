@@ -2317,6 +2317,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                     configs: configs,
                     layers: _rawLayers,
                     clipBehavior: Clip.none,
+                    overlayColor: cropRotateEditorConfigs.style.background,
                   ),
                 ),
             ],
@@ -2363,6 +2364,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 configs: configs,
                 layers: _layers,
                 clipBehavior: Clip.none,
+                overlayColor: cropRotateEditorConfigs.style.background,
               ),
           ],
         );

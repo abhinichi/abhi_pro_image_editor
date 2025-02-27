@@ -313,6 +313,7 @@ class BlurEditorState extends State<BlurEditor>
                       transformConfigs: initialTransformConfigs,
                       editorBodySize: editorBodySize,
                     ),
+                    overlayColor: blurEditorConfigs.style.background,
                     configs: configs,
                     layers: layers!,
                     clipBehavior: Clip.none,
