@@ -1,13 +1,15 @@
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:image/image.dart' show JpegChroma, PngFilter;
+
+import '/plugins/image/src/formats/jpeg/jpeg_chroma.dart';
+import '/plugins/image/src/formats/png/png_filter.dart';
 
 import 'output_formats.dart';
 import 'processor_configs.dart';
 
-export 'package:image/image.dart' show JpegChroma, PngFilter;
+export '/plugins/image/src/formats/jpeg/jpeg_chroma.dart';
+export '/plugins/image/src/formats/png/png_filter.dart';
 export 'output_formats.dart';
 export 'processor_configs.dart';
 

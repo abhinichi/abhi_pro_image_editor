@@ -106,10 +106,15 @@ class ImageConverterService {
       image = await dartUiRemoveTransparentImgAreas(image) ?? image;
     }
     return await encodeImageFromThreadRequest(
-      ThreadRequest.fromConfigs(
+      ThreadRequest(
         id: 'id',
         image: await convertFlutterUiToImage(image),
-        configs: configs,
+        outputFormat: configs.outputFormat,
+        singleFrame: configs.singleFrame,
+        jpegQuality: configs.jpegQuality,
+        jpegChroma: configs.jpegChroma,
+        pngFilter: configs.pngFilter,
+        pngLevel: configs.pngLevel,
       ),
     );
   }

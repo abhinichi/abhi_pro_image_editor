@@ -421,10 +421,15 @@ class ContentRecorderController {
     required ui.Image image,
     required String id,
   }) async {
-    return ThreadRequest.fromConfigs(
+    return ThreadRequest(
       id: id,
       image: await convertFlutterUiToImage(image),
-      configs: _configs,
+      outputFormat: _configs.outputFormat,
+      singleFrame: _configs.singleFrame,
+      jpegQuality: _configs.jpegQuality,
+      jpegChroma: _configs.jpegChroma,
+      pngFilter: _configs.pngFilter,
+      pngLevel: _configs.pngLevel,
     );
   }
 }
