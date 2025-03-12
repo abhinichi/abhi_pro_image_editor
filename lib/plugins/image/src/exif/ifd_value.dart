@@ -73,7 +73,6 @@ abstract class IfdValue {
 }
 
 class IfdByteValue extends IfdValue {
-
   IfdByteValue(int value) : value = Uint8List(1) {
     this.value[0] = value;
   }
@@ -123,7 +122,6 @@ class IfdByteValue extends IfdValue {
 }
 
 class IfdValueAscii extends IfdValue {
-
   IfdValueAscii(this.value);
 
   IfdValueAscii.list(List<int> value) : value = String.fromCharCodes(value);
@@ -174,7 +172,6 @@ class IfdValueAscii extends IfdValue {
 }
 
 class IfdValueShort extends IfdValue {
-
   IfdValueShort(int value) : value = Uint16List(1) {
     this.value[0] = value;
   }
@@ -230,7 +227,6 @@ class IfdValueShort extends IfdValue {
 }
 
 class IfdValueLong extends IfdValue {
-
   IfdValueLong(int value) : value = Uint32List(1) {
     this.value[0] = value;
   }
@@ -285,7 +281,6 @@ class IfdValueLong extends IfdValue {
 }
 
 class IfdValueRational extends IfdValue {
-
   IfdValueRational(int numerator, int denominator)
       : value = [Rational(numerator, denominator)];
 
@@ -347,7 +342,6 @@ class IfdValueRational extends IfdValue {
 }
 
 class IfdValueSByte extends IfdValue {
-
   IfdValueSByte(int value) : value = Int8List(1) {
     this.value[0] = value;
   }
@@ -398,7 +392,6 @@ class IfdValueSByte extends IfdValue {
 }
 
 class IfdValueSShort extends IfdValue {
-
   IfdValueSShort(int value) : value = Int16List(1) {
     this.value[0] = value;
   }
@@ -457,7 +450,6 @@ class IfdValueSShort extends IfdValue {
 }
 
 class IfdValueSLong extends IfdValue {
-
   IfdValueSLong(int value) : value = Int32List(1) {
     this.value[0] = value;
   }
@@ -513,7 +505,6 @@ class IfdValueSLong extends IfdValue {
 }
 
 class IfdValueSRational extends IfdValue {
-
   IfdValueSRational(int numerator, int denominator)
       : value = [Rational(numerator, denominator)];
 
@@ -571,7 +562,6 @@ class IfdValueSRational extends IfdValue {
 }
 
 class IfdValueSingle extends IfdValue {
-
   IfdValueSingle(double value) : value = Float32List(1) {
     this.value[0] = value;
   }
@@ -628,7 +618,6 @@ class IfdValueSingle extends IfdValue {
 }
 
 class IfdValueDouble extends IfdValue {
-
   IfdValueDouble(double value) : value = Float64List(1) {
     this.value[0] = value;
   }
@@ -685,7 +674,6 @@ class IfdValueDouble extends IfdValue {
 }
 
 class IfdValueUndefined extends IfdValue {
-
   IfdValueUndefined.list(List<int> value) : value = Uint8List.fromList(value);
 
   IfdValueUndefined.data(InputBuffer data, int count)

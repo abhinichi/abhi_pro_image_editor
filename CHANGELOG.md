@@ -1,7 +1,10 @@
 # Changelog
 
+## 9.0.2
+- **STYLE**: Improved Dart code formatting
+
 ## 9.0.1
-- **FIX**(EditorImage): support `File` type in addition to file path
+- **FIX**(EditorImage): Support `File` type in addition to file path
 
 ## 9.0.0
 - **FEAT**(callbacks): Add new callbacks that are triggered when a layer intersects with a helper line.
