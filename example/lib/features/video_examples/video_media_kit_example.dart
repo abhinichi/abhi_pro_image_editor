@@ -71,9 +71,6 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
         controls: null,
       ),
       callbacks: ProImageEditorCallbacks(
-        onImageEditingComplete: (bytes) async {
-          print(bytes.length);
-        },
         videoEditorCallbacks: VideoEditorCallbacks(
           onPause: _player.pause,
           onPlay: _player.play,
@@ -83,7 +80,45 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
         ),
       ),
       configs: ProImageEditorConfigs(
+        mainEditor: MainEditorConfigs(
+          widgets: MainEditorWidgets(removeLayerArea: _buildRemoveLayerArea),
+        ),
         videoEditor: _configs,
+      ),
+    );
+  }
+
+  Widget _buildRemoveLayerArea(
+    GlobalKey removeAreaKey,
+    ProImageEditorState editor,
+    Stream<void> rebuildStream,
+  ) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: SafeArea(
+        bottom: false,
+        child: StreamBuilder(
+            stream: rebuildStream,
+            builder: (context, snapshot) {
+              return Container(
+                key: removeAreaKey,
+                height: kToolbarHeight,
+                width: kToolbarHeight,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF44336).withAlpha(
+                      editor.layerInteractionManager.hoverRemoveBtn
+                          ? 255
+                          : 100),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Center(
+                  child: Icon(
+                    editor.mainEditorConfigs.icons.removeElementZone,
+                    size: 28,
+                  ),
+                ),
+              );
+            }),
       ),
     );
   }
