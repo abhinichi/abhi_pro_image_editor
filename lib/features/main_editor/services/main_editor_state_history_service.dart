@@ -102,12 +102,12 @@ class MainEditorStateHistoryService {
       for (Layer layer in el.layers) {
         if (import.configs.recalculateSizeAndPosition) {
           Size currentImageSize = sizesManager.decodedImageSize;
-          Size lastDecodedImageSize = import.lastRenderedImgSize;
+          Size lastRenderedImgSize = import.lastRenderedImgSize;
 
           double scaleWidth =
-              currentImageSize.width / lastDecodedImageSize.width;
+              currentImageSize.width / lastRenderedImgSize.width;
           double scaleHeight =
-              currentImageSize.height / lastDecodedImageSize.height;
+              currentImageSize.height / lastRenderedImgSize.height;
 
           scaleWidth = scaleWidth.isFinite ? scaleWidth : 1;
           scaleHeight = scaleHeight.isFinite ? scaleHeight : 1;

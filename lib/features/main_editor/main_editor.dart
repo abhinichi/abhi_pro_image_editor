@@ -1941,6 +1941,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// optional [onUpdateUI] callback.
   Future<void> importStateHistory(ImportStateHistory import) async {
     await _stateHistoryService.importStateHistory(import, context);
+    await decodeImage();
   }
 
   /// Exports the current state history.

@@ -251,8 +251,9 @@ class ExportStateHistory {
         minifier.convertSizeKey('height'): imageInfos.rawSize.height,
       },
       minifier.convertMainKey('lastRenderedImgSize'): {
-        minifier.convertSizeKey('width'): imageInfos.renderedSize.width,
-        minifier.convertSizeKey('height'): imageInfos.renderedSize.height,
+        minifier.convertSizeKey('width'): imageInfos.originalRenderedSize.width,
+        minifier.convertSizeKey('height'):
+            imageInfos.originalRenderedSize.height,
       },
     };
   }
