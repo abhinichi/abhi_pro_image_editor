@@ -13,6 +13,10 @@ export 'core/models/editor_configs/pro_image_editor_configs.dart';
 export 'core/models/editor_image.dart';
 export 'core/models/history/state_history.dart';
 
+/// Video editing
+export '/core/models/editor_callbacks/video_editor_callbacks.dart';
+export '/core/models/editor_configs/video_editor_configs.dart';
+
 /// Import/Export state history
 export 'shared/services/import_export/models/export_state_history_configs.dart';
 export 'shared/services/import_export/import_state_history.dart';

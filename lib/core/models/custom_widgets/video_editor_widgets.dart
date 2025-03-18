@@ -5,6 +5,7 @@ class VideoEditorWidgets {
     this.playIndicator,
     this.pauseIndicator,
     this.muteButton,
+    this.trimBar,
     this.infoBanner,
     this.headerToolbar,
   });
@@ -13,6 +14,9 @@ class VideoEditorWidgets {
   final Widget? pauseIndicator;
   final Widget Function(Function(bool isMuted) setMute)? muteButton;
   final Widget? infoBanner;
+  final Widget? trimBar;
 
   final Widget? headerToolbar;
+
+  /// TODO: write copyWith method
 }

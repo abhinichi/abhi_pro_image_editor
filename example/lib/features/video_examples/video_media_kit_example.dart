@@ -3,8 +3,6 @@ import 'package:example/core/mixin/example_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:pro_image_editor/core/models/editor_callbacks/video_editor_callbacks.dart';
-import 'package:pro_image_editor/core/models/editor_configs/video_editor_configs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 class VideoMediaKitExample extends StatefulWidget {

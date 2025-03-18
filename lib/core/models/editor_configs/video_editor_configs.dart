@@ -15,7 +15,9 @@ class VideoEditorConfigs {
     this.widgets = const VideoEditorWidgets(),
     this.initialPlay = false,
     this.initialMuted = false,
+    this.controlsPosition = VideoEditorControlPosition.top,
     this.infoBannerText,
+    this.minTrimDuration = const Duration(seconds: 10),
     this.animatedIndicatorDuration = const Duration(milliseconds: 200),
     this.animatedIndicatorSwitchInCurve = Curves.ease,
     this.animatedIndicatorSwitchOutCurve = Curves.ease,
@@ -28,6 +30,10 @@ class VideoEditorConfigs {
   final bool initialPlay;
   final bool initialMuted;
 
+  final Duration minTrimDuration;
+
+  final VideoEditorControlPosition controlsPosition;
+
   final String? infoBannerText;
 
   final Duration animatedIndicatorDuration;
@@ -39,6 +45,8 @@ class VideoEditorConfigs {
     VideoEditorIcons? icons,
     VideoEditorStyle? style,
     VideoEditorWidgets? widgets,
+    Duration? minTrimDuration,
+    VideoEditorControlPosition? controlsPosition,
     bool? initialPlay,
     bool? initialMuted,
     String? infoBannerText,
@@ -50,6 +58,8 @@ class VideoEditorConfigs {
       icons: icons ?? this.icons,
       style: style ?? this.style,
       widgets: widgets ?? this.widgets,
+      minTrimDuration: minTrimDuration ?? this.minTrimDuration,
+      controlsPosition: controlsPosition ?? this.controlsPosition,
       initialPlay: initialPlay ?? this.initialPlay,
       initialMuted: initialMuted ?? this.initialMuted,
       infoBannerText: infoBannerText ?? this.infoBannerText,
@@ -93,3 +103,5 @@ class VideoEditorConfigs {
         animatedIndicatorSwitchOutCurve.hashCode;
   }
 }
+
+enum VideoEditorControlPosition { top, bottom }
