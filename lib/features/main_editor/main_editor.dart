@@ -1,18 +1,17 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui show Image;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:vibration/vibration.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_callbacks_mixin.dart';
 import '/core/mixins/editor_configs_mixin.dart';
 import '/core/models/history/last_layer_interaction_position.dart';
 import '/core/models/styles/draggable_sheet_style.dart';
+import '/core/platform/io/io_helper.dart';
 import '/features/main_editor/widgets/main_editor_appbar.dart';
 import '/features/main_editor/widgets/main_editor_background_image.dart';
 import '/features/main_editor/widgets/main_editor_bottombar.dart';
@@ -24,15 +23,16 @@ import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/services/import_export/export_state_history.dart';
 import '/shared/services/layer_transform_generator.dart';
 import '/shared/utils/debounce.dart';
+import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/adaptive_dialog.dart';
 import '/shared/widgets/extended/extended_interactive_viewer.dart';
-import '/shared/widgets/extended/extended_mouse_cursor.dart';
 import '/shared/widgets/screen_resize_detector.dart';
 import '../filter_editor/types/filter_matrix.dart';
 import '../filter_editor/widgets/filter_generator.dart';
 import '../tune_editor/models/tune_adjustment_matrix.dart';
 import 'controllers/main_editor_controllers.dart';
 import 'mixins/main_editor_global_keys.dart';
+import 'providers/image_infos_provider.dart';
 import 'services/desktop_interaction_manager.dart';
 import 'services/layer_copy_manager.dart';
 import 'services/layer_interaction_manager.dart';
@@ -156,7 +156,8 @@ class ProImageEditor extends StatefulWidget
   /// This constructor creates a `ProImageEditor` widget configured to edit an
   /// image loaded from the specified `file`.
   ///
-  /// The `file` parameter should point to the image file.
+  /// The `file` parameter should be from the type `File` or the path to the
+  /// file.
   ///
   /// {@macro mainEditorConfigs}
   ///
@@ -168,14 +169,14 @@ class ProImageEditor extends StatefulWidget
   /// )
   /// ```
   factory ProImageEditor.file(
-    File file, {
+    dynamic file, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ProImageEditorCallbacks callbacks,
   }) {
     return ProImageEditor._(
       key: key,
-      file: file,
+      file: ensureFileInstance(file),
       configs: configs,
       callbacks: callbacks,
     );
@@ -237,6 +238,111 @@ class ProImageEditor extends StatefulWidget
       callbacks: callbacks,
     );
   }
+
+  /// Creates a `ProImageEditor` instance by automatically determining the
+  /// image source.
+  ///
+  /// This factory constructor intelligently selects the appropriate image
+  /// loading method based on the provided parameters. It allows for seamless
+  /// integration without requiring users to manually specify whether the image
+  /// is from memory, a file, a network URL, or an asset.
+  ///
+  /// The selection is based on the first non-null parameter in the following
+  /// order of priority:
+  /// 1. `byteArray` (raw image data in memory)
+  /// 2. `file` (local file system)
+  /// 3. `networkUrl` (image from a remote URL)
+  /// 4. `assetPath` (image stored as an app asset)
+  ///
+  /// Additionally, an `EditorImage` instance can be provided, which may contain
+  /// any of the above sources, and will be processed in the same priority
+  /// order.
+  ///
+  /// {@macro mainEditorConfigs}
+  ///
+  /// Example usage:
+  /// ```dart
+  /// ProImageEditor.autoSource(
+  ///   byteArray: imageData,
+  ///   callbacks: editorCallbacks,
+  ///   configs: ProImageEditorConfigs(),
+  /// )
+  ///
+  /// ProImageEditor.autoSource(
+  ///   file: File('path/to/image.jpg'),
+  ///   callbacks: editorCallbacks,
+  /// )
+  ///
+  /// ProImageEditor.autoSource(
+  ///   networkUrl: 'https://example.com/image.jpg',
+  ///   callbacks: editorCallbacks,
+  /// )
+  ///
+  /// ProImageEditor.autoSource(
+  ///   assetPath: 'assets/images/sample.jpg',
+  ///   callbacks: editorCallbacks,
+  /// )
+  ///
+  /// ProImageEditor.autoSource(
+  ///   editorImage: EditorImage(file: File('path/to/image.jpg')),
+  ///   callbacks: editorCallbacks,
+  /// )
+  /// ```
+  ///
+  /// Throws an [ArgumentError] if no valid image source is provided.
+  ///
+  /// - [byteArray] - Raw image data as a `Uint8List` (highest priority).
+  /// - [file] - A `File` instance representing a local image file.
+  /// - [networkUrl] - URL pointing to an image on the internet.
+  /// - [assetPath] - Path to an image stored in the app’s assets.
+  /// - [editorImage] - An `EditorImage` instance containing one of the above.
+  /// - [configs] - Optional configuration settings for the editor.
+  /// - [callbacks] - Required callbacks for handling image editor events.
+  factory ProImageEditor.autoSource({
+    Key? key,
+    Uint8List? byteArray,
+    File? file,
+    String? assetPath,
+    String? networkUrl,
+    EditorImage? editorImage,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
+    required ProImageEditorCallbacks callbacks,
+  }) {
+    if (byteArray != null || editorImage?.byteArray != null) {
+      return ProImageEditor.memory(
+        byteArray ?? editorImage!.byteArray!,
+        key: key,
+        configs: configs,
+        callbacks: callbacks,
+      );
+    } else if (file != null || editorImage?.file != null) {
+      return ProImageEditor.file(
+        ensureFileInstance(file ?? editorImage!.file!),
+        key: key,
+        configs: configs,
+        callbacks: callbacks,
+      );
+    } else if (networkUrl != null || editorImage?.networkUrl != null) {
+      return ProImageEditor.network(
+        networkUrl ?? editorImage!.networkUrl!,
+        key: key,
+        configs: configs,
+        callbacks: callbacks,
+      );
+    } else if (assetPath != null || editorImage?.assetPath != null) {
+      return ProImageEditor.asset(
+        assetPath ?? editorImage!.assetPath!,
+        key: key,
+        configs: configs,
+        callbacks: callbacks,
+      );
+    } else {
+      throw ArgumentError(
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must "
+          'be provided.');
+    }
+  }
+
   @override
   final ProImageEditorConfigs configs;
   @override
@@ -266,7 +372,6 @@ class ProImageEditorState extends State<ProImageEditor>
         SimpleConfigsAccessState,
         SimpleCallbacksAccessState,
         MainEditorGlobalKeys {
-  final _mouseCursorsKey = GlobalKey<ExtendedMouseRegionState>();
   final _bottomBarKey = GlobalKey();
   final _removeAreaKey = GlobalKey();
   final _backgroundImageColorFilterKey = GlobalKey<ColorFilterGeneratorState>();
@@ -283,8 +388,10 @@ class ProImageEditorState extends State<ProImageEditor>
   final LayerCopyManager _layerCopyManager = LayerCopyManager();
 
   /// Helper class for managing interactions with layers in the editor.
-  final LayerInteractionManager layerInteractionManager =
-      LayerInteractionManager();
+  late final LayerInteractionManager layerInteractionManager =
+      LayerInteractionManager(
+    helperLinesCallbacks: mainEditorCallbacks?.helperLines,
+  );
 
   /// Manager class for managing the state of the editor.
   final StateManager stateManager = StateManager();
@@ -385,6 +492,7 @@ class ProImageEditorState extends State<ProImageEditor>
     _controllers = MainEditorControllers(configs, callbacks);
     _desktopInteractionManager = DesktopInteractionManager(
       configs: configs,
+      callbacks: callbacks,
       context: context,
       onUpdateUI: mainEditorCallbacks?.handleUpdateUI,
       setState: setState,
@@ -414,20 +522,6 @@ class ProImageEditorState extends State<ProImageEditor>
           tuneAdjustments: [],
         ),
       );
-    }
-
-    if (helperLines.hitVibration) {
-      Vibration.hasVibrator().then((hasVibrator) {
-        layerInteractionManager.deviceCanVibrate = hasVibrator;
-
-        if (layerInteractionManager.deviceCanVibrate) {
-          Vibration.hasCustomVibrationsSupport()
-              .then((hasCustomVibrationsSupport) {
-            layerInteractionManager.deviceCanCustomVibrate =
-                hasCustomVibrationsSupport;
-          });
-        }
-      });
     }
 
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
@@ -837,6 +931,10 @@ class ProImageEditorState extends State<ProImageEditor>
     _controllers.cropLayerPainterCtrl.add(null);
   }
 
+  /// Returns the current scale factor of the image editor.
+  double get editorScaleFactor =>
+      _interactiveViewer.currentState?.scaleFactor ?? 1.0;
+
   /// Handle the start of a scaling operation.
   ///
   /// This method is called when a scaling operation begins and initializes the
@@ -916,11 +1014,11 @@ class ProImageEditorState extends State<ProImageEditor>
     if (layerInteractionManager.rotateScaleLayerSizeHelper != null) {
       layerInteractionManager
         ..freeStyleHighPerformanceScaling =
-            paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop
+            paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
+                !isDesktop
         ..calculateInteractiveButtonScaleRotate(
           configs: configs,
           activeLayer: _activeLayer!,
-          configEnabledHitVibration: helperLines.hitVibration,
           details: details,
           editorSize: sizesManager.bodySize,
           layerTheme: layerInteraction.style,
@@ -941,20 +1039,21 @@ class ProImageEditorState extends State<ProImageEditor>
     if (details.pointerCount == 1) {
       layerInteractionManager
         ..freeStyleHighPerformanceMoving =
-            paintEditorConfigs.freeStyleHighPerformanceMoving ?? isWebMobile
+            paintEditorConfigs.enableFreeStyleHighPerformanceMoving ??
+                isWebMobile
         ..calculateMovement(
           editorScaleFactor: editorScaleFactor,
           removeAreaKey: _removeAreaKey,
           activeLayer: _activeLayer!,
           context: context,
           detail: details,
-          configEnabledHitVibration: helperLines.hitVibration,
           onHoveredRemoveChanged: _controllers.removeBtnCtrl.add,
         );
     } else if (details.pointerCount == 2) {
       layerInteractionManager
         ..freeStyleHighPerformanceScaling =
-            paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop
+            paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
+                !isDesktop
         ..calculateScaleRotate(
           editorScaleFactor: editorScaleFactor,
           configs: configs,
@@ -962,7 +1061,6 @@ class ProImageEditorState extends State<ProImageEditor>
           detail: details,
           editorSize: sizesManager.bodySize,
           screenPaddingHelper: sizesManager.imageMargin,
-          configEnabledHitVibration: helperLines.hitVibration,
         );
     }
     mainEditorCallbacks?.handleUpdateLayer(_activeLayer!);
@@ -1001,6 +1099,9 @@ class ProImageEditorState extends State<ProImageEditor>
         configs: configs,
         theme: _theme,
         callbacks: callbacks,
+        scaleFactor: textEditorConfigs.enableMainEditorZoomFactor
+            ? _interactiveViewer.currentState?.scaleFactor ?? 1.0
+            : 1.0,
       ),
 
       /// Small Duration is important for a smooth hero animation
@@ -1075,7 +1176,7 @@ class ProImageEditorState extends State<ProImageEditor>
     _checkInteractiveViewer();
     isSubEditorOpen = true;
 
-    if (paintEditorConfigs.freeStyleHighPerformanceHero) {
+    if (paintEditorConfigs.enableFreeStyleHighPerformanceHero) {
       layerInteractionManager.freeStyleHighPerformanceHero = true;
     }
 
@@ -1250,6 +1351,7 @@ class ProImageEditorState extends State<ProImageEditor>
         configs: configs,
         theme: _theme,
         callbacks: callbacks,
+        scaleFactor: _interactiveViewer.currentState?.scaleFactor ?? 1.0,
       ),
       duration: duration,
     );
@@ -1651,7 +1753,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void doneEditing() async {
     if (_isProcessingFinalImage) return;
     if (!stateManager.canUndo && activeLayers.isEmpty) {
-      if (!imageGenerationConfigs.allowEmptyEditCompletion) {
+      if (!imageGenerationConfigs.allowEmptyEditingCompletion) {
         return closeEditor();
       }
     }
@@ -1932,43 +2034,50 @@ class ProImageEditorState extends State<ProImageEditor>
           }
           mainEditorCallbacks?.onPopInvoked?.call(didPop, result);
         },
-        child: ScreenResizeDetector(
-          ignoreSafeArea: false,
-          onResizeUpdate: (event) {
-            sizesManager
-              ..recalculateLayerPosition(
-                history: stateManager.stateHistory,
-                resizeEvent: ResizeEvent(
-                  oldContentSize: Size(
-                    event.oldContentSize.width,
-                    event.oldContentSize.height - sizesManager.allToolbarHeight,
+        child: ImageInfosProvider(
+          infos: _imageInfos,
+          imageFitToWidth:
+              _imageInfos?.renderedSize.width == sizesManager.bodySize.width,
+          child: ScreenResizeDetector(
+            ignoreSafeArea: false,
+            onResizeUpdate: (event) {
+              sizesManager
+                ..recalculateLayerPosition(
+                  history: stateManager.stateHistory,
+                  resizeEvent: ResizeEvent(
+                    oldContentSize: Size(
+                      event.oldContentSize.width,
+                      event.oldContentSize.height -
+                          sizesManager.allToolbarHeight,
+                    ),
+                    newContentSize: Size(
+                      event.newContentSize.width,
+                      event.newContentSize.height -
+                          sizesManager.allToolbarHeight,
+                    ),
                   ),
-                  newContentSize: Size(
-                    event.newContentSize.width,
-                    event.newContentSize.height - sizesManager.allToolbarHeight,
-                  ),
+                )
+                ..lastScreenSize = event.newContentSize;
+            },
+            onResizeEnd: (event) async {
+              await decodeImage();
+            },
+            child: AnnotatedRegion<SystemUiOverlayStyle>(
+              value: mainEditorConfigs.style.uiOverlayStyle,
+              child: Theme(
+                data: _theme,
+                child: SafeArea(
+                  child: LayoutBuilder(builder: (context, constraints) {
+                    sizesManager.editorSize = constraints.biggest;
+                    return Scaffold(
+                      backgroundColor: mainEditorConfigs.style.background,
+                      resizeToAvoidBottomInset: false,
+                      appBar: _buildAppBar(),
+                      body: _buildBody(),
+                      bottomNavigationBar: _buildBottomNavBar(),
+                    );
+                  }),
                 ),
-              )
-              ..lastScreenSize = event.newContentSize;
-          },
-          onResizeEnd: (event) async {
-            await decodeImage();
-          },
-          child: AnnotatedRegion<SystemUiOverlayStyle>(
-            value: mainEditorConfigs.style.uiOverlayStyle,
-            child: Theme(
-              data: _theme,
-              child: SafeArea(
-                child: LayoutBuilder(builder: (context, constraints) {
-                  sizesManager.editorSize = constraints.biggest;
-                  return Scaffold(
-                    backgroundColor: mainEditorConfigs.style.background,
-                    resizeToAvoidBottomInset: false,
-                    appBar: _buildAppBar(),
-                    body: _buildBody(),
-                    bottomNavigationBar: _buildBottomNavBar(),
-                  );
-                }),
               ),
             ),
           ),
@@ -2093,7 +2202,6 @@ class ProImageEditorState extends State<ProImageEditor>
       configs: configs,
       callbacks: callbacks,
       sizesManager: sizesManager,
-      mouseCursorsKey: _mouseCursorsKey,
       selectedLayerIndex: selectedLayerIndex,
       activeLayers: activeLayers,
       isSubEditorOpen: isSubEditorOpen,

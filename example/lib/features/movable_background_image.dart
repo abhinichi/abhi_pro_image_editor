@@ -256,6 +256,7 @@ class _MovableBackgroundImageExampleState
             onCloseEditor: () =>
                 onCloseEditor(enablePop: !isDesktopMode(context)),
             mainEditorCallbacks: MainEditorCallbacks(
+              helperLines: HelperLinesCallbacks(onLineHit: vibrateLineHit),
               onAfterViewInit: () {
                 editorKey.currentState!.addLayer(
                   WidgetLayer(
@@ -306,8 +307,8 @@ class _MovableBackgroundImageExampleState
           configs: ProImageEditorConfigs(
             designMode: platformDesignMode,
             imageGeneration: ImageGenerationConfigs(
-              captureOnlyDrawingBounds: true,
-              captureOnlyBackgroundImageArea: false,
+              cropToDrawingBounds: true,
+              allowEmptyEditingCompletion: false,
               outputFormat: OutputFormat.png,
 
               /// Set the pixel ratio manually. You can also set this

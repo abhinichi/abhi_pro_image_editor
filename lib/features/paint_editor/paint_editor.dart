@@ -1,6 +1,4 @@
-// Dart imports:
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
 // Flutter imports:
@@ -13,12 +11,15 @@ import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
 import '/core/models/transform_helper.dart';
+import '/core/platform/io/io_helper.dart';
 import '/features/paint_editor/widgets/paint_editor_appbar.dart';
 import '/features/paint_editor/widgets/paint_editor_bottombar.dart';
 import '/features/paint_editor/widgets/paint_editor_color_picker.dart';
 import '/pro_image_editor.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
+import '/shared/services/shader_manager.dart';
 import '/shared/styles/platform_text_styles.dart';
+import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/auto_image.dart';
 import '/shared/widgets/extended/extended_interactive_viewer.dart';
 import '/shared/widgets/layer/layer_stack.dart';
@@ -80,7 +81,7 @@ class PaintEditor extends StatefulWidget
   }) {
     return PaintEditor._(
       key: key,
-      editorImage: EditorImage(file: file),
+      editorImage: EditorImage(file: ensureFileInstance(file)),
       initConfigs: initConfigs,
     );
   }
@@ -146,7 +147,7 @@ class PaintEditor extends StatefulWidget
       );
     } else if (file != null || editorImage?.file != null) {
       return PaintEditor.file(
-        file ?? editorImage!.file!,
+        ensureFileInstance(file ?? editorImage!.file!),
         key: key,
         initConfigs: initConfigs,
       );
@@ -238,43 +239,56 @@ class PaintEditorState extends State<PaintEditor>
   /// The list is dynamically generated based on the configuration settings in
   /// the [PaintEditorConfigs] object.
   List<PaintModeBottomBarItem> get paintModes => [
-        if (paintEditorConfigs.hasOptionFreeStyle)
+        if (paintEditorConfigs.enableModeFreeStyle)
           PaintModeBottomBarItem(
             mode: PaintMode.freeStyle,
             icon: paintEditorConfigs.icons.freeStyle,
             label: i18n.paintEditor.freestyle,
           ),
-        if (paintEditorConfigs.hasOptionArrow)
+        if (paintEditorConfigs.enableModeArrow)
           PaintModeBottomBarItem(
             mode: PaintMode.arrow,
             icon: paintEditorConfigs.icons.arrow,
             label: i18n.paintEditor.arrow,
           ),
-        if (paintEditorConfigs.hasOptionLine)
+        if (paintEditorConfigs.enableModeLine)
           PaintModeBottomBarItem(
             mode: PaintMode.line,
             icon: paintEditorConfigs.icons.line,
             label: i18n.paintEditor.line,
           ),
-        if (paintEditorConfigs.hasOptionRect)
+        if (paintEditorConfigs.enableModeRect)
           PaintModeBottomBarItem(
             mode: PaintMode.rect,
             icon: paintEditorConfigs.icons.rectangle,
             label: i18n.paintEditor.rectangle,
           ),
-        if (paintEditorConfigs.hasOptionCircle)
+        if (paintEditorConfigs.enableModeCircle)
           PaintModeBottomBarItem(
             mode: PaintMode.circle,
             icon: paintEditorConfigs.icons.circle,
             label: i18n.paintEditor.circle,
           ),
-        if (paintEditorConfigs.hasOptionDashLine)
+        if (paintEditorConfigs.enableModeDashLine)
           PaintModeBottomBarItem(
             mode: PaintMode.dashLine,
             icon: paintEditorConfigs.icons.dashLine,
             label: i18n.paintEditor.dashLine,
           ),
-        if (paintEditorConfigs.hasOptionEraser)
+        if (paintEditorConfigs.enableModePixelate &&
+            ShaderManager.instance.isShaderFilterSupported)
+          PaintModeBottomBarItem(
+            mode: PaintMode.pixelate,
+            icon: paintEditorConfigs.icons.pixelate,
+            label: i18n.paintEditor.pixelate,
+          ),
+        if (paintEditorConfigs.enableModeBlur)
+          PaintModeBottomBarItem(
+            mode: PaintMode.blur,
+            icon: paintEditorConfigs.icons.blur,
+            label: i18n.paintEditor.blur,
+          ),
+        if (paintEditorConfigs.enableModeEraser)
           PaintModeBottomBarItem(
             mode: PaintMode.eraser,
             icon: paintEditorConfigs.icons.eraser,
@@ -293,7 +307,7 @@ class PaintEditorState extends State<PaintEditor>
   void initState() {
     super.initState();
     paintCtrl = PaintController(
-      fill: paintEditorConfigs.initialFill,
+      fill: paintEditorConfigs.isInitiallyFilled,
       mode: paintEditorConfigs.initialPaintMode,
       strokeWidth: paintEditorConfigs.style.initialStrokeWidth,
       color: paintEditorConfigs.style.initialColor,
@@ -301,7 +315,7 @@ class PaintEditorState extends State<PaintEditor>
       strokeMultiplier: 1,
     );
 
-    _isFillMode = paintEditorConfigs.initialFill;
+    _isFillMode = paintEditorConfigs.isInitiallyFilled;
 
     initStreamControllers();
 
@@ -317,6 +331,12 @@ class PaintEditorState extends State<PaintEditor>
       setState(() {});
       paintEditorCallbacks?.handleUpdateUI();
     });
+
+    /// Preload pixelate shader if enabled and supported
+    if (paintEditorConfigs.enableModePixelate &&
+        ShaderManager.instance.isShaderFilterSupported) {
+      ShaderManager.instance.loadShader(ShaderMode.pixelate);
+    }
   }
 
   @override
@@ -724,9 +744,9 @@ class PaintEditorState extends State<PaintEditor>
         enableInteraction: paintMode == PaintMode.moveAndZoom,
         onInteractionStart: (details) {
           _freeStyleHighPerformance =
-              (paintEditorConfigs.freeStyleHighPerformanceMoving ??
+              (paintEditorConfigs.enableFreeStyleHighPerformanceMoving ??
                       !isDesktop) ||
-                  (paintEditorConfigs.freeStyleHighPerformanceScaling ??
+                  (paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
                       !isDesktop);
 
           callbacks.paintEditorCallbacks?.onEditorZoomScaleStart?.call(details);
@@ -769,7 +789,7 @@ class PaintEditorState extends State<PaintEditor>
                 ),
 
               /// Build layers
-              if (layers != null)
+              if (paintEditorConfigs.showLayers && layers != null)
                 LayerStack(
                   configs: configs,
                   layers: layers!,
@@ -780,6 +800,7 @@ class PaintEditorState extends State<PaintEditor>
                     editorBodySize: editorBodySize,
                     transformConfigs: initialTransformConfigs,
                   ),
+                  overlayColor: paintEditorConfigs.style.background,
                 ),
               _buildPainter(),
               if (paintEditorConfigs.widgets.bodyItemsRecorded != null)
@@ -830,6 +851,7 @@ class PaintEditorState extends State<PaintEditor>
     return PaintCanvas(
       key: _paintCanvas,
       paintCtrl: paintCtrl,
+      paintEditorConfigs: paintEditorConfigs,
       drawAreaSize: mainBodySize ?? editorBodySize,
       freeStyleHighPerformance: _freeStyleHighPerformance,
       onRemoveLayer: (idList) {

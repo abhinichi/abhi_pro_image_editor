@@ -33,6 +33,7 @@ class TextEditorInput extends StatelessWidget {
     required this.selectedTextStyle,
     required this.align,
     required this.textFontSize,
+    required this.scaleFactor,
     required this.textColor,
     required this.backgroundColor,
     required this.layer,
@@ -59,6 +60,9 @@ class TextEditorInput extends StatelessWidget {
 
   /// The font size of the input text.
   final double textFontSize;
+
+  /// The scale factor to transform the textfield
+  final double scaleFactor;
 
   /// The color of the input text.
   final Color textColor;
@@ -126,43 +130,46 @@ class TextEditorInput extends StatelessWidget {
   }
 
   Widget _buildInputField() {
-    return RoundedBackgroundTextField(
-      key: const ValueKey('rounded-background-text-editor-field'),
-      controller: textCtrl,
-      focusNode: focusNode,
-      onChanged: callbacks?.handleChanged,
-      onEditingComplete: callbacks?.handleEditingComplete,
-      onSubmitted: callbacks?.handleSubmitted,
-      autocorrect: configs.autocorrect,
-      enableSuggestions: configs.enableSuggestions,
-      keyboardType: TextInputType.multiline,
-      textInputAction: TextInputAction.newline,
-      textCapitalization: TextCapitalization.sentences,
-      textAlign: textCtrl.text.isEmpty ? TextAlign.center : align,
-      maxLines: null,
-      cursorColor: configs.style.inputCursorColor,
-      cursorHeight: textFontSize * 1.2,
-      scrollPhysics: const NeverScrollableScrollPhysics(),
-      hint: textCtrl.text.isEmpty ? i18n.inputHintText : '',
-      hintStyle: selectedTextStyle.copyWith(
-        color: configs.style.inputHintColor,
-        fontSize: textFontSize,
-        height: 1.35,
-        shadows: [],
-      ),
-      backgroundColor: backgroundColor,
-      style: selectedTextStyle.copyWith(
-        color: textColor,
-        fontSize: textFontSize,
-        height: 1.35,
-        letterSpacing: 0,
-        decoration: TextDecoration.none,
-        shadows: [],
-      ),
+    return Transform.scale(
+      scale: scaleFactor,
+      child: RoundedBackgroundTextField(
+        key: const ValueKey('rounded-background-text-editor-field'),
+        controller: textCtrl,
+        focusNode: focusNode,
+        onChanged: callbacks?.handleChanged,
+        onEditingComplete: callbacks?.handleEditingComplete,
+        onSubmitted: callbacks?.handleSubmitted,
+        autocorrect: configs.enableAutocorrect,
+        enableSuggestions: configs.enableSuggestions,
+        keyboardType: TextInputType.multiline,
+        textInputAction: TextInputAction.newline,
+        textCapitalization: TextCapitalization.sentences,
+        textAlign: textCtrl.text.isEmpty ? TextAlign.center : align,
+        maxLines: null,
+        cursorColor: configs.style.inputCursorColor,
+        cursorHeight: textFontSize * 1.2,
+        scrollPhysics: const NeverScrollableScrollPhysics(),
+        hint: textCtrl.text.isEmpty ? i18n.inputHintText : '',
+        hintStyle: selectedTextStyle.copyWith(
+          color: configs.style.inputHintColor,
+          fontSize: textFontSize,
+          height: 1.35,
+          shadows: [],
+        ),
+        backgroundColor: backgroundColor,
+        style: selectedTextStyle.copyWith(
+          color: textColor,
+          fontSize: textFontSize,
+          height: 1.35,
+          letterSpacing: 0,
+          decoration: TextDecoration.none,
+          shadows: [],
+        ),
 
-      /// If we edit an layer we focus to the textfield after the
-      /// hero animation is done
-      autofocus: layer == null,
+        /// If we edit an layer we focus to the textfield after the
+        /// hero animation is done
+        autofocus: layer == null,
+      ),
     );
   }
 }

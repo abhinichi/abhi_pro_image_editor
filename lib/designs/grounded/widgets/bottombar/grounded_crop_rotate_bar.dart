@@ -99,6 +99,7 @@ class _GroundedCropRotateBarState extends State<GroundedCropRotateBar>
         alignment: Alignment.center,
         child: SingleChildScrollView(
           controller: _bottomBarScrollCtrl,
+          clipBehavior: Clip.none,
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: FadeInUp(
@@ -109,7 +110,7 @@ class _GroundedCropRotateBarState extends State<GroundedCropRotateBar>
               children: <Widget>[
                 ..._buildConfigs(),
                 if (cropRotateEditorConfigs.aspectRatios.isNotEmpty &&
-                    cropRotateEditorConfigs.canChangeAspectRatio) ...[
+                    cropRotateEditorConfigs.showAspectRatioButton) ...[
                   const SizedBox(width: 5),
                   _buildDivider(),
                   ...List.generate(

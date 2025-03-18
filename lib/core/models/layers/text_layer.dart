@@ -26,6 +26,7 @@ class TextLayer extends Layer {
   TextLayer({
     required this.text,
     this.customSecondaryColor = false,
+    this.hit = false,
     this.textStyle,
     this.colorMode,
     this.colorPickerPosition,
@@ -40,6 +41,8 @@ class TextLayer extends Layer {
     super.flipX,
     super.flipY,
     super.interaction,
+    super.isDeleted,
+    super.meta,
   });
 
   /// Factory constructor for creating a TextLayer instance from a Layer
@@ -114,6 +117,8 @@ class TextLayer extends Layer {
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
+      isDeleted: layer.isDeleted,
+      meta: layer.meta,
       text: map[keyConverter('text')] ?? '-',
       fontScale: map[keyConverter('fontScale')] ?? 1.0,
       textStyle: fontFamily != null ||
@@ -149,6 +154,9 @@ class TextLayer extends Layer {
       customSecondaryColor: map[keyConverter('customSecondaryColor')] ?? false,
     );
   }
+
+  /// Flag that indicates if the layers hit box is triggered.
+  bool hit;
 
   /// The text content of the layer.
   String text;

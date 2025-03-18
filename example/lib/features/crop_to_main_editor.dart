@@ -41,8 +41,8 @@ class _CropToMainEditorExampleState extends State<CropToMainEditorExample>
     designMode: platformDesignMode,
     cropRotateEditor: const CropRotateEditorConfigs(
       initAspectRatio: 1,
-      provideImageInfos: true,
-      canChangeAspectRatio: false,
+      enableProvideImageInfos: true,
+      showAspectRatioButton: false,
     ),
   );
 
@@ -78,6 +78,9 @@ class _CropToMainEditorExampleState extends State<CropToMainEditorExample>
             onCloseEditor: () =>
                 onCloseEditor(enablePop: !isDesktopMode(context)),
             onImageEditingComplete: onImageEditingComplete,
+            mainEditorCallbacks: MainEditorCallbacks(
+              helperLines: HelperLinesCallbacks(onLineHit: vibrateLineHit),
+            ),
           ),
           configs: _editorConfigs.copyWith(
             mainEditor: MainEditorConfigs(

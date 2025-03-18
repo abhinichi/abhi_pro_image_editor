@@ -45,7 +45,6 @@ class HelperLineConfigs {
     this.showVerticalLine = true,
     this.showHorizontalLine = true,
     this.showRotateLine = true,
-    this.hitVibration = true,
     this.style = const HelperLineStyle(),
   });
 
@@ -57,20 +56,6 @@ class HelperLineConfigs {
 
   /// Specifies whether to show the rotate helper line.
   final bool showRotateLine;
-
-  /// Controls whether haptic feedback is enabled when a layer intersects with a
-  /// helper line.
-  ///
-  /// When set to `true`, haptic feedback is triggered when a layer's position
-  /// or boundary intersects with a helper line, providing tactile feedback to
-  /// the user.
-  /// This feature enhances the user experience by providing feedback on layer
-  /// alignment.
-  ///
-  /// By default, this option is set to `true`, enabling haptic feedback for hit
-  /// detection with helper lines. You can set it to `false` to disable haptic
-  /// feedback.
-  final bool hitVibration;
 
   /// Style configuration for helper lines.
   final HelperLineStyle style;
@@ -85,14 +70,12 @@ class HelperLineConfigs {
     bool? showVerticalLine,
     bool? showHorizontalLine,
     bool? showRotateLine,
-    bool? hitVibration,
     HelperLineStyle? style,
   }) {
     return HelperLineConfigs(
       showVerticalLine: showVerticalLine ?? this.showVerticalLine,
       showHorizontalLine: showHorizontalLine ?? this.showHorizontalLine,
       showRotateLine: showRotateLine ?? this.showRotateLine,
-      hitVibration: hitVibration ?? this.hitVibration,
       style: style ?? this.style,
     );
   }

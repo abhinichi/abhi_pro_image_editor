@@ -1,21 +1,21 @@
 // Dart imports:
 import 'dart:async';
-import 'dart:io';
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// Project imports:
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
 import '/core/models/editor_image.dart';
 import '/core/models/init_configs/blur_editor_init_configs.dart';
 import '/core/models/transform_helper.dart';
+import '/core/platform/io/io_helper.dart';
 import '/features/blur_editor/widgets/blur_editor_bottombar.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
+import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import '../crop_rotate_editor/models/transform_factors.dart';
@@ -66,7 +66,7 @@ class BlurEditor extends StatefulWidget
   }) {
     return BlurEditor._(
       key: key,
-      editorImage: EditorImage(file: file),
+      editorImage: EditorImage(file: ensureFileInstance(file)),
       initConfigs: initConfigs,
     );
   }
@@ -118,7 +118,7 @@ class BlurEditor extends StatefulWidget
       );
     } else if (file != null || editorImage?.file != null) {
       return BlurEditor.file(
-        file ?? editorImage!.file!,
+        ensureFileInstance(file ?? editorImage!.file!),
         key: key,
         initConfigs: initConfigs,
       );
@@ -140,6 +140,7 @@ class BlurEditor extends StatefulWidget
           'be provided.');
     }
   }
+
   @override
   final BlurEditorInitConfigs initConfigs;
   @override
@@ -313,6 +314,7 @@ class BlurEditorState extends State<BlurEditor>
                       transformConfigs: initialTransformConfigs,
                       editorBodySize: editorBodySize,
                     ),
+                    overlayColor: blurEditorConfigs.style.background,
                     configs: configs,
                     layers: layers!,
                     clipBehavior: Clip.none,

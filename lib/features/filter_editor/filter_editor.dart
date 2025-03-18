@@ -1,6 +1,5 @@
 // Dart imports:
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,9 +9,11 @@ import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
 import '/core/models/transform_helper.dart';
+import '/core/platform/io/io_helper.dart';
 import '/features/filter_editor/widgets/filter_editor_appbar.dart';
 import '/pro_image_editor.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
+import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import 'types/filter_matrix.dart';
@@ -67,7 +68,7 @@ class FilterEditor extends StatefulWidget
   }) {
     return FilterEditor._(
       key: key,
-      editorImage: EditorImage(file: file),
+      editorImage: EditorImage(file: ensureFileInstance(file)),
       initConfigs: initConfigs,
     );
   }
@@ -120,7 +121,7 @@ class FilterEditor extends StatefulWidget
       );
     } else if (file != null || editorImage?.file != null) {
       return FilterEditor.file(
-        file ?? editorImage!.file!,
+        ensureFileInstance(file ?? editorImage!.file!),
         key: key,
         initConfigs: initConfigs,
       );
@@ -330,6 +331,7 @@ class FilterEditorState extends State<FilterEditor>
                     configs: configs,
                     layers: layers!,
                     clipBehavior: Clip.none,
+                    overlayColor: filterEditorConfigs.style.background,
                   ),
                 if (filterEditorConfigs.widgets.bodyItemsRecorded != null)
                   ...filterEditorConfigs.widgets.bodyItemsRecorded!(

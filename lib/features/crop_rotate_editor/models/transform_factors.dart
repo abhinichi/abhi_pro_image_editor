@@ -218,6 +218,37 @@ class TransformConfigs {
       },
     };
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is TransformConfigs &&
+        other.offset == offset &&
+        other.cropRect == cropRect &&
+        other.originalSize == originalSize &&
+        other.cropEditorScreenRatio == cropEditorScreenRatio &&
+        other.angle == angle &&
+        other.scaleUser == scaleUser &&
+        other.scaleRotation == scaleRotation &&
+        other.aspectRatio == aspectRatio &&
+        other.flipX == flipX &&
+        other.flipY == flipY;
+  }
+
+  @override
+  int get hashCode {
+    return offset.hashCode ^
+        angle.hashCode ^
+        cropRect.hashCode ^
+        originalSize.hashCode ^
+        cropEditorScreenRatio.hashCode ^
+        scaleUser.hashCode ^
+        scaleRotation.hashCode ^
+        aspectRatio.hashCode ^
+        flipX.hashCode ^
+        flipY.hashCode;
+  }
 }
 
 /// An enumeration representing the maximum side of an image.

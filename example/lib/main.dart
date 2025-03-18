@@ -91,8 +91,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _openCodeInGithub() async {
-    String path =
-        'https://github.com/hm21/pro_image_editor/tree/stable/example/lib/pages';
+    String path = 'https://github.com/hm21/pro_image_editor/tree/stable/'
+        'example/lib/features';
     Uri url = Uri.parse(path);
     if (!await launchUrl(url)) {
       throw Exception('Could not launch $url');

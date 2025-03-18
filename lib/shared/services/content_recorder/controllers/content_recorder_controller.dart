@@ -5,11 +5,11 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mime/mime.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/multi_threading/thread_capture_model.dart';
 import '/core/models/multi_threading/thread_request_model.dart';
+import '/plugins/mime/mime.dart';
 import '/shared/utils/decode_image.dart';
 import '/shared/utils/unique_id_generator.dart';
 import '../services/image_converter_service.dart';
@@ -196,8 +196,8 @@ class ContentRecorderController {
     Widget? widget,
     OutputFormat? outputFormat,
   }) async {
-    if (!_configs.generateImageInBackground ||
-        !_configs.generateInsideSeparateThread) {
+    if (!_configs.enableBackgroundGeneration ||
+        !_configs.enableIsolateGeneration) {
       return null;
     }
     ThreadCaptureState isolateCaptureState = ThreadCaptureState();
@@ -340,9 +340,7 @@ class ContentRecorderController {
 
     /// Check if the output size is too large.
     double outputRatio = imageInfos.pixelRatio;
-    if (!_configs.captureOnlyDrawingBounds &&
-        context != null &&
-        context.mounted) {
+    if (!_configs.cropToDrawingBounds && context != null && context.mounted) {
       outputRatio =
           max(imageInfos.pixelRatio, MediaQuery.devicePixelRatioOf(context));
     }
@@ -353,7 +351,7 @@ class ContentRecorderController {
     );
     if (!isFormatSame || isOutputSizeTooLarge) {
       final ui.Image image = await decodeImageFromList(bytes);
-      if (_configs.generateInsideSeparateThread) {
+      if (_configs.enableIsolateGeneration) {
         /// Recapture the image if the output format is incorrect or the output
         /// size is too large.
         if (kIsWeb || isOutputSizeTooLarge) {
@@ -423,10 +421,15 @@ class ContentRecorderController {
     required ui.Image image,
     required String id,
   }) async {
-    return ThreadRequest.fromConfigs(
+    return ThreadRequest(
       id: id,
       image: await convertFlutterUiToImage(image),
-      configs: _configs,
+      outputFormat: _configs.outputFormat,
+      singleFrame: _configs.singleFrame,
+      jpegQuality: _configs.jpegQuality,
+      jpegChroma: _configs.jpegChroma,
+      pngFilter: _configs.pngFilter,
+      pngLevel: _configs.pngLevel,
     );
   }
 }

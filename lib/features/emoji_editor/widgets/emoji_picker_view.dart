@@ -7,6 +7,7 @@ import '/core/models/i18n/i18n_emoji_editor.dart';
 import '/core/models/styles/emoji_editor_style.dart';
 import '/features/emoji_editor/services/emoji_state_manager.dart';
 import '/shared/utils/platform_info.dart';
+import './emoji_editor_category_view.dart';
 import 'emoji_cell_extended.dart';
 
 /// A widget that provides an enhanced emoji picker view.
@@ -257,7 +258,7 @@ class _DefaultEmojiPickerViewState extends State<ProEmojiPickerView>
   }
 
   List<CategoryEmoji> get _categories {
-    return widget.state.categoryEmoji.toList();
+    return widget.state.categoryEmoji;
   }
 
   @override
@@ -407,7 +408,7 @@ class _DefaultEmojiPickerViewState extends State<ProEmojiPickerView>
             _tabController,
             _pageController,
           )
-        : DefaultCategoryView(
+        : EmojiEditorCategoryView(
             widget.config,
             widget.state,
             _tabController,
@@ -419,6 +420,7 @@ class _DefaultEmojiPickerViewState extends State<ProEmojiPickerView>
     if (!widget.config.bottomActionBarConfig.enabled) {
       return const SizedBox.shrink();
     }
+
     return SizedBox(
       key: _searchBarKey,
       child: widget.config.bottomActionBarConfig.customBottomActionBar != null

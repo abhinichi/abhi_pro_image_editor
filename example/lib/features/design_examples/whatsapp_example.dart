@@ -124,6 +124,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
               onImageEditingComplete: onImageEditingComplete,
               onCloseEditor: onCloseEditor,
               mainEditorCallbacks: MainEditorCallbacks(
+                helperLines: HelperLinesCallbacks(onLineHit: vibrateLineHit),
                 onScaleStart: _whatsAppHelper.onScaleStart,
                 onScaleUpdate: (details) {
                   _whatsAppHelper.onScaleUpdate(details, _editor!);
@@ -229,10 +230,34 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
                 ),
               ),
               filterEditor: FilterEditorConfigs(
+                fadeInUpDuration: Duration.zero,
                 filterList: [
                   const FilterModel(
                     name: 'None',
-                    filters: [],
+                    filters: [
+                      [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    ],
                   ),
                   FilterModel(
                     name: 'Pop',

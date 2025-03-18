@@ -1,6 +1,5 @@
 // Dart imports:
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,9 +9,11 @@ import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
 import '/core/models/transform_helper.dart';
+import '/core/platform/io/io_helper.dart';
 import '/features/tune_editor/widgets/tune_editor_bottombar.dart';
 import '/pro_image_editor.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
+import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/filtered_image.dart';
@@ -67,7 +68,7 @@ class TuneEditor extends StatefulWidget
   }) {
     return TuneEditor._(
       key: key,
-      editorImage: EditorImage(file: file),
+      editorImage: EditorImage(file: ensureFileInstance(file)),
       initConfigs: initConfigs,
     );
   }
@@ -120,7 +121,7 @@ class TuneEditor extends StatefulWidget
       );
     } else if (file != null || editorImage?.file != null) {
       return TuneEditor.file(
-        file ?? editorImage!.file!,
+        ensureFileInstance(file ?? editorImage!.file!),
         key: key,
         initConfigs: initConfigs,
       );
@@ -209,8 +210,6 @@ class TuneEditorState extends State<TuneEditor>
     uiStream = StreamController.broadcast();
     uiStream.stream.listen((_) => rebuildController.add(null));
 
-    tuneAdjustmentMatrix = appliedTuneAdjustments;
-
     var items = tuneEditorConfigs.tuneAdjustmentOptions ??
         tunePresets(
           icons: tuneEditorConfigs.icons,
@@ -229,8 +228,11 @@ class TuneEditorState extends State<TuneEditor>
       );
     }).toList();
 
-    if (tuneAdjustmentMatrix.isEmpty) {
-      _setMatrixList();
+    for (final item in items) {
+      int i = appliedTuneAdjustments.indexWhere((el) => el.id == item.id);
+      tuneAdjustmentMatrix.add(
+        i >= 0 ? appliedTuneAdjustments[i] : item.toMatrixItem(),
+      );
     }
 
     tuneEditorCallbacks?.onInit?.call();
@@ -476,6 +478,7 @@ class TuneEditorState extends State<TuneEditor>
       configs: configs,
       layers: layers!,
       clipBehavior: Clip.none,
+      overlayColor: tuneEditorConfigs.style.background,
     );
   }
 

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/features/paint_editor/controllers/paint_controller.dart';
-import 'package:pro_image_editor/features/paint_editor/enums/paint_editor_enum.dart';
 import 'package:pro_image_editor/features/paint_editor/widgets/paint_canvas.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 
 void main() {
   group('PaintCanvas Tests', () {
@@ -28,6 +28,7 @@ void main() {
               key: canvasKey,
               drawAreaSize: const Size(1000, 1000),
               paintCtrl: ctrl,
+              paintEditorConfigs: const PaintEditorConfigs(),
             ),
           ),
         ),
@@ -76,6 +77,7 @@ void main() {
               key: canvasKey,
               drawAreaSize: const Size(1000, 1000),
               paintCtrl: ctrl,
+              paintEditorConfigs: const PaintEditorConfigs(),
             ),
           ),
         ),
@@ -120,6 +122,7 @@ void main() {
             body: PaintCanvas(
               drawAreaSize: const Size(200, 200),
               paintCtrl: ctrl,
+              paintEditorConfigs: const PaintEditorConfigs(),
             ),
           ),
         ),

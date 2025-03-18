@@ -1,9 +1,8 @@
 name: pro_image_editor
 description: "A Flutter image editor: Seamlessly enhance your images with user-friendly editing features."
-version: 8.1.2
+version: 9.0.5
 homepage: https://github.com/hm21/pro_image_editor/
 repository: https://github.com/hm21/pro_image_editor/
-issue_tracker: https://github.com/hm21/pro_image_editor/issues/
 documentation: https://github.com/hm21/pro_image_editor/
 
 
@@ -32,7 +31,7 @@ platforms:
 
 environment:
   sdk: '>=3.2.2 <4.0.0'
-  flutter: ">=3.27.0"
+  flutter: ">=3.29.0"
 
 dependencies:
   flutter:
@@ -40,10 +39,7 @@ dependencies:
 
   emoji_picker_flutter: ^4.3.0
   http: ^1.3.0
-  image: ^4.5.2
-  mime: ^2.0.0
-  vibration: ^3.1.1
-  web: ^1.1.0
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -59,7 +55,8 @@ flutter:
   assets:
     - lib/web/web_worker.dart.js
     - lib/web/web_worker.dart.js.map
-    - lib/web/web_worker.dart.wasm
+  shaders:
+    - lib/shared/shaders/pixelate.frag
   fonts:
    - family: ProImageEditorIcons
      fonts:

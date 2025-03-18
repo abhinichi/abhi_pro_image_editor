@@ -34,7 +34,7 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// A callback function that is triggered when the paint mode changes.
   ///
-  /// The [ValueChanged<PaintModeE>] parameter provides the new paint mode.
+  /// The [ValueChanged<PaintMode>] parameter provides the new paint mode.
   final ValueChanged<PaintMode>? onPaintModeChanged;
 
   /// A callback function that is triggered when the fill mode is toggled.

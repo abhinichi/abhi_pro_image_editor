@@ -1,19 +1,106 @@
 # Changelog
 
-# 8.1.2
+## 9.0.5
+- **FIX**(Wasm): Fixes an issue where image generation fails when using WebAssembly. Resolves [#391](https://github.com/hm21/pro_image_editor/issues/391).
+
+## 9.0.4
+- **DOCS**(readme): simplify README for better readability
+
+## 9.0.3
+- **FEAT**: Add getter `editorScaleFactor` to retrieve current scale factor. See pull request [#392](https://github.com/hm21/pro_image_editor/pull/392) for more details.
+
+## 9.0.2
+- **STYLE**: Improved Dart code formatting
+
+## 9.0.1
+- **FIX**(EditorImage): Support `File` type in addition to file path
+
+## 9.0.0
+- **FEAT**(callbacks): Add new callbacks that are triggered when a layer intersects with a helper line.
+- **FEAT**(TextLayer): Improve the text layer hit box for better gesture recognition.
+- **FEAT**(File): The file constructor in the main editor and sub-editors now supports adding just the file path in addition to the File itself.
+
+- **FIX**(Layers): Fix incorrect layer selection when drawing lines overlay other layers
+
+#### Breaking Changes
+- Removed the vibration package dependency and the support for internal feedback vibration. You can read more about this change and see example code on how to implement feedback support [here](https://github.com/hm21/pro_image_editor/discussions/386).
+- Replaced `mime`, `image`, `archive`, and `crypto` packages with smaller, internally versions.
+- Moved configuration `locale` inside `EmojiEditorConfigs` to `I18nEmojiEditor`.
+- Changed the default behavior so that emoji search text is no longer automatically translated, reducing the size of the application by about 1.5MB. The example of how to enable auto-translation or translate a specific locale can be found [here](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/features/emoji_translate_example.dart).
+- Removed all deprecated configuration settings.
+
+
+## 8.3.6
+- **FIX**(design-grounded): Fixed an issue where the scrollbar in the grounded bottombar did not restore correctly after opening a subeditor.
+- **FIX**(design-whatsapp): Fixed an issue where the filter in the WhatsApp design could not be deselected.
+
+## 8.3.5
+- **FIX**(layer-stack): Resolved an issue where the outside overlay color on layers depended on the crop_rotate_editor instead of the active subeditor.
+
+## 8.3.4
+- **FIX**(grounded-design): Resolved an issue in the grounded design where switching between screens caused an error due to the ScrollController.
+
+## 8.3.3
+- **FIX**(layer-interaction): Resolved an issue where layers with blocked interaction also prevented interaction with background layers. Resolves [#374](https://github.com/hm21/pro_image_editor/issues/374)
+
+## 8.3.2
+- **FIX**(emoji-editor): Resolved an issue where categoryViewConfig caused an error. Resolves [#373](https://github.com/hm21/pro_image_editor/issues/373).
+
+## 8.3.1
+- **REFACTOR**(configs): Rename configuration properties for clarity.
+
+## 8.3.0
+- **FEAT**(paint-editor): Add a new 'pixelate' paint mode to censor specific areas. This paint mode is only supported when using the Impeller rendering engine.
+- **FEAT**(CensorConfigs): Add a new configuration option, `enableRoundArea`, which allows the censored area to be rounded instead of rectangular.
+
+## 8.2.0
+- **FEAT**(paint-editor): Add a new 'blur' paint mode to censor specific areas. 
+
+## 8.1.12
+- **FEAT**(layers): Add missing `showLayers` config to enable/disable layers in paint and crop editor.
+
+## 8.1.11
+- **FIX**(export): Resolve an issue where exporting the first state history did return all state histories. Resolves [#353](https://github.com/hm21/pro_image_editor/issues/353).
+
+## 8.1.10
+- **FEAT**(callback): Introduced `onEscapeButton` callback inside `MainEditorCallbacks` to allow external handling of the Escape key logic.
+
+## 8.1.9
+- **FIX**(text-editor): Ensure text editor layer scales correctly when editing.  
+Added `enableMainEditorZoomFactor` to `textEditorConfigs` to apply the zoom factor in the text editor as well. Resolves [#349](https://github.com/hm21/pro_image_editor/issues/349).
+
+## 8.1.8
+- **FIX**(export): Ensure filters, tune adjustments, and blur configs are exported for `ExportHistorySpan.current` and `ExportHistorySpan.currentAndForward`.
+
+## 8.1.7
+- **FEAT**(MainEditorConfigs): Add `enableEscapeButton` to enable or disable the escape button listener.
+
+## 8.1.6
+- **FEAT**(layer): Add meta field to layermodels for custom metadata in export/import.
+
+## 8.1.5
+- **FEAT**(export): Optimize the export process by including only parameters that were modified in tune adjustments. This reduces the exported file size.  
+
+## 8.1.4
+- **FIX**(generation): Use `captureOnlyBackgroundImageArea` instead of `captureOnlyDrawingBounds` for background cropping.
+
+## 8.1.3
+- **PERF**(capture-image): Improved image capture performance by minimizing its impact on the main thread.  
+
+## 8.1.2
 - **FIX**(paint-editor): Ensure bottombar selection updates in UI when changed.
 - **FIX**(paint-editor): Correct appBar canRedo to use the proper function instead of canUndo.
 - **FIX**(layer): Resolve issue where selecting layers that overlap did not function as expected. Resolves issue [#282](https://github.com/hm21/pro_image_editor/issues/282)
 - **FIX**(import): Resolve issue where transformations exported from the crop-rotate editor were not properly imported.
 
-# 8.1.1
+## 8.1.1
 - **FIX**(crop_rotate_editor): Fixed an issue where the crop-rotate editor would throw multiple errors when reopened. Resolves issue [#236](https://github.com/hm21/pro_image_editor/issues/236) and [#237](https://github.com/hm21/pro_image_editor/issues/237).
 - **PERF**(mediaquery): Replaces MediaQuery.of(...) with MediaQuery.sizeOf(...) to optimize performance and minimize unnecessary widget rebuilds.  
 
-# 8.1.0
+## 8.1.0
 - **FEAT**(layer): Added new methods `lockAllLayers` and `unlockAllLayers` to the main editor, enabling direct locking or unlocking of all layers.
 
-# 8.0.4
+## 8.0.4
 - **FIX**(export/import): Resolve an issue where exported stickers within the JSON file could no longer be imported. Resolves issue [#334](https://github.com/hm21/pro_image_editor/issues/334)
 
 ## 8.0.3

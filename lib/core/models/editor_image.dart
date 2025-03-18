@@ -1,12 +1,12 @@
 // Dart imports:
-import 'dart:io';
 import 'dart:typed_data';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
 
-// Project imports:
+import '/core/platform/io/io_helper.dart';
 import '/shared/utils/converters.dart';
+import '/shared/utils/file_constructor_utils.dart';
 
 /// Flutter EditorImage Class Documentation
 ///
@@ -87,10 +87,11 @@ class EditorImage {
   /// must not be null.
   EditorImage({
     this.byteArray,
-    this.file,
     this.networkUrl,
     this.assetPath,
-  }) : assert(
+    dynamic file,
+  })  : file = file == null ? null : ensureFileInstance(file),
+        assert(
           byteArray != null ||
               file != null ||
               networkUrl != null ||
@@ -140,7 +141,7 @@ class EditorImage {
       case EditorImageType.asset:
         return AssetImage(assetPath!);
       case EditorImageType.file:
-        return FileImage(file!);
+        return FileImage(file! as dynamic);
       case EditorImageType.network:
         return NetworkImage(networkUrl!);
     }

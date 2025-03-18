@@ -96,7 +96,7 @@ class TextEditorAppBar extends StatelessWidget implements PreferredSizeWidget {
             designMode: designMode,
             title: i18n.smallScreenMoreTooltip,
             options: [
-              if (textEditorConfigs.canToggleTextAlign)
+              if (textEditorConfigs.showTextAlignButton)
                 PopupMenuOption(
                   label: i18n.textAlign,
                   icon: Icon(align == TextAlign.left
@@ -111,7 +111,7 @@ class TextEditorAppBar extends StatelessWidget implements PreferredSizeWidget {
                     }
                   },
                 ),
-              if (textEditorConfigs.canChangeFontScale)
+              if (textEditorConfigs.showFontScaleButton)
                 PopupMenuOption(
                   label: i18n.fontScale,
                   icon: Icon(textEditorConfigs.icons.fontScale),
@@ -122,7 +122,7 @@ class TextEditorAppBar extends StatelessWidget implements PreferredSizeWidget {
                     }
                   },
                 ),
-              if (textEditorConfigs.canToggleBackgroundMode)
+              if (textEditorConfigs.showBackgroundModeButton)
                 PopupMenuOption(
                   label: i18n.backgroundMode,
                   icon: Icon(textEditorConfigs.icons.backgroundMode),
@@ -153,7 +153,7 @@ class TextEditorAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   List<IconButton> _getConfigButtons() => [
-        if (textEditorConfigs.canToggleTextAlign)
+        if (textEditorConfigs.showTextAlignButton)
           IconButton(
             key: const ValueKey('TextAlignIconButton'),
             tooltip: i18n.textAlign,
@@ -164,14 +164,14 @@ class TextEditorAppBar extends StatelessWidget implements PreferredSizeWidget {
                     ? textEditorConfigs.icons.alignRight
                     : textEditorConfigs.icons.alignCenter),
           ),
-        if (textEditorConfigs.canChangeFontScale)
+        if (textEditorConfigs.showFontScaleButton)
           IconButton(
             key: const ValueKey('BackgroundModeFontScaleButton'),
             tooltip: i18n.fontScale,
             onPressed: onOpenFontScaleBottomSheet,
             icon: Icon(textEditorConfigs.icons.fontScale),
           ),
-        if (textEditorConfigs.canToggleBackgroundMode)
+        if (textEditorConfigs.showBackgroundModeButton)
           IconButton(
             key: const ValueKey('BackgroundModeColorIconButton'),
             tooltip: i18n.backgroundMode,

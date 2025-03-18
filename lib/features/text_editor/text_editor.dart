@@ -27,6 +27,7 @@ class TextEditor extends StatefulWidget with SimpleConfigsAccess {
     this.layer,
     this.callbacks = const ProImageEditorCallbacks(),
     this.configs = const ProImageEditorConfigs(),
+    this.scaleFactor = 1.0,
     required this.theme,
   });
   @override
@@ -43,6 +44,13 @@ class TextEditor extends StatefulWidget with SimpleConfigsAccess {
 
   /// The text layer data to be edited, if any.
   final TextLayer? layer;
+
+  /// A factor by which the textfield is scaled.
+  ///
+  /// This value is used to adjust the size of the text in the editor.
+  /// A value of 1.0 means no scaling, while values greater than 1.0
+  /// increase the size and values less than 1.0 decrease the size.
+  final double scaleFactor;
 
   @override
   createState() => TextEditorState();
@@ -445,6 +453,7 @@ class TextEditorState extends State<TextEditor>
       align: align,
       backgroundColor: _backgroundColor,
       textCtrl: textCtrl,
+      scaleFactor: widget.scaleFactor,
       focusNode: focusNode,
       i18n: i18n.textEditor,
       layer: widget.layer,

@@ -24,4 +24,10 @@ enum PaintMode {
 
   /// Remove paint-items when hit.
   eraser,
+
+  /// Creates an area that blurs the background.
+  blur,
+
+  /// Creates an area that will pixelate the background.
+  pixelate,
 }

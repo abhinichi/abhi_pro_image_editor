@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '/core/platform/io/io_helper.dart';
 import '/shared/services/import_export/types/widget_loader.dart';
 import '/shared/utils/parser/int_parser.dart';
 import '../editor_image.dart';
@@ -39,6 +38,8 @@ class WidgetLayer extends Layer {
     super.flipY,
     super.interaction,
     this.exportConfigs = const WidgetLayerExportConfigs(),
+    super.isDeleted,
+    super.meta,
   });
 
   /// Factory constructor for creating a WidgetLayer instance from a
@@ -94,7 +95,7 @@ class WidgetLayer extends Layer {
     } else if (exportConfigs.fileUrl != null) {
       widget = ConstrainedBox(
         constraints: defaultConstraints,
-        child: Image.file(File(exportConfigs.fileUrl!)),
+        child: Image.file(File(exportConfigs.fileUrl!) as dynamic),
       );
       requirePrecache?.call(EditorImage(file: File(exportConfigs.fileUrl!)));
     } else if (widgetRecords.isNotEmpty &&
@@ -117,6 +118,8 @@ class WidgetLayer extends Layer {
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
+      isDeleted: layer.isDeleted,
+      meta: layer.meta,
       widget: widget,
       exportConfigs: exportConfigs,
     );

@@ -69,7 +69,7 @@ class PaintElement {
         canvas.drawPath(path, painter);
         break;
       default:
-        throw ArgumentError('$mode is not a valid PaintModeE');
+        throw ArgumentError('$mode is not a valid PaintMode');
     }
   }
 

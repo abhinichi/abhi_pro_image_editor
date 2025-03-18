@@ -119,7 +119,7 @@ class MainEditorInteractiveContent extends StatelessWidget {
           ),
 
           /// Build crop area overlay
-          if (configs.imageGeneration.captureOnlyBackgroundImageArea)
+          if (configs.imageGeneration.cropToImageBounds)
             _buildCropAreaOverlay(),
 
           /// Build helper content
@@ -140,18 +140,20 @@ class MainEditorInteractiveContent extends StatelessWidget {
   }
 
   Widget _buildInteractiveViewer() {
+    var mainConfigs = configs.mainEditor;
+    var paintConfigs = configs.paintEditor;
     return ExtendedInteractiveViewer(
       key: interactiveViewerKey,
-      boundaryMargin: configs.mainEditor.boundaryMargin,
-      enableZoom: configs.mainEditor.enableZoom,
-      minScale: configs.mainEditor.editorMinScale,
-      maxScale: configs.mainEditor.editorMaxScale,
+      boundaryMargin: mainConfigs.boundaryMargin,
+      enableZoom: mainConfigs.enableZoom,
+      minScale: mainConfigs.editorMinScale,
+      maxScale: mainConfigs.editorMaxScale,
       onInteractionStart: (details) {
         callbacks.mainEditorCallbacks?.onEditorZoomScaleStart?.call(details);
-        layerInteractionManager.freeStyleHighPerformanceEditorZoom = (configs
-                    .paintEditor.freeStyleHighPerformanceMoving ??
-                !isDesktop) ||
-            (configs.paintEditor.freeStyleHighPerformanceScaling ?? !isDesktop);
+        layerInteractionManager.freeStyleHighPerformanceEditorZoom =
+            (paintConfigs.enableFreeStyleHighPerformanceMoving ?? !isDesktop) ||
+                (paintConfigs.enableFreeStyleHighPerformanceScaling ??
+                    !isDesktop);
 
         controllers.uiLayerCtrl.add(null);
       },
@@ -195,8 +197,7 @@ class MainEditorInteractiveContent extends StatelessWidget {
         stream: controllers.cropLayerPainterCtrl.stream,
         builder: (context, snapshot) {
           return CustomPaint(
-            foregroundPainter: configs
-                    .imageGeneration.captureOnlyBackgroundImageArea
+            foregroundPainter: configs.imageGeneration.cropToImageBounds
                 ? CropLayerPainter(
                     opacity:
                         configs.mainEditor.style.outsideCaptureAreaLayerOpacity,
@@ -205,7 +206,7 @@ class MainEditorInteractiveContent extends StatelessWidget {
                         ? stateManager
                             .transformConfigs.cropRect.size.aspectRatio
                         : sizesManager.decodedImageSize.aspectRatio,
-                    isRoundCropper: configs.cropRotateEditor.roundCropper,
+                    isRoundCropper: configs.cropRotateEditor.enableRoundCropper,
                     is90DegRotated:
                         stateManager.transformConfigs.is90DegRotated,
                     interactiveViewerScale:

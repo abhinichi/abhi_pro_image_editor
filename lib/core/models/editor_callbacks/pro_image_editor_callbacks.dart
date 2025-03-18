@@ -3,7 +3,7 @@ import 'crop_rotate_editor_callbacks.dart';
 import 'editor_callbacks_typedef.dart';
 import 'emoji_editor_callbacks.dart';
 import 'filter_editor_callbacks.dart';
-import 'main_editor_callbacks.dart';
+import 'main_editor/main_editor_callbacks.dart';
 import 'paint_editor_callbacks.dart';
 import 'sticker_editor_callbacks.dart';
 import 'text_editor_callbacks.dart';
@@ -13,7 +13,7 @@ export 'blur_editor_callbacks.dart';
 export 'crop_rotate_editor_callbacks.dart';
 export 'editor_callbacks_typedef.dart';
 export 'filter_editor_callbacks.dart';
-export 'main_editor_callbacks.dart';
+export 'main_editor/main_editor_callbacks.dart';
 export 'paint_editor_callbacks.dart';
 export 'sticker_editor_callbacks.dart';
 export 'text_editor_callbacks.dart';
@@ -49,7 +49,7 @@ class ProImageEditorCallbacks {
   /// The edited image is provided as a Uint8List to the
   /// [onImageEditingComplete] function when the editing is completed.
   ///
-  /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px"/>
+  /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_capture_image.jpeg?raw=true" alt="Schema" height="500px"/>
   final ImageEditingCompleteCallback? onImageEditingComplete;
 
   /// A callback function that is called when the editing is complete and the
@@ -77,7 +77,7 @@ class ProImageEditorCallbacks {
   /// A callback function that will be called before the image editor will
   /// close.
   ///
-  /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px" />
+  /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_capture_image.jpeg?raw=true" alt="Schema" height="500px" />
   final ImageEditingEmptyCallback? onCloseEditor;
 
   /// Callbacks from the main editor.

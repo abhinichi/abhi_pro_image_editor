@@ -83,7 +83,7 @@ class CropEditorBottombar extends StatelessWidget {
                     direction: Axis.horizontal,
                     alignment: WrapAlignment.spaceAround,
                     children: <Widget>[
-                      if (configs.canRotate)
+                      if (configs.showRotateButton)
                         FlatIconTextButton(
                           key: const ValueKey('crop-rotate-editor-rotate-btn'),
                           label: Text(
@@ -95,7 +95,7 @@ class CropEditorBottombar extends StatelessWidget {
                               color: foregroundColor),
                           onPressed: onRotate,
                         ),
-                      if (configs.canFlip)
+                      if (configs.showFlipButton)
                         FlatIconTextButton(
                           key: const ValueKey('crop-rotate-editor-flip-btn'),
                           label: Text(
@@ -107,7 +107,7 @@ class CropEditorBottombar extends StatelessWidget {
                               Icon(configs.icons.flip, color: foregroundColor),
                           onPressed: onFlip,
                         ),
-                      if (configs.canChangeAspectRatio)
+                      if (configs.showAspectRatioButton)
                         FlatIconTextButton(
                           key: const ValueKey('crop-rotate-editor-ratio-btn'),
                           label: Text(
@@ -119,7 +119,7 @@ class CropEditorBottombar extends StatelessWidget {
                               color: foregroundColor),
                           onPressed: onOpenAspectRatioOptions,
                         ),
-                      if (configs.canReset)
+                      if (configs.showResetButton)
                         FlatIconTextButton(
                           key: const ValueKey('crop-rotate-editor-reset-btn'),
                           label: Text(
