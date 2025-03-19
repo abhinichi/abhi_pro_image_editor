@@ -32,7 +32,7 @@ class ProVideoController {
     TrimDurationSpan(start: Duration.zero, end: videoDuration),
   );
 
-  initialize({
+  void initialize({
     required VideoEditorCallbacks Function() callbacksFunction,
     required VideoEditorConfigs Function() configsFunction,
   }) {
@@ -41,13 +41,21 @@ class ProVideoController {
   }
 
   void togglePlayState() {
-    isPlayingNotifier.value = !isPlayingNotifier.value;
-
-    if (isPlayingNotifier.value) {
-      callbacks.onPlay?.call();
+    if (!isPlayingNotifier.value) {
+      play();
     } else {
-      callbacks.onPause?.call();
+      pause();
     }
+  }
+
+  void play() {
+    isPlayingNotifier.value = true;
+    callbacks.onPlay?.call();
+  }
+
+  void pause() {
+    isPlayingNotifier.value = false;
+    callbacks.onPause?.call();
   }
 
   void setMuteState(bool isMuted) {
@@ -61,7 +69,7 @@ class ProVideoController {
       start: span.start,
       end: span.end,
     );
-    callbacks.onTrimSpanChanged?.call(trimDurationSpanNotifier.value);
+    callbacks.onTrimSpanUpdate?.call(trimDurationSpanNotifier.value);
   }
 
   void setTrimStart(Duration duration) {
@@ -69,7 +77,7 @@ class ProVideoController {
       start: duration,
       end: trimDurationSpanNotifier.value.end,
     );
-    callbacks.onTrimSpanChanged?.call(trimDurationSpanNotifier.value);
+    callbacks.onTrimSpanUpdate?.call(trimDurationSpanNotifier.value);
   }
 
   void setTrimEnd(Duration duration) {
@@ -77,6 +85,6 @@ class ProVideoController {
       start: trimDurationSpanNotifier.value.start,
       end: duration,
     );
-    callbacks.onTrimSpanChanged?.call(trimDurationSpanNotifier.value);
+    callbacks.onTrimSpanUpdate?.call(trimDurationSpanNotifier.value);
   }
 }

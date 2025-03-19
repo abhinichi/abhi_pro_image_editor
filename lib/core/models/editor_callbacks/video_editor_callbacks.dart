@@ -5,10 +5,12 @@ class VideoEditorCallbacks {
     this.onPlay,
     this.onPause,
     this.onMuteToggle,
-    this.onTrimSpanChanged,
+    this.onTrimSpanUpdate,
+    this.onTrimSpanEnd,
   });
   final Function()? onPlay;
   final Function()? onPause;
   final Function(bool isMuted)? onMuteToggle;
-  final Function(TrimDurationSpan durationSpan)? onTrimSpanChanged;
+  final Function(TrimDurationSpan durationSpan)? onTrimSpanUpdate;
+  final Function(TrimDurationSpan durationSpan)? onTrimSpanEnd;
 }

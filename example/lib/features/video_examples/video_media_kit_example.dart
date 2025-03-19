@@ -19,6 +19,10 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
   /// Ensure that you have called `MediaKit.ensureInitialized();` in the
   /// main method.
 
+  bool _isSeeking = false;
+  TrimDurationSpan? _durationSpan;
+  TrimDurationSpan? _tempDurationSpan;
+
   late final _player = Player();
   late final _controller = VideoController(_player);
 
@@ -56,6 +60,7 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
     Size initialSize = Size.zero;
     Duration videoDuration = Duration.zero;
 
+    /// Read duration
     _player.stream.duration.listen((event) {
       if (!mounted) return;
 
@@ -66,6 +71,8 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
       }
       setState(() {});
     });
+
+    /// Read resolution
     _player.stream.width.listen((event) {
       if (!mounted) return;
 
@@ -80,6 +87,17 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
       setState(() {});
     });
 
+    /// Listen when video end
+    _player.stream.position.listen((position) {
+      if (_isSeeking ||
+          _durationSpan == null ||
+          position < _durationSpan!.end) {
+        return;
+      }
+
+      _seekToPosition(_durationSpan!);
+    });
+
     await durationCompleter.future;
     await resolutionCompleter.future;
 
@@ -89,6 +107,26 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
       videoDuration: videoDuration,
       fileSize: bytes.lengthInBytes,
     );
+  }
+
+  Future<void> _seekToPosition(TrimDurationSpan span) async {
+    _durationSpan = span;
+
+    if (_isSeeking) {
+      _tempDurationSpan = span; // Store the latest seek request
+      return;
+    }
+    _isSeeking = true;
+    await _player.seek(span.start);
+
+    _isSeeking = false;
+
+    // Check if there's a pending seek request
+    if (_tempDurationSpan != null) {
+      TrimDurationSpan nextSeek = _tempDurationSpan!;
+      _tempDurationSpan = null; // Clear the pending seek
+      await _seekToPosition(nextSeek); // Process the latest request
+    }
   }
 
   @override
@@ -106,6 +144,12 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
                   onMuteToggle: (isMuted) {
                     _player.setVolume(isMuted ? 0 : 100);
                   },
+                  onTrimSpanUpdate: (durationSpan) {
+                    if (_player.state.playing) {
+                      _proVideoController!.pause();
+                    }
+                  },
+                  onTrimSpanEnd: _seekToPosition,
                 ),
               ),
               configs: ProImageEditorConfigs(

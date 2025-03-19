@@ -98,6 +98,15 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
     }
   }
 
+  void _triggerTrimSpanEnd() {
+    _player.callbacks.onTrimSpanEnd?.call(
+      TrimDurationSpan(
+        start: Duration(microseconds: (trimStart * _videoDuration).toInt()),
+        end: Duration(microseconds: (trimEnd * _videoDuration).toInt()),
+      ),
+    );
+  }
+
   double get _minInteractiveDimension =>
       Theme.of(context).materialTapTargetSize == MaterialTapTargetSize.padded
           ? kMinInteractiveDimension
@@ -148,6 +157,7 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
                   children: [
                     /// Trimmer background
                     GestureDetector(
+                      onHorizontalDragEnd: (_) => _triggerTrimSpanEnd(),
                       onHorizontalDragUpdate: (details) {
                         _updateScrollbar(details.delta.dx);
                       },
@@ -237,6 +247,7 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
           max(_minInteractiveDimension, _player.style.trimBarHandlerWidth),
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
+        onHorizontalDragEnd: (_) => _triggerTrimSpanEnd(),
         onHorizontalDragUpdate: (details) =>
             _updateDragTrimBar(details, scaledWidth),
         child: MouseRegion(
@@ -264,6 +275,7 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
       left: offset,
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
+        onHorizontalDragEnd: (_) => _triggerTrimSpanEnd(),
         onHorizontalDragUpdate: (details) {
           double newValue = trimStart + details.primaryDelta! / scaledWidth;
           _updateTrimStart(max(0, newValue));
@@ -281,6 +293,7 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
       left: offset,
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
+        onHorizontalDragEnd: (_) => _triggerTrimSpanEnd(),
         onHorizontalDragUpdate: (details) {
           double newValue = trimEnd + details.primaryDelta! / scaledWidth;
           _updateTrimEnd(min(1, newValue));
