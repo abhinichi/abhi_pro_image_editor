@@ -35,6 +35,10 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
     super.dispose();
   }
 
+  VideoPlayerValue? get _playerValue {
+    return _flickManager.flickVideoManager?.videoPlayerValue;
+  }
+
   void _initializePlayer() async {
     _flickManager = FlickManager(
       videoPlayerController:
@@ -57,8 +61,10 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
 
     do {
       await Future.delayed(const Duration(milliseconds: 30));
-    } while (_flickManager.flickVideoManager?.videoPlayerValue?.size == null ||
-        _flickManager.flickVideoManager?.videoPlayerValue?.duration == null);
+    } while (_playerValue?.size == null ||
+        _playerValue?.duration == null ||
+        _playerValue!.size.isEmpty ||
+        _playerValue!.duration.inSeconds == 0);
 
     proVideoController = ProVideoController(
       videoPlayer: _buildVideoPlayer(),
