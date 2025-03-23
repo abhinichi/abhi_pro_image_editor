@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
@@ -13,6 +14,7 @@ class TransformedContentGenerator extends StatefulWidget {
     required this.child,
     required this.transformConfigs,
     required this.configs,
+    this.isVideoPlayer = false,
     super.key,
   });
 
@@ -24,6 +26,9 @@ class TransformedContentGenerator extends StatefulWidget {
 
   /// Configuration object for the image editor.
   final ProImageEditorConfigs configs;
+
+  /// Indicateds if the child is a video player.
+  final bool isVideoPlayer;
 
   @override
   State<TransformedContentGenerator> createState() =>
@@ -90,6 +95,7 @@ class _TransformedContentGeneratorState
             }
           }
         }
+
         return FittedBox(
           child: SizedBox(
             width: configs.originalSize.isInfinite
@@ -135,6 +141,9 @@ class _TransformedContentGeneratorState
   }
 
   Widget _buildCropPainter({required Widget child}) {
+    // TODO: Add support for web video player
+    if (kIsWeb && widget.isVideoPlayer) return child;
+
     CutOutsideArea clipper = CutOutsideArea(configs: widget.transformConfigs);
 
     if (widget.configs.cropRotateEditor.enableRoundCropper) {

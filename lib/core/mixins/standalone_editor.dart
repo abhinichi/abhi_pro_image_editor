@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '/core/mixins/converted_callbacks.dart';
 import '/features/filter_editor/types/filter_matrix.dart';
 import '/features/tune_editor/models/tune_adjustment_matrix.dart';
+import '/shared/controllers/video_controller.dart';
 import '/shared/services/content_recorder/controllers/content_recorder_controller.dart';
 import '/shared/utils/decode_image.dart';
 import '/shared/widgets/overlays/loading_dialog/loading_dialog.dart';
@@ -28,7 +29,10 @@ mixin StandaloneEditor<T extends EditorInitConfigs> {
   T get initConfigs;
 
   /// Returns the editor image
-  EditorImage get editorImage;
+  EditorImage? get editorImage;
+
+  /// Returns the video controller
+  ProVideoController? get videoController;
 }
 
 /// A mixin providing access to standalone editor configurations and image
@@ -40,7 +44,11 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   I get initConfigs => (widget as StandaloneEditor<I>).initConfigs;
 
   /// Returns the image being edited.
-  EditorImage get editorImage => (widget as StandaloneEditor<I>).editorImage;
+  EditorImage? get editorImage => (widget as StandaloneEditor<I>).editorImage;
+
+  /// Returns the controller to edit the video.
+  ProVideoController? get videoController =>
+      (widget as StandaloneEditor<I>).videoController;
 
   @override
   ProImageEditorConfigs get configs => initConfigs.configs;
@@ -107,7 +115,7 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   }) async {
     if (imageInfos == null || forceUpdate == true) {
       imageInfos = (await decodeImageInfos(
-        bytes: await editorImage.safeByteArray(context),
+        bytes: await editorImage!.safeByteArray(context),
         screenSize: editorBodySize,
         configs: activeHistory,
       ));
@@ -119,7 +127,7 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   @protected
   void doneEditing({
     dynamic returnValue,
-    required EditorImage editorImage,
+    EditorImage? editorImage,
     Function? onCloseWithValue,
     Function(Uint8List?)? onSetFakeHero,
   }) async {
@@ -152,7 +160,7 @@ mixin StandaloneEditorState<T extends StatefulWidget,
             : null,
         originalImageBytes: screenshotHistoryPosition > 0
             ? null
-            : await editorImage.safeByteArray(context),
+            : await editorImage!.safeByteArray(context),
       );
 
       createScreenshot = false;

@@ -21,7 +21,6 @@ import '/pro_image_editor.dart';
 import '/shared/mixins/extended_loop.dart';
 import '/shared/services/content_recorder/widgets/record_invisible_widget.dart';
 import '/shared/services/layer_transform_generator.dart';
-import '/shared/utils/debounce.dart';
 import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/extended/extended_custom_paint.dart';
 import '/shared/widgets/extended/extended_transform_scale.dart';
@@ -30,7 +29,7 @@ import '/shared/widgets/extended/mouse_region/extended_rebuild_mouse_region.dart
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/screen_resize_detector.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
-import '../filter_editor/widgets/filtered_image.dart';
+import '../filter_editor/widgets/filtered_widget.dart';
 import 'enums/crop_area_part.dart';
 import 'enums/crop_rotate_angle_side.dart';
 import 'mixins/crop_area_history.dart';
@@ -63,9 +62,11 @@ class CropRotateEditor extends StatefulWidget
   /// for the editor.
   const CropRotateEditor._({
     super.key,
-    required this.editorImage,
     required this.initConfigs,
-  });
+    this.editorImage,
+    this.videoController,
+  }) : assert(editorImage != null || videoController != null,
+            'Either editorImage or videoController must be provided.');
 
   /// Constructs a `CropRotateEditor` widget with image data loaded from memory.
   factory CropRotateEditor.memory(
@@ -131,42 +132,46 @@ class CropRotateEditor extends StatefulWidget
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
+    ProVideoController? videoController,
     required CropRotateEditorInitConfigs initConfigs,
   }) {
-    if (byteArray != null || editorImage?.byteArray != null) {
-      return CropRotateEditor.memory(
-        byteArray ?? editorImage!.byteArray!,
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else if (file != null || editorImage?.file != null) {
-      return CropRotateEditor.file(
-        ensureFileInstance(file ?? editorImage!.file!),
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else if (networkUrl != null || editorImage?.networkUrl != null) {
-      return CropRotateEditor.network(
-        networkUrl ?? editorImage!.networkUrl!,
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else if (assetPath != null || editorImage?.assetPath != null) {
-      return CropRotateEditor.asset(
-        assetPath ?? editorImage!.assetPath!,
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' "
-          'must be provided.');
-    }
+    return CropRotateEditor._(
+      key: key,
+      editorImage: videoController != null
+          ? null
+          : editorImage ??
+              EditorImage(
+                byteArray: byteArray,
+                file: file == null ? null : ensureFileInstance(file),
+                networkUrl: networkUrl,
+                assetPath: assetPath,
+              ),
+      videoController: videoController,
+      initConfigs: initConfigs,
+    );
   }
+
+  /// 🚧 The Video Editor is under development and not ready for use.
+  ///
+  /// Constructs a `CropRotateEditor` widget with an video player.
+  factory CropRotateEditor.video(
+    ProVideoController videoController, {
+    Key? key,
+    required CropRotateEditorInitConfigs initConfigs,
+  }) {
+    return CropRotateEditor._(
+      key: key,
+      videoController: videoController,
+      initConfigs: initConfigs,
+    );
+  }
+
   @override
   final CropRotateEditorInitConfigs initConfigs;
   @override
-  final EditorImage editorImage;
+  final EditorImage? editorImage;
+  @override
+  final ProVideoController? videoController;
 
   @override
   State<CropRotateEditor> createState() => CropRotateEditorState();
@@ -538,7 +543,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _imageNeedDecode = false;
 
     var decodedImage =
-        await decodeImageFromList(await editorImage.safeByteArray(context));
+        await decodeImageFromList(await editorImage!.safeByteArray(context));
 
     if (!mounted) return;
     var w = decodedImage.width;
@@ -2277,7 +2282,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             fit: StackFit.expand,
             alignment: Alignment.center,
             children: [
-              FilteredImage(
+              FilteredWidget(
                 filters: appliedFilters,
                 tuneAdjustments: appliedTuneAdjustments,
                 blurFactor: appliedBlurFactor,
@@ -2285,6 +2290,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 width: _imgWidth,
                 height: _imgHeight,
                 image: editorImage,
+                videoPlayer: videoController?.videoPlayer,
               ),
               if (cropRotateEditorConfigs.showLayers &&
                   cropRotateEditorConfigs.enableTransformLayers &&
@@ -2325,13 +2331,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
               createRectTween: (begin, end) =>
                   RectTween(begin: begin, end: end),
               child: TransformedContentGenerator(
+                isVideoPlayer: videoController != null,
                 transformConfigs: _fakeHeroTransformConfigs,
                 configs: configs,
-                child: FilteredImage(
+                child: FilteredWidget(
                   width: _mainImageSize.width,
                   height: _mainImageSize.height,
                   configs: configs,
                   image: editorImage,
+                  videoPlayer: videoController?.videoPlayer,
                   filters: appliedFilters,
                   tuneAdjustments: appliedTuneAdjustments,
                   blurFactor: appliedBlurFactor,
@@ -2367,13 +2375,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
       width: w,
       height: h,
       child: TransformedContentGenerator(
+        isVideoPlayer: videoController != null,
         transformConfigs: transformC,
         configs: configs,
-        child: FilteredImage(
+        child: FilteredWidget(
           width: w,
           height: h,
           configs: configs,
           image: editorImage,
+          videoPlayer: videoController?.videoPlayer,
           filters: appliedFilters,
           tuneAdjustments: appliedTuneAdjustments,
           blurFactor: appliedBlurFactor,

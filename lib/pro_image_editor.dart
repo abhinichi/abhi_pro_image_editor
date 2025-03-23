@@ -13,6 +13,13 @@ export 'core/models/editor_configs/pro_image_editor_configs.dart';
 export 'core/models/editor_image.dart';
 export 'core/models/history/state_history.dart';
 
+/// Video editing
+export '/shared/controllers/video_controller.dart';
+export '/shared/widgets/video/export_prebuild/video_editor_prebuild_widgets.dart';
+export '/core/models/editor_callbacks/video_editor_callbacks.dart';
+export '/core/models/editor_configs/video_editor_configs.dart';
+export '/core/models/video/trim_duration_span_model.dart';
+
 /// Import/Export state history
 export 'shared/services/import_export/models/export_state_history_configs.dart';
 export 'shared/services/import_export/import_state_history.dart';
@@ -34,6 +41,7 @@ export 'features/crop_rotate_editor/crop_rotate_editor.dart';
 export 'features/emoji_editor/emoji_editor.dart';
 export 'features/filter_editor/filter_editor.dart';
 export 'features/tune_editor/tune_editor.dart';
+export '/shared/utils/debounce.dart';
 
 /// Editors
 export 'features/main_editor/main_editor.dart';

@@ -16,7 +16,7 @@ import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
-import '../filter_editor/widgets/filtered_image.dart';
+import '../filter_editor/widgets/filtered_widget.dart';
 import 'models/tune_adjustment_matrix.dart';
 import 'utils/tune_presets.dart';
 import 'widgets/tune_editor_appbar.dart';
@@ -43,9 +43,11 @@ class TuneEditor extends StatefulWidget
   /// for the editor.
   const TuneEditor._({
     super.key,
-    required this.editorImage,
     required this.initConfigs,
-  });
+    this.editorImage,
+    this.videoController,
+  }) : assert(editorImage != null || videoController != null,
+            'Either editorImage or videoController must be provided.');
 
   /// Constructs a `TuneEditor` widget with image data loaded from memory.
   factory TuneEditor.memory(
@@ -111,42 +113,47 @@ class TuneEditor extends StatefulWidget
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
+    ProVideoController? videoController,
     required TuneEditorInitConfigs initConfigs,
   }) {
-    if (byteArray != null || editorImage?.byteArray != null) {
-      return TuneEditor.memory(
-        byteArray ?? editorImage!.byteArray!,
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else if (file != null || editorImage?.file != null) {
-      return TuneEditor.file(
-        ensureFileInstance(file ?? editorImage!.file!),
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else if (networkUrl != null || editorImage?.networkUrl != null) {
-      return TuneEditor.network(
-        networkUrl ?? editorImage!.networkUrl!,
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else if (assetPath != null || editorImage?.assetPath != null) {
-      return TuneEditor.asset(
-        assetPath ?? editorImage!.assetPath!,
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must "
-          'be provided.');
-    }
+    return TuneEditor._(
+      key: key,
+      editorImage: videoController != null
+          ? null
+          : editorImage ??
+              EditorImage(
+                byteArray: byteArray,
+                file: file == null ? null : ensureFileInstance(file),
+                networkUrl: networkUrl,
+                assetPath: assetPath,
+              ),
+      videoController: videoController,
+      initConfigs: initConfigs,
+    );
   }
+
+  /// 🚧 The Video Editor is under development and not ready for use.
+  ///
+  /// Constructs a `TuneEditor` widget with an video player.
+  @Deprecated('The Video Editor is under development and not ready for use.')
+  factory TuneEditor.video(
+    ProVideoController videoController, {
+    Key? key,
+    required TuneEditorInitConfigs initConfigs,
+  }) {
+    return TuneEditor._(
+      key: key,
+      videoController: videoController,
+      initConfigs: initConfigs,
+    );
+  }
+
   @override
   final TuneEditorInitConfigs initConfigs;
   @override
-  final EditorImage editorImage;
+  final EditorImage? editorImage;
+  @override
+  final ProVideoController? videoController;
 
   @override
   createState() => TuneEditorState();
@@ -426,7 +433,7 @@ class TuneEditorState extends State<TuneEditor>
               alignment: Alignment.center,
               fit: StackFit.expand,
               children: [
-                _buildBackgroundImage(),
+                _buildBackground(),
                 if (tuneEditorConfigs.showLayers && layers != null)
                   _buildLayers(),
                 if (tuneEditorConfigs.widgets.bodyItemsRecorded != null)
@@ -443,21 +450,23 @@ class TuneEditorState extends State<TuneEditor>
     });
   }
 
-  Widget _buildBackgroundImage() {
+  Widget _buildBackground() {
     return Hero(
       tag: heroTag,
       createRectTween: (begin, end) => RectTween(begin: begin, end: end),
       child: TransformedContentGenerator(
+        isVideoPlayer: videoController != null,
         configs: configs,
         transformConfigs: initialTransformConfigs ?? TransformConfigs.empty(),
         child: StreamBuilder(
             stream: uiStream.stream,
             builder: (context, snapshot) {
-              return FilteredImage(
+              return FilteredWidget(
                 width: getMinimumSize(mainImageSize, editorBodySize).width,
                 height: getMinimumSize(mainImageSize, editorBodySize).height,
                 configs: configs,
                 image: editorImage,
+                videoPlayer: videoController?.videoPlayer,
                 filters: appliedFilters,
                 tuneAdjustments: tuneAdjustmentMatrix,
                 blurFactor: appliedBlurFactor,

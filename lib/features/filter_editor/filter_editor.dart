@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '/core/constants/image_constants.dart';
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
@@ -17,7 +18,7 @@ import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import 'types/filter_matrix.dart';
-import 'widgets/filtered_image.dart';
+import 'widgets/filtered_widget.dart';
 
 export 'utils/filter_generator/filter_addons.dart';
 export 'utils/filter_generator/filter_model.dart';
@@ -43,9 +44,11 @@ class FilterEditor extends StatefulWidget
   /// for the editor.
   const FilterEditor._({
     super.key,
-    required this.editorImage,
     required this.initConfigs,
-  });
+    this.editorImage,
+    this.videoController,
+  }) : assert(editorImage != null || videoController != null,
+            'Either editorImage or videoController must be provided.');
 
   /// Constructs a `FilterEditor` widget with image data loaded from memory.
   factory FilterEditor.memory(
@@ -111,42 +114,46 @@ class FilterEditor extends StatefulWidget
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
+    ProVideoController? videoController,
     required FilterEditorInitConfigs initConfigs,
   }) {
-    if (byteArray != null || editorImage?.byteArray != null) {
-      return FilterEditor.memory(
-        byteArray ?? editorImage!.byteArray!,
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else if (file != null || editorImage?.file != null) {
-      return FilterEditor.file(
-        ensureFileInstance(file ?? editorImage!.file!),
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else if (networkUrl != null || editorImage?.networkUrl != null) {
-      return FilterEditor.network(
-        networkUrl ?? editorImage!.networkUrl!,
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else if (assetPath != null || editorImage?.assetPath != null) {
-      return FilterEditor.asset(
-        assetPath ?? editorImage!.assetPath!,
-        key: key,
-        initConfigs: initConfigs,
-      );
-    } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must "
-          'be provided.');
-    }
+    return FilterEditor._(
+      key: key,
+      editorImage: videoController != null
+          ? null
+          : editorImage ??
+              EditorImage(
+                byteArray: byteArray,
+                file: file == null ? null : ensureFileInstance(file),
+                networkUrl: networkUrl,
+                assetPath: assetPath,
+              ),
+      videoController: videoController,
+      initConfigs: initConfigs,
+    );
   }
+
+  /// 🚧 The Video Editor is under development and not ready for use.
+  ///
+  /// Constructs a `FilterEditor` widget with an video player.
+  factory FilterEditor.video(
+    ProVideoController videoController, {
+    Key? key,
+    required FilterEditorInitConfigs initConfigs,
+  }) {
+    return FilterEditor._(
+      key: key,
+      videoController: videoController,
+      initConfigs: initConfigs,
+    );
+  }
+
   @override
   final FilterEditorInitConfigs initConfigs;
   @override
-  final EditorImage editorImage;
+  final EditorImage? editorImage;
+  @override
+  final ProVideoController? videoController;
 
   @override
   createState() => FilterEditorState();
@@ -297,13 +304,14 @@ class FilterEditorState extends State<FilterEditor>
                   createRectTween: (begin, end) =>
                       RectTween(begin: begin, end: end),
                   child: TransformedContentGenerator(
+                    isVideoPlayer: videoController != null,
                     configs: configs,
                     transformConfigs:
                         initialTransformConfigs ?? TransformConfigs.empty(),
                     child: StreamBuilder(
                         stream: _uiFilterStream.stream,
                         builder: (context, snapshot) {
-                          return FilteredImage(
+                          return FilteredWidget(
                             width: getMinimumSize(mainImageSize, editorBodySize)
                                 .width,
                             height:
@@ -311,6 +319,7 @@ class FilterEditorState extends State<FilterEditor>
                                     .height,
                             configs: configs,
                             image: editorImage,
+                            videoPlayer: videoController?.videoPlayer,
                             filters: _getActiveFilters(),
                             tuneAdjustments: appliedTuneAdjustments,
                             blurFactor: appliedBlurFactor,
@@ -394,6 +403,11 @@ class FilterEditorState extends State<FilterEditor>
                 mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
                 mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
                 editorImage: editorImage,
+                image: editorImage != null
+                    ? null
+                    : widget.videoController!.thumbnails.isNotEmpty
+                        ? Image(image: widget.videoController!.thumbnails.first)
+                        : Image.memory(kImageEditorTransparentBytes),
                 activeFilters: appliedFilters,
                 blurFactor: appliedBlurFactor,
                 configs: configs,
