@@ -121,6 +121,12 @@ class PaintEditor extends StatefulWidget
     Key? key,
     required PaintEditorInitConfigs initConfigs,
   }) {
+    assert(
+      !initConfigs.configs.imageGeneration.cropToImageBounds,
+      '`cropToImageBounds` must be set to false in `imageGeneration` when '
+      'using `PaintEditor.drawing`.',
+    );
+
     return PaintEditor._(
       key: key,
       editorImage: EditorImage(byteArray: kImageEditorTransparentBytes),
@@ -159,8 +165,6 @@ class PaintEditor extends StatefulWidget
     );
   }
 
-  /// 🚧 The Video Editor is under development and not ready for use.
-  ///
   /// Constructs a `PaintEditor` widget with an video player.
   factory PaintEditor.video(
     ProVideoController videoController, {
