@@ -25,11 +25,15 @@ class LayerInteractionManager {
   ///   to handle helper line hit events.
   LayerInteractionManager({
     required this.helperLinesCallbacks,
+    this.onSelectedLayerChanged,
   });
 
   /// An optional instance of [HelperLinesCallbacks] that defines callback
   ///  functions for handling helper line interactions.
   final HelperLinesCallbacks? helperLinesCallbacks;
+
+  /// Callback function to be called when the selected layer changes.
+  final ValueChanged<String>? onSelectedLayerChanged;
 
   /// Debounce for scaling actions in the editor.
   late Debounce scaleDebounce;
@@ -112,7 +116,16 @@ class LayerInteractionManager {
   final double hitSpan = 10;
 
   /// The ID of the currently selected layer.
-  String selectedLayerId = '';
+  String _selectedLayerId = '';
+
+  /// Returns the ID of the currently selected layer.
+  String get selectedLayerId => _selectedLayerId;
+
+  /// Sets the ID of the currently selected layer.
+  set selectedLayerId(String id) {
+    _selectedLayerId = id;
+    onSelectedLayerChanged?.call(_selectedLayerId);
+  }
 
   /// Helper variable for scaling during rotation of a layer.
   double? rotateScaleLayerScaleHelper;
