@@ -31,6 +31,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     this.onEditorZoomScaleEnd,
     this.onEscapeButton,
     this.helperLines = const HelperLinesCallbacks(),
+    this.onSelectedLayerChanged,
     super.onInit,
     super.onAfterViewInit,
     super.onUpdateUI,
@@ -203,6 +204,15 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   /// An instance of [HelperLinesCallbacks] that manages callback functions
   /// for handling helper line hit events.
   final HelperLinesCallbacks helperLines;
+
+  /// A callback that is called when the selected layer of layer interaction
+  /// manager changes.
+  ///
+  /// The callback is called with the id of the newly selected layer. If no
+  /// layer is selected, the callback is called with blank.
+  ///
+  /// This callback is not called when [LayerInteractionSelectable] is disabled.
+  final ValueChanged<String>? onSelectedLayerChanged;
 
   /// Handles the addition of a layer.
   ///
