@@ -1412,7 +1412,9 @@ class ProImageEditorState extends State<ProImageEditor>
         configs: configs,
         theme: _theme,
         callbacks: callbacks,
-        scaleFactor: _interactiveViewer.currentState?.scaleFactor ?? 1.0,
+        scaleFactor: textEditorConfigs.enableMainEditorZoomFactor
+            ? _interactiveViewer.currentState?.scaleFactor ?? 1.0
+            : 1.0,
       ),
       duration: duration,
     );
