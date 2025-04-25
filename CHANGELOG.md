@@ -1,5 +1,8 @@
 # Changelog
 
+## 9.5.1
+- **FIX**(onCompleteWithParameters): Return correct parameters on completion. Resolves [#403](https://github.com/hm21/pro_image_editor/issues/403).
+
 ## 9.5.0
 - **FEAT**(callback): Added `copyWith` method to all callback models. More details in Feature-Request [#424](https://github.com/hm21/pro_image_editor/pull/424).
 - **FEAT**(zoom): Preserved zoom state by sharing Matrix4 between paint and main editor
