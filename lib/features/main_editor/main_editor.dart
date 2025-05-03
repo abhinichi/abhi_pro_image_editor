@@ -2259,6 +2259,7 @@ class ProImageEditorState extends State<ProImageEditor>
                   handleDoubleTap(context, details, mainEditorConfigs);
                   mainEditorCallbacks?.onDoubleTap?.call();
                 },
+                onPointerUp: onPointerUp,
                 onPointerSignal: isDesktop && _activeLayer != null
                     ? (event) {
                         if (_activeLayer == null) return;

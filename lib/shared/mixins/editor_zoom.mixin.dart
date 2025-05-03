@@ -13,6 +13,12 @@ mixin EditorZoomMixin<T extends StatefulWidget> on State<T> {
   /// Stores the position of the last pointer down event, used for zoom focus.
   Offset? _lastTapDownOffset;
 
+  /// The maximum distance that the first touch in a double-tap gesture can
+  /// travel before deciding that it is not part of a double-tap gesture.
+  /// DoubleTapGestureRecognizer also restricts the second touch to this
+  /// distance.
+  final double _doubleTapSlop = 48.0;
+
   /// A debounce utility to track timing between double-tap events.
   final _doubleTapDebounce = Debounce(const Duration(milliseconds: 300));
 
@@ -30,17 +36,42 @@ mixin EditorZoomMixin<T extends StatefulWidget> on State<T> {
     super.dispose();
   }
 
+  final Set<int> _activePointers = {};
+
   /// Detects whether a [PointerDownEvent] is part of a double-tap gesture.
   ///
   /// Returns `true` if two taps occur within the debounce duration.
   @protected
   bool detectDoubleTap(PointerDownEvent details) {
+    _activePointers.add(details.pointer);
+
+    if (_activePointers.length > 1) {
+      _doubleTapCountHelper = 0;
+      _doubleTapDebounce.cancel();
+      return false;
+    }
+
+    final tapPosition = details.position;
+
+    if (_lastTapDownOffset != null &&
+        (tapPosition - _lastTapDownOffset!).distance > _doubleTapSlop) {
+      // Too far apart — reset
+      _doubleTapCountHelper = 0;
+    }
+
     _lastTapDownOffset = details.position;
     _doubleTapCountHelper++;
     _doubleTapDebounce(() {
       _doubleTapCountHelper = 0;
     });
     return _doubleTapCountHelper == 2;
+  }
+
+  /// Called when a pointer that triggered an [onPointerDown] is no longer in
+  /// contact with the screen.
+  @protected
+  void onPointerUp(PointerUpEvent event) {
+    _activePointers.remove(event.pointer);
   }
 
   /// Handles a confirmed double-tap gesture and performs a zoom action.

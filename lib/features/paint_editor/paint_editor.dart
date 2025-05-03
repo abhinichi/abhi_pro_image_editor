@@ -766,6 +766,7 @@ class PaintEditorState extends State<PaintEditor>
           handleDoubleTap(context, details, paintEditorConfigs);
           paintEditorCallbacks?.onDoubleTap?.call();
         },
+        onPointerUp: onPointerUp,
         child: ExtendedInteractiveViewer(
           key: interactiveViewer,
           initialMatrix4: paintEditorConfigs.enableShareZoomMatrix

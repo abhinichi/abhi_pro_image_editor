@@ -61,6 +61,11 @@ class Debounce {
     _timer = Timer(delay, callback);
   }
 
+  /// Cancels the timer.
+  cancel() {
+    _timer?.cancel();
+  }
+
   /// Disposes of the debounce timer, preventing any further calls.
   ///
   /// Call this method when you no longer need to debounce function calls to
