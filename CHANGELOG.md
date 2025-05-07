@@ -1,5 +1,8 @@
 # Changelog
 
+## 9.7.3
+ - **FEAT**(Main-Editor): Add EditorSafeArea to the Main editor to folow SubEditor logic
+
 ## 9.7.2
  - **Fix**(Tune-Editor): Ensure the back button works properly. This resolve issue [#449](https://github.com/hm21/pro_image_editor/issues/449)
 
