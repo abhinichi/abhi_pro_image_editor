@@ -11,7 +11,7 @@ extension BoxConstraintsExtension on BoxConstraints {
   /// - `'maxWidth'`: The maximum width constraint.
   /// - `'minHeight'`: The minimum height constraint.
   /// - `'maxHeight'`: The maximum height constraint.
-  Map<String, double> toMap({bool leadingHashSign = true}) {
+  Map<String, double> toMap() {
     return {
       'minWidth': minWidth,
       'maxWidth': maxWidth,
