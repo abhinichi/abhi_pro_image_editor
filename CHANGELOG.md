@@ -1,5 +1,8 @@
 # Changelog
 
+## 9.8.1
+ - **FIX**(Image-Generation): Resolved an issue that the image generation was slowly.
+
 ## 9.8.0
  - **FEAT**(Layer): Introduce `BoxConstraints` to `Layer` class for enhanced constraint management and layout control.
 
