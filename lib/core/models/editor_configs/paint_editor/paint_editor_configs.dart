@@ -51,6 +51,10 @@ class PaintEditorConfigs extends ZoomConfigs {
     super.doubleTapZoomDuration,
     super.doubleTapZoomCurve,
     super.boundaryMargin,
+    this.colorPickerBottom,
+    this.colorPickerTop,
+    this.colorPickerLeft,
+    this.colorPickerRight,
     this.enableModeFreeStyle = true,
     this.enableModeArrow = true,
     this.enableModeLine = true,
@@ -72,6 +76,8 @@ class PaintEditorConfigs extends ZoomConfigs {
     this.enableFreeStyleHighPerformanceMoving,
     this.enableFreeStyleHighPerformanceHero = false,
     this.initialPaintMode = PaintMode.freeStyle,
+    this.isColorPickerHorizontal = false,
+    this.colorPickerPadding = EdgeInsets.zero,
     this.censorConfigs = const CensorConfigs(),
     this.safeArea = const EditorSafeArea(),
     this.style = const PaintEditorStyle(),
@@ -81,7 +87,6 @@ class PaintEditorConfigs extends ZoomConfigs {
             'maxScale must be greater than or equal to minScale'),
         assert(editorMaxScale > editorMinScale,
             'editorMaxScale must be greater than editorMinScale');
-
   /// Indicates whether the paint editor is enabled.
   final bool enabled;
 
@@ -188,6 +193,24 @@ class PaintEditorConfigs extends ZoomConfigs {
   /// Widgets associated with the paint editor.
   final PaintEditorWidgets widgets;
 
+  /// Is Color Picker Horizontal
+  final bool? isColorPickerHorizontal;
+
+  /// Color Bottom position
+  final double? colorPickerBottom;
+
+  /// Color picker top position
+  final double? colorPickerTop;
+
+  /// Color picker left position
+  final double? colorPickerLeft;
+
+  /// Color picker right position
+  final double? colorPickerRight;
+
+  /// Padding for the color picker.
+  final EdgeInsets? colorPickerPadding;
+
   /// Creates a copy of this `PaintEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -230,6 +253,12 @@ class PaintEditorConfigs extends ZoomConfigs {
     double? doubleTapZoomFactor,
     Duration? doubleTapZoomDuration,
     Curve? doubleTapZoomCurve,
+    bool? isColorPickerHorizontal,
+    double? colorPickerBottom,
+    double? colorPickerTop,
+    double? colorPickerLeft,
+    double? colorPickerRight,
+    EdgeInsets? colorPickerPadding,
   }) {
     return PaintEditorConfigs(
       enabled: enabled ?? this.enabled,
@@ -276,6 +305,12 @@ class PaintEditorConfigs extends ZoomConfigs {
           doubleTapZoomDuration ?? this.doubleTapZoomDuration,
       doubleTapZoomCurve: doubleTapZoomCurve ?? this.doubleTapZoomCurve,
       boundaryMargin: boundaryMargin ?? this.boundaryMargin,
+      colorPickerBottom: colorPickerBottom ?? this.colorPickerBottom,
+      colorPickerTop: colorPickerTop ?? this.colorPickerTop,
+      colorPickerLeft: colorPickerLeft ?? this.colorPickerLeft,
+      colorPickerRight: colorPickerRight ?? this.colorPickerRight,
+      colorPickerPadding: colorPickerPadding ?? this.colorPickerPadding,
+      isColorPickerHorizontal: isColorPickerHorizontal ?? this.isColorPickerHorizontal
     );
   }
 }

@@ -46,34 +46,38 @@ class PaintEditorColorPicker extends StatelessWidget {
           ) ??
           const SizedBox.shrink();
     }
-
     return Positioned(
-      top: 10,
-      right: 0,
-      child: StreamBuilder(
-        stream: state.uiPickerStream.stream,
-        builder: (context, snapshot) {
-          return BarColorPicker(
-            configs: configs,
-            length: min(
-              350,
-              MediaQuery.sizeOf(context).height -
-                  MediaQuery.viewInsetsOf(context).bottom -
-                  kToolbarHeight -
-                  kBottomNavigationBarHeight -
-                  MediaQuery.paddingOf(context).top -
-                  30,
-            ),
-            horizontal: false,
-            thumbColor: Colors.white,
-            cornerRadius: 10,
-            pickMode: PickMode.color,
-            initialColor: configs.paintEditor.style.initialColor,
-            colorListener: (int value) {
-              state.colorChanged(Color(value));
-            },
-          );
-        },
+      top: configs.paintEditor.colorPickerTop,
+      bottom: configs.paintEditor.colorPickerBottom,
+      right: configs.paintEditor.colorPickerRight,
+      left: configs.paintEditor.colorPickerLeft,
+      child: Padding(
+        padding: configs.paintEditor.colorPickerPadding ?? EdgeInsets.zero,
+        child: StreamBuilder(
+          stream: state.uiPickerStream.stream,
+          builder: (context, snapshot) {
+            return BarColorPicker(
+              configs: configs,
+              length: min(
+                350,
+                MediaQuery.sizeOf(context).height -
+                    MediaQuery.viewInsetsOf(context).bottom -
+                    kToolbarHeight -
+                    kBottomNavigationBarHeight -
+                    MediaQuery.paddingOf(context).top -
+                    30,
+              ),
+              horizontal: configs.paintEditor.isColorPickerHorizontal ?? true,
+              thumbColor: Colors.white,
+              cornerRadius: 10,
+              pickMode: PickMode.color,
+              initialColor: configs.paintEditor.style.initialColor,
+              colorListener: (int value) {
+                state.colorChanged(Color(value));
+              },
+            );
+          },
+        ),
       ),
     );
   }
