@@ -757,88 +757,91 @@ class PaintEditorState extends State<PaintEditor>
 
   List<Widget> _buildInteractiveContent() {
     return [
-      Listener(
-        behavior: HitTestBehavior.translucent,
-        onPointerDown: (details) {
-          bool isDoubleTap = detectDoubleTap(details);
-          if (!isDoubleTap) return;
+      Padding(
+        padding: configs.paintEditor.colorPickerPadding ?? EdgeInsets.zero,
+        child: Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (details) {
+            bool isDoubleTap = detectDoubleTap(details);
+            if (!isDoubleTap) return;
 
-          handleDoubleTap(context, details, paintEditorConfigs);
-          paintEditorCallbacks?.onDoubleTap?.call();
-        },
-        onPointerUp: onPointerUp,
-        child: ExtendedInteractiveViewer(
-          key: interactiveViewer,
-          initialMatrix4: paintEditorConfigs.enableShareZoomMatrix
-              ? initConfigs.initialZoomMatrix
-              : null,
-          zoomConfigs: paintEditorConfigs,
-          enableInteraction: paintMode == PaintMode.moveAndZoom,
-          onInteractionStart: (details) {
-            _freeStyleHighPerformance =
-                (paintEditorConfigs.enableFreeStyleHighPerformanceMoving ??
-                        !isDesktop) ||
-                    (paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
-                        !isDesktop);
-
-            callbacks.paintEditorCallbacks?.onEditorZoomScaleStart
-                ?.call(details);
-            setState(() {});
+            handleDoubleTap(context, details, paintEditorConfigs);
+            paintEditorCallbacks?.onDoubleTap?.call();
           },
-          onInteractionUpdate:
-              callbacks.paintEditorCallbacks?.onEditorZoomScaleUpdate,
-          onInteractionEnd: (details) {
-            _freeStyleHighPerformance = false;
-            callbacks.paintEditorCallbacks?.onEditorZoomScaleEnd?.call(details);
-            setState(() {});
-          },
-          onMatrix4Change:
-              callbacks.paintEditorCallbacks?.onEditorZoomMatrix4Change,
-          child: Stack(
-            alignment: Alignment.center,
-            fit: StackFit.expand,
-            children: [
-              if (initConfigs.convertToUint8List && isVideoEditor)
-                _buildBackground(),
-              ContentRecorder(
-                autoDestroyController: false,
-                controller: screenshotCtrl,
-                child: Stack(
-                  alignment: Alignment.center,
-                  fit: StackFit.expand,
-                  children: [
-                    if (!widget.paintOnly)
-                      if (!initConfigs.convertToUint8List || !isVideoEditor)
-                        _buildBackground()
-                      else
-                        SizedBox(
-                          width: configs.imageGeneration.maxOutputSize.width,
-                          height: configs.imageGeneration.maxOutputSize.height,
-                        ),
+          onPointerUp: onPointerUp,
+          child: ExtendedInteractiveViewer(
+            key: interactiveViewer,
+            initialMatrix4: paintEditorConfigs.enableShareZoomMatrix
+                ? initConfigs.initialZoomMatrix
+                : null,
+            zoomConfigs: paintEditorConfigs,
+            enableInteraction: paintMode == PaintMode.moveAndZoom,
+            onInteractionStart: (details) {
+              _freeStyleHighPerformance =
+                  (paintEditorConfigs.enableFreeStyleHighPerformanceMoving ??
+                          !isDesktop) ||
+                      (paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
+                          !isDesktop);
 
-                    /// Build layers
-                    if (paintEditorConfigs.showLayers && layers != null)
-                      LayerStack(
-                        configs: configs,
-                        layers: layers!,
-                        transformHelper: TransformHelper(
-                          mainBodySize:
-                              getMinimumSize(mainBodySize, editorBodySize),
-                          mainImageSize:
-                              getMinimumSize(mainImageSize, editorBodySize),
-                          editorBodySize: editorBodySize,
-                          transformConfigs: initialTransformConfigs,
+              callbacks.paintEditorCallbacks?.onEditorZoomScaleStart
+                  ?.call(details);
+              setState(() {});
+            },
+            onInteractionUpdate:
+                callbacks.paintEditorCallbacks?.onEditorZoomScaleUpdate,
+            onInteractionEnd: (details) {
+              _freeStyleHighPerformance = false;
+              callbacks.paintEditorCallbacks?.onEditorZoomScaleEnd?.call(details);
+              setState(() {});
+            },
+            onMatrix4Change:
+                callbacks.paintEditorCallbacks?.onEditorZoomMatrix4Change,
+            child: Stack(
+              alignment: Alignment.center,
+              fit: StackFit.expand,
+              children: [
+                if (initConfigs.convertToUint8List && isVideoEditor)
+                  _buildBackground(),
+                ContentRecorder(
+                  autoDestroyController: false,
+                  controller: screenshotCtrl,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    fit: StackFit.expand,
+                    children: [
+                      if (!widget.paintOnly)
+                        if (!initConfigs.convertToUint8List || !isVideoEditor)
+                          _buildBackground()
+                        else
+                          SizedBox(
+                            width: configs.imageGeneration.maxOutputSize.width,
+                            height: configs.imageGeneration.maxOutputSize.height,
+                          ),
+
+                      /// Build layers
+                      if (paintEditorConfigs.showLayers && layers != null)
+                        LayerStack(
+                          configs: configs,
+                          layers: layers!,
+                          transformHelper: TransformHelper(
+                            mainBodySize:
+                                getMinimumSize(mainBodySize, editorBodySize),
+                            mainImageSize:
+                                getMinimumSize(mainImageSize, editorBodySize),
+                            editorBodySize: editorBodySize,
+                            transformConfigs: initialTransformConfigs,
+                          ),
+                          overlayColor: paintEditorConfigs.style.background,
                         ),
-                        overlayColor: paintEditorConfigs.style.background,
-                      ),
-                    _buildPainter(),
-                    if (paintEditorConfigs.widgets.bodyItemsRecorded != null)
-                      ...paintEditorConfigs.widgets.bodyItemsRecorded!(
-                          this, rebuildController.stream),
-                  ],
+                      _buildPainter(),
+                      if (paintEditorConfigs.widgets.bodyItemsRecorded != null)
+                        ...paintEditorConfigs.widgets.bodyItemsRecorded!(
+                            this, rebuildController.stream),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

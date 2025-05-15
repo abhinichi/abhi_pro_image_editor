@@ -35,8 +35,14 @@ class DefaultExample extends StatefulWidget {
 class _DefaultExampleState extends State<DefaultExample>
     with ExampleHelperState<DefaultExample> {
   late final _configs = ProImageEditorConfigs(
-    designMode: platformDesignMode,
-  );
+      designMode: platformDesignMode,
+      paintEditor: const PaintEditorConfigs(
+          enabled: true,
+          isColorPickerHorizontal: true,
+          colorPickerPadding: EdgeInsets.all(20),
+          colorPickerBottom: 0,
+          colorPickerLeft: 0,
+          colorPickerRight: 0));
   late final _callbacks = ProImageEditorCallbacks(
     onImageEditingStarted: onImageEditingStarted,
     onImageEditingComplete: onImageEditingComplete,
