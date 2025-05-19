@@ -3,6 +3,7 @@ import 'dart:async';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '/shared/widgets/censor/blur_area_item.dart';
@@ -117,7 +118,38 @@ class PaintCanvasState extends State<PaintCanvas> {
     } else if (widget.paintCtrl.mode == PaintMode.eraser) {
       List<String> removeIds = [];
       for (var item in _paintCtrl.activePaintItemList) {
-        if (item.hit) removeIds.add(item.id);
+        if (item.mode == PaintMode.blur || item.mode == PaintMode.pixelate) {
+          List<Offset?> offsets = item.offsets;
+          if (offsets.length != 2) continue;
+
+          var topLeft = offsets[0];
+          if (topLeft == null) continue;
+
+          var bottomRight = offsets[1];
+          if (bottomRight == null) continue;
+
+          double width = (bottomRight.dx - topLeft.dx);
+          double height = (bottomRight.dy - topLeft.dy);
+
+          double left = width >= 0 ? topLeft.dx : topLeft.dx + width;
+          double top = height >= 0 ? topLeft.dy : topLeft.dy + height;
+
+          var dx = details.localFocalPoint.dx;
+          var dy = details.localFocalPoint.dy;
+
+          bool horizontalHit = dx >= left && dx <= left + width.abs();
+          bool verticalHit = dy >= top && dy <= top + height.abs();
+          if (horizontalHit && verticalHit) {
+            removeIds.add(item.id);
+          }
+        } else {
+          final painter =
+              item.key.currentContext?.findRenderObject() as RenderCustomPaint?;
+          final hasHit =
+              painter?.painter?.hitTest(details.localFocalPoint) ?? false;
+
+          if (hasHit || item.hit) removeIds.add(item.id);
+        }
       }
       if (removeIds.isNotEmpty) widget.onRemoveLayer?.call(removeIds);
     } else {
@@ -203,6 +235,7 @@ class PaintCanvasState extends State<PaintCanvas> {
           Opacity(
             opacity: item.opacity,
             child: CustomPaint(
+              key: item.key,
               willChange: false,
               isComplex: item.mode == PaintMode.freeStyle,
               painter: DrawPaintItem(
