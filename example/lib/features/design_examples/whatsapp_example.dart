@@ -355,9 +355,8 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
               ),
               stickerEditor: StickerEditorConfigs(
                 enabled: true,
-                buildStickers: (setLayer, scrollController) =>
-                    DemoBuildStickers(
-                        setLayer: setLayer, scrollController: scrollController),
+                builder: (setLayer, scrollController) => DemoBuildStickers(
+                    setLayer: setLayer, scrollController: scrollController),
               ),
               layerInteraction: const LayerInteractionConfigs(
                 style: LayerInteractionStyle(

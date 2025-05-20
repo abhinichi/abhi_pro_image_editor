@@ -388,7 +388,7 @@ class _MovableBackgroundImageExampleState
                       ? _editorSize.height
                       : _editorSize.width) /
                   _initScale,
-              buildStickers: (setLayer, scrollController) {
+              builder: (setLayer, scrollController) {
                 // Optionally your code to pick layers
                 return const SizedBox();
               },

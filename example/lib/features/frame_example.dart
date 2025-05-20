@@ -377,7 +377,7 @@ class _FrameExampleState extends State<FrameExample>
           stickerEditor: StickerEditorConfigs(
             enabled: false,
             initWidth: _layerInitWidth / _initScale,
-            buildStickers: (setLayer, scrollController) {
+            builder: (setLayer, scrollController) {
               // Optionally your code to pick layers
               return const SizedBox();
             },
