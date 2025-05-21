@@ -60,6 +60,7 @@ class LayerInteractionHelperWidget extends StatefulWidget
     this.selected = false,
     this.isInteractive = false,
     this.callbacks = const ProImageEditorCallbacks(),
+    this.forceIgnoreGestures = false,
   });
 
   /// The configuration settings for the image editor.
@@ -120,6 +121,13 @@ class LayerInteractionHelperWidget extends StatefulWidget
   /// tooltips.
   final bool isInteractive;
 
+  /// Determines whether gesture interactions should be forcibly ignored.
+  ///
+  /// When set to `true`, all gesture interactions with the associated widget
+  /// will be ignored, regardless of other conditions. This can be useful in
+  /// scenarios where you want to temporarily disable user interaction.
+  final bool forceIgnoreGestures;
+
   /// Indicates whether the layer is selected.
   ///
   /// If true, the layer is highlighted, and interaction buttons are displayed.
@@ -154,18 +162,18 @@ class _LayerInteractionHelperWidgetState
 
   @override
   Widget build(BuildContext context) {
-    String layerId = widget.layerData.id;
     var deferManager = DeferManager.maybeOf(context);
 
     if (!widget.isInteractive ||
         (!widget.selected && deferManager?.selectedLayerId != '')) {
       // Return the child widget directly if the layer is not interactive.
-      return widget.child;
+      return IgnorePointer(
+          ignoring: widget.forceIgnoreGestures, child: widget.child);
     } else if (!widget.selected) {
       // Use a defer pointer if the layer is not selected, preventing
       // interaction.
-      return DeferPointer(
-        key: ValueKey('Defer-${deferManager?.id ?? ''}-$layerId'),
+      return IgnorePointer(
+        ignoring: widget.forceIgnoreGestures,
         child: widget.child,
       );
     }
@@ -175,7 +183,8 @@ class _LayerInteractionHelperWidgetState
 
     return TooltipVisibility(
       visible: layerInteraction.style.showTooltips,
-      child: DeferPointer(
+      child: IgnorePointer(
+        ignoring: widget.forceIgnoreGestures,
         child: Stack(
           fit: StackFit.passthrough,
           alignment: Alignment.center,
