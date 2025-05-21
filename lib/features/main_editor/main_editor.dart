@@ -1311,23 +1311,22 @@ class ProImageEditorState extends State<ProImageEditor>
                     bottom:
                         mainEditorConfigs.style.subEditorPage.positionBottom,
                     child: Center(
-                      child: Container(
-                        width: mainEditorConfigs
-                                .style.subEditorPage.enforceSizeFromMainEditor
-                            ? sizesManager.editorSize.width
-                            : null,
-                        height: mainEditorConfigs
-                                .style.subEditorPage.enforceSizeFromMainEditor
-                            ? sizesManager.editorSize.height
-                            : null,
-                        clipBehavior: Clip.hardEdge,
-                        decoration: BoxDecoration(
-                          borderRadius: mainEditorConfigs
-                              .style.subEditorPage.borderRadius,
-                        ),
-                        child: page,
-                      )
-                    ),
+                        child: Container(
+                      width: mainEditorConfigs
+                              .style.subEditorPage.enforceSizeFromMainEditor
+                          ? sizesManager.editorSize.width
+                          : null,
+                      height: mainEditorConfigs
+                              .style.subEditorPage.enforceSizeFromMainEditor
+                          ? sizesManager.editorSize.height
+                          : null,
+                      clipBehavior: Clip.hardEdge,
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            mainEditorConfigs.style.subEditorPage.borderRadius,
+                      ),
+                      child: page,
+                    )),
                   ),
                 ],
               ),

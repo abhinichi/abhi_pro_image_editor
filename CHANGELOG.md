@@ -1,7 +1,7 @@
 # Changelog
 
 ## 9.9.1
- - **FIX**(Main-Editor & Paint-Editor): Fix the main editor size calculation to reduce layers shiftting
+ - **FIX**(Main-Editor & Paint-Editor): Fix the main editor size calculation to reduce layers shiftting and fix the disable layers not allowign zoom gestures on main editor
 
 ## 9.9.0
  - **FEAT**(Sticker-Editor): Added `builder` parameter to `StickerEditorConfigs`, which will replace `buildStickers` in the future. The new `builder` supports directly returning a `WidgetLayer` instead of just a `Widget`, enabling more flexibility and control.
