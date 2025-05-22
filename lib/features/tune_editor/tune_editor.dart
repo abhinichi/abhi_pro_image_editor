@@ -314,13 +314,13 @@ class TuneEditorState extends State<TuneEditor>
           1 + ((_autoTuneValues!['contrast'] ?? 0) - 1) * autoTuneIntensity;
       var saturation =
           1 + ((_autoTuneValues!['saturation'] ?? 0) - 1) * autoTuneIntensity;
-      var exposure = (_autoTuneValues!['exposure'] ?? 0) * autoTuneIntensity;
-      var hue = (_autoTuneValues!['hue'] ?? 0) * autoTuneIntensity;
-      var temperature =
-          (_autoTuneValues!['temperature'] ?? 0) * autoTuneIntensity;
-      var sharpness = (_autoTuneValues!['sharpness'] ?? 0) * autoTuneIntensity;
-      var fade = (_autoTuneValues!['fade'] ?? 0) * autoTuneIntensity;
-      var luminance = (_autoTuneValues!['luminance'] ?? 0) * autoTuneIntensity;
+      // var exposure = (_autoTuneValues!['exposure'] ?? 0) * autoTuneIntensity;
+      // var hue = (_autoTuneValues!['hue'] ?? 0) * autoTuneIntensity;
+      // var temperature =
+      //     (_autoTuneValues!['temperature'] ?? 0) * autoTuneIntensity;
+      // var sharpness = (_autoTuneValues!['sharpness'] ?? 0) * autoTuneIntensity;
+      // var fade = (_autoTuneValues!['fade'] ?? 0) * autoTuneIntensity;
+      // var luminance = (_autoTuneValues!['luminance'] ?? 0) * autoTuneIntensity;
 
       _setAutoValue(brightness, 0);
       _setAutoValue(contrast, 1);
