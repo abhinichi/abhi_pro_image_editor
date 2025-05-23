@@ -1,5 +1,8 @@
 # Changelog
 
+## 9.9.4
+- **FIX**(Main-Editor): Fix the editor name on openPage to fix onOpenSubEditor, onStartCloseSubEditor, onEndCloseSubEditor. This resolves issue  [#474](https://github.com/hm21/pro_image_editor/issues/474).
+
 ## 9.9.3
 - **FIX**(Layers): Corrected size calculation to prevent layer shifting.
 - **FIX**(Main-Editor): Fixed an issue where disabled layers blocked zoom gestures.
