@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/core/utils/size_utils.dart';
+import '/core/utils/size_utils.dart';
 
 import '/core/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
