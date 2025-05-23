@@ -1,7 +1,8 @@
 # Changelog
 
 ## 9.9.3
-- **FIX**(Main-Editor & Paint-Editor): Fix the main editor size calculation to reduce layers shiftting and fix the disable layers not allowign zoom gestures on main editor
+- **FIX**(Layers): Corrected size calculation to prevent layer shifting.
+- **FIX**(Main-Editor): Fixed an issue where disabled layers blocked zoom gestures.
 
 ## 9.9.2
  - **FIX**(Crop-Rotate-Editor): Ensure the editor respects the `maxOutputSize` constraint.
