@@ -67,6 +67,7 @@ class _ChewiePlayerExampleState extends State<ChewiePlayerExample>
       initialResolution: videoMetadata.resolution,
       videoDuration: videoMetadata.duration,
       fileSize: videoMetadata.fileSize,
+      bitrate: videoMetadata.bitrate,
       thumbnails: thumbnails,
     );
 

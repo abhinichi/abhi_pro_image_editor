@@ -67,6 +67,7 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
       initialResolution: videoMetadata.resolution,
       videoDuration: videoMetadata.duration,
       fileSize: videoMetadata.fileSize,
+      bitrate: videoMetadata.bitrate,
       thumbnails: thumbnails,
     );
     _flickManager.flickVideoManager!.videoPlayerController!

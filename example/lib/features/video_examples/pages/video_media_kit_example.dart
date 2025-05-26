@@ -88,6 +88,7 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
       initialResolution: videoMetadata.resolution,
       videoDuration: videoMetadata.duration,
       fileSize: videoMetadata.fileSize,
+      bitrate: videoMetadata.bitrate,
       thumbnails: thumbnails,
     );
 

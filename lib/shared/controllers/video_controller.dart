@@ -15,6 +15,7 @@ class ProVideoController {
     required this.videoDuration,
     required this.initialResolution,
     required this.fileSize,
+    this.bitrate,
     List<ImageProvider>? thumbnails,
   }) {
     this.thumbnails = thumbnails;
@@ -31,6 +32,19 @@ class ProVideoController {
 
   /// The size of the video file in bytes.
   final int fileSize;
+
+  /// The bitrate of the video in bits per second.
+  ///
+  /// This value represents the amount of data processed per unit of time in
+  /// the video stream.
+  /// Higher bitrate generally result in better video quality, but also
+  /// larger file sizes.
+  ///
+  /// **WARNING:** Not all devices support CBR (Constant Bitrate) mode.
+  /// If unsupported, the encoder may silently fall back to VBR
+  /// (Variable Bitrate), and the actual bitrate may be constrained by
+  /// device-specific minimum and maximum limits.
+  final int? bitrate;
 
   /// A [ValueNotifier] that holds a list of [ImageProvider] objects
   /// representing video thumbnails.
@@ -71,6 +85,9 @@ class ProVideoController {
     TrimDurationSpan(start: Duration.zero, end: videoDuration),
   );
 
+  /// Notifier that indicates whether the trim time span UI should be shown.
+  final showTrimTimeSpanNotifier = ValueNotifier(false);
+
   /// Indicates whether audio is currently enabled for the video.
   ///
   /// This returns `true` if the video is not muted, based on the value
@@ -95,6 +112,16 @@ class ProVideoController {
   }) {
     _callbacksFunction = callbacksFunction;
     _configsFunction = configsFunction;
+  }
+
+  /// Dispose the video controller.
+  void dispose() {
+    thumbnailsNotifier.dispose();
+    playTimeNotifier.dispose();
+    isPlayingNotifier.dispose();
+    isMutedNotifier.dispose();
+    trimDurationSpanNotifier.dispose();
+    showTrimTimeSpanNotifier.dispose();
   }
 
   /// Toggles the play state of the video.

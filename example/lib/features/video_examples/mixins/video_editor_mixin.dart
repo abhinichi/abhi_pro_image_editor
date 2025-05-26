@@ -56,6 +56,13 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   /// it allows tracking each task individually.
   final taskId = DateTime.now().microsecondsSinceEpoch.toString();
 
+  @override
+  void dispose() {
+    proVideoController?.dispose();
+
+    super.dispose();
+  }
+
   /// Loads and sets [videoMetadata] for the given [video].
   Future<void> setMetadata() async {
     videoMetadata = await VideoUtilsService.instance.getMetadata(video);
@@ -124,6 +131,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       ),
       enableAudio: proVideoController?.isAudioEnabled ?? true,
       outputFormat: outputFormat,
+      bitrate: videoMetadata.bitrate,
     );
     exportedVideo = await VideoUtilsService.instance.renderVideo(exportModel);
     videoGenerationTime = stopwatch.elapsed;

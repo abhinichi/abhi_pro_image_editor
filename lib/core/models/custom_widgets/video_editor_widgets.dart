@@ -12,6 +12,7 @@ class VideoEditorWidgets {
     this.playIndicator,
     this.pauseIndicator,
     this.muteButton,
+    this.playButton,
     this.trimDurationInfo,
     this.infoBanner,
     this.trimBar,
@@ -25,10 +26,17 @@ class VideoEditorWidgets {
   /// Widget displayed when the video is paused.
   final Widget? pauseIndicator;
 
-  /// A function that builds the mute button.
+  /// A builder function that builds the mute button.
   ///
   /// The provided callback [setMute] toggles mute state.
   final Widget Function(Function(bool isMuted) setMute)? muteButton;
+
+  /// A builder function for the play button widget. This button is only visible
+  /// if `enablePlayButton` is set to `true`.
+  ///
+  /// The provided [toggleState] callback toggles the playback state,
+  /// where `isPlaying` indicates the new state.
+  final Widget Function(Function(bool isPlaying) toggleState)? playButton;
 
   /// A function that builds the trim duration info display.
   ///

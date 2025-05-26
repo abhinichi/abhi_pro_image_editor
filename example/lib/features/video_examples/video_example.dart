@@ -112,7 +112,7 @@ class _VideoExampleState extends State<VideoExample>
               ),
             ),
           ),
-          if (!kIsWeb && Platform.isAndroid)
+          if (kDebugMode || (!kIsWeb && Platform.isAndroid))
             ..._videoPackages.map((pkg) {
               return ListTile(
                 enabled: pkg.enabled,
