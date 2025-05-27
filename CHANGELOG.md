@@ -1,5 +1,8 @@
 # Changelog
 
+## 9.9.5
+- **FIX**(widget-layer): `copyWith` now correctly includes `exportConfigs`. 
+
 ## 9.9.4
 - **FIX**(Main-Editor): Corrected editor name handling in `openPage` to ensure proper behavior of `onOpenSubEditor`, `onStartCloseSubEditor` and `onEndCloseSubEditor`. This resolves issue [#474](https://github.com/hm21/pro_image_editor/issues/474).
 
