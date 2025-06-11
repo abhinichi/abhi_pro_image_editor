@@ -585,7 +585,7 @@ class TuneEditorState extends State<TuneEditor>
         setState(() {
           selectedIndex = index;
           if (selectedIndex == 0) {
-            Future.delayed(const Duration(seconds: 3), () {
+            Future.delayed(const Duration(milliseconds: 2600), () {
               applyAutoTune(0.8);
             });
           }
