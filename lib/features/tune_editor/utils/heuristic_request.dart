@@ -1,14 +1,19 @@
-import 'dart:ui' as ui;
-import 'dart:typed_data';
 import 'dart:isolate';
 import 'dart:math';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
+/// This class is for fetching image and calculating the auto tune value for the
+/// user-selected image
 class HeuristicRequest {
-  final Uint8List imageBytes;
-
+  /// contractor
   HeuristicRequest(this.imageBytes);
+
+  /// variable for storing the selected image
+  final Uint8List imageBytes;
 }
 
+/// This function fetches the image and cal the auto tune value.
 Future<Map<String, double>?> computeHeuristicAdjustmentsIsolate(
     Uint8List imageBytes) async {
   final codec = await ui.instantiateImageCodec(imageBytes);
@@ -123,10 +128,10 @@ Future<void> _heuristicIsolateEntry(List<dynamic> args) async {
 
   final avgBrightnessNormalized = avgBrightness / 255.0;
 
-  double brightnessValue =  (0.6 - avgBrightnessNormalized).clamp(0.0, 0.3);
-  double contrastValue = ((contrastStdDev < 60)
-      ? (60 - contrastStdDev) / 128.0
-      : 0.0).clamp(0.0, 0.4);
+  double brightnessValue = (0.6 - avgBrightnessNormalized).clamp(0.0, 0.3);
+  double contrastValue =
+      ((contrastStdDev < 60) ? (60 - contrastStdDev) / 128.0 : 0.0)
+          .clamp(0.0, 0.4);
   double saturationValue = (0.6 - avgSaturation).clamp(-0.2, 0.5);
   double exposureValue = ((avgBrightness - 127.5) / 127.5).clamp(-0.2, 0.2);
   double hueValue = ((avgHue - 120) / 180).clamp(-0.25, 0.25);

@@ -4,8 +4,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/features/tune_editor/utils/heuristic_request.dart';
-
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
@@ -19,8 +17,9 @@ import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/filtered_widget.dart';
-import 'models/tuneEditBatch.dart';
 import 'models/tune_adjustment_matrix.dart';
+import 'models/tune_edit_batch.dart';
+import 'utils/heuristic_request.dart';
 import 'utils/tune_presets.dart';
 import 'widgets/tune_editor_appbar.dart';
 
