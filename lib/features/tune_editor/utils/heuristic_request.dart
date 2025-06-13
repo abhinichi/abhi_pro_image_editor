@@ -5,6 +5,7 @@ import 'dart:math';
 
 class HeuristicRequest {
   final Uint8List imageBytes;
+
   HeuristicRequest(this.imageBytes);
 }
 
@@ -122,17 +123,19 @@ Future<void> _heuristicIsolateEntry(List<dynamic> args) async {
 
   final avgBrightnessNormalized = avgBrightness / 255.0;
 
-  double brightnessValue = (0.5 - avgBrightnessNormalized).clamp(-0.5, 0.5);
-  double contrastValue = (0.4 - (contrastStdDev / 128.0)).clamp(-0.3, 0.5);
-  double saturationValue = (0.6 - avgSaturation).clamp(-0.3, 0.5);
-  double exposureValue = ((avgBrightness - 127.5) / 127.5).clamp(-0.5, 0.5);
-  double hueValue = ((avgHue - 120) / 180).clamp(-0.3, 0.3);
+  double brightnessValue =  (0.6 - avgBrightnessNormalized).clamp(0.0, 0.3);
+  double contrastValue = ((contrastStdDev < 60)
+      ? (60 - contrastStdDev) / 128.0
+      : 0.0).clamp(0.0, 0.4);
+  double saturationValue = (0.6 - avgSaturation).clamp(-0.2, 0.5);
+  double exposureValue = ((avgBrightness - 127.5) / 127.5).clamp(-0.2, 0.2);
+  double hueValue = ((avgHue - 120) / 180).clamp(-0.25, 0.25);
   double temperatureValue = avgTemperature.clamp(-0.2, 0.2);
-  double sharpnessValue = ((avgSharpness - 20) / 100).clamp(-0.3, 0.3);
-  double fadeValue =
-      ((128 - avgBrightness).abs() / 128.0 * (1 - contrastStdDev / 100))
-          .clamp(-0.3, 0.3);
-  double luminanceValue = avgBrightnessNormalized;
+  double sharpnessValue = ((avgSharpness - 20) / 100).clamp(0.0, 0.3);
+  double fadeValue = (contrastStdDev > 80)
+      ? ((contrastStdDev - 80) / 200).clamp(0.0, 0.2)
+      : 0.0;
+  double luminanceValue = (avgBrightnessNormalized - 0.5).clamp(-0.2, 0.2);
 
   sendPort.send({
     'brightness': brightnessValue,

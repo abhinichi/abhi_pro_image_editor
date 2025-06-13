@@ -19,6 +19,7 @@ import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/filtered_widget.dart';
+import 'models/tuneEditBatch.dart';
 import 'models/tune_adjustment_matrix.dart';
 import 'utils/tune_presets.dart';
 import 'widgets/tune_editor_appbar.dart';
@@ -190,19 +191,26 @@ class TuneEditorState extends State<TuneEditor>
   ///
   /// This index represents the adjustment item that is currently being modified
   /// by the user.
+  ///
+  /// -1 means no tile will be selected by default of you want any tile to be
+  /// selected by default then mention that index number here
   int selectedIndex = -1;
 
   /// A stack used to keep track of previous states for undo functionality.
   ///
   /// Each entry in the list is a snapshot of the `tuneAdjustmentMatrix` at a
-  /// certain point, allowing the user to revert to a previous state.
-  List<List<TuneAdjustmentMatrix>> _undoStack = [];
+  /// certain point, allowing the user to revert to a previous state.[];
+  ///
+  /// This holds list of [TuneAdjustmentMatrix]
+  List<TuneEditBatch> _undoStack = [];
 
   /// A stack used to keep track of states for redo functionality.
   ///
   /// When the user undoes an action, the current state is moved to this stack,
   /// allowing them to redo the action and return to that state if desired.
-  List<List<TuneAdjustmentMatrix>> _redoStack = [];
+  ///
+  /// This holds list of [TuneAdjustmentMatrix]
+  List<TuneEditBatch> _redoStack = [];
 
   /// Determines whether undo can be performed on the current state.
   bool get canUndo => _undoStack.isNotEmpty;
@@ -292,12 +300,10 @@ class TuneEditorState extends State<TuneEditor>
   /// the adjustment matrix.
   void redo() {
     if (_redoStack.isNotEmpty) {
-      /// Save current state to undo stack
-      _undoStack.add(List.from(tuneAdjustmentMatrix.map((e) => e.copy())));
-
-      /// Restore the last state from redo stack
-      tuneAdjustmentMatrix = _redoStack.removeLast();
-
+      _undoStack.add(TuneEditBatch(
+        tuneAdjustmentMatrix.map((e) => e.copy()).toList(),
+      ));
+      tuneAdjustmentMatrix = _redoStack.removeLast().state;
       tuneEditorCallbacks?.handleRedo();
 
       setState(() {});
@@ -305,37 +311,35 @@ class TuneEditorState extends State<TuneEditor>
   }
 
   /// apply autoTune
-  void applyAutoTune(double autoTuneIntensity) {
+  void applyAutoTune() {
     debugPrint('applyAutoTune tapped');
     debugPrint('applyAutoTune $_autoTuneValues');
     if (_autoTuneValues != null) {
-      var brightness =
-          (_autoTuneValues!['brightness'] ?? 0) * autoTuneIntensity;
-      var contrast =
-          1 + ((_autoTuneValues!['contrast'] ?? 0) - 1) * autoTuneIntensity;
-      var saturation =
-          1 + ((_autoTuneValues!['saturation'] ?? 0) - 1) * autoTuneIntensity;
-      // var exposure = (_autoTuneValues!['exposure'] ?? 0) * autoTuneIntensity;
-      // var hue = (_autoTuneValues!['hue'] ?? 0) * autoTuneIntensity;
-      // var temperature =
-      //     (_autoTuneValues!['temperature'] ?? 0) * autoTuneIntensity;
-      // var sharpness = (_autoTuneValues!['sharpness'] ?? 0)
-      // * autoTuneIntensity;
-      // var fade = (_autoTuneValues!['fade'] ?? 0) * autoTuneIntensity;
-      // var luminance = (_autoTuneValues!['luminance'] ?? 0)
-      // * autoTuneIntensity;
+      onChangedStart(1.0, 'auto_tune');
+      var brightness = (_autoTuneValues!['brightness'] ?? 0);
+      var contrast = (_autoTuneValues!['contrast'] ?? 0);
+      var saturation = ((_autoTuneValues!['saturation'])! +
+          ((_autoTuneValues!['saturation']! < 0.0) ? 0.4 : 0.1));
+      var exposure = -(_autoTuneValues!['exposure'] ?? 0);
+      var hue = ((_autoTuneValues!['hue']! * 0.1));
+      var temperature = _autoTuneValues!['temperature']! +
+          ((_autoTuneValues!['temperature']! < 0.0) ? 0.2 : -0.2);
 
-      _setAutoValue(brightness, 0);
-      _setAutoValue(contrast, 1);
-      _setAutoValue(saturation, 2);
-      // Optionally uncomment others:
-      // _setAutoValue(exposure, 3);
-      // _setAutoValue(hue, 4);
-      // _setAutoValue(temperature, 5);
-      // _setAutoValue(sharpness, 6);
-      // _setAutoValue(fade, 7);
-      // _setAutoValue(luminance, 8);
+      var sharpness = (_autoTuneValues!['sharpness'] ?? 0);
+      var fade = (_autoTuneValues!['fade'] ?? 0);
+      var luminance = (_autoTuneValues!['luminance'] ?? 0);
+
+      _setAutoValue(brightness, 1);
+      _setAutoValue(contrast, 2);
+      _setAutoValue(saturation, 3);
+      _setAutoValue(exposure, 4);
+      _setAutoValue(hue, 5);
+      _setAutoValue(temperature, 6);
+      _setAutoValue(sharpness, 7);
+      _setAutoValue(fade, 8);
+      _setAutoValue(luminance, 9);
     }
+    onChangedEnd(0.0);
   }
 
   /// Undoes the last action.
@@ -344,14 +348,11 @@ class TuneEditorState extends State<TuneEditor>
   /// the previous adjustment matrix.
   void undo() {
     if (_undoStack.isNotEmpty) {
-      /// Save current state to redo stack
-      _redoStack.add(List.from(tuneAdjustmentMatrix.map((e) => e.copy())));
-
-      /// Restore the last state from undo stack
-      tuneAdjustmentMatrix = _undoStack.removeLast();
-
-      tuneEditorCallbacks?.handleUndo();
-
+      _redoStack.add(TuneEditBatch(
+        tuneAdjustmentMatrix.map((e) => e.copy()).toList(),
+      ));
+      tuneAdjustmentMatrix = _undoStack.removeLast().state;
+      tuneEditorCallbacks?.handleRedo();
       setState(() {});
     }
   }
@@ -370,7 +371,6 @@ class TuneEditorState extends State<TuneEditor>
   }
 
   void _setAutoValue(double value, int selectedIndex) {
-    onChangedStart(value);
     var selectedItem = tuneAdjustmentList[selectedIndex];
 
     int index =
@@ -392,7 +392,6 @@ class TuneEditorState extends State<TuneEditor>
 
     uiStream.add(null);
     tuneEditorCallbacks?.handleTuneFactorChange(tuneAdjustmentMatrix);
-    onChangedEnd(value);
   }
 
   /// Handles changes in the tune factor value.
@@ -401,10 +400,6 @@ class TuneEditorState extends State<TuneEditor>
 
     int index =
         tuneAdjustmentMatrix.indexWhere((item) => item.id == selectedItem.id);
-
-    if (index == 0) {
-      applyAutoTune(value);
-    }
 
     var item = TuneAdjustmentMatrix(
       id: selectedItem.id,
@@ -425,10 +420,13 @@ class TuneEditorState extends State<TuneEditor>
   }
 
   /// Saves the current state to the undo stack before making changes.
-  void onChangedStart(double value) {
+  void onChangedStart(double value, [String? label]) {
     // Save current state to undo stack before making changes
     _undoStack.add(
-      tuneAdjustmentMatrix.map((e) => e.copy()).toList(),
+      TuneEditBatch(
+        tuneAdjustmentMatrix.map((e) => e.copy()).toList(),
+        label: label,
+      ),
     );
     // Clear redo stack because a new change is made
     _redoStack.clear();
@@ -588,9 +586,7 @@ class TuneEditorState extends State<TuneEditor>
         setState(() {
           selectedIndex = index;
           if (selectedIndex == 0) {
-            Future.delayed(const Duration(milliseconds: 2600), () {
-              applyAutoTune(0.8);
-            });
+            Future.delayed(const Duration(milliseconds: 2600), applyAutoTune);
           }
         });
       },
