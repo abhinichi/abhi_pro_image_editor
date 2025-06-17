@@ -504,7 +504,7 @@ class TuneEditorState extends State<TuneEditor>
         if (showLoader)
           const SpinKitCircle(
             color: primaryColor,
-            size: width100,
+            size: width50,
           )
       ],
     );
