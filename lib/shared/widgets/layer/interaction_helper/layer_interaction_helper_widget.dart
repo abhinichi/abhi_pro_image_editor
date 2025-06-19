@@ -147,9 +147,24 @@ class _LayerInteractionHelperWidgetState
     extends State<LayerInteractionHelperWidget>
     with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
   final _rebuildStream = StreamController.broadcast();
+  final _overlayCtrl = OverlayPortalController();
+
+  @override
+  void didUpdateWidget(covariant LayerInteractionHelperWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.selected) {
+        if (!_overlayCtrl.isShowing) _overlayCtrl.show();
+      } else {
+        if (_overlayCtrl.isShowing) _overlayCtrl.hide();
+      }
+    });
+  }
 
   @override
   void dispose() {
+    if (_overlayCtrl.isShowing) _overlayCtrl.hide();
     _rebuildStream.close();
     super.dispose();
   }
@@ -177,54 +192,83 @@ class _LayerInteractionHelperWidgetState
     } else if (!widget.selected) {
       // Use a defer pointer if the layer is not selected, preventing
       // interaction.
-      return DeferPointer(
-        key: ValueKey('Defer-${deferManager?.id ?? ''}-$layerId'),
-        child: widget.child,
-      );
     }
+    return OverlayPortal.overlayChildLayoutBuilder(
+      controller: _overlayCtrl,
+      overlayChildBuilder: (context, info) {
+        final padding = layerInteraction.style.overlayPadding;
+        final Matrix4 transform = info.childPaintTransform.clone();
 
+        // The child size
+        final childWidth = info.childSize.width;
+        final childHeight = info.childSize.height;
+
+        // The new padded size
+        final paddedWidth = childWidth + padding.horizontal;
+        final paddedHeight = childHeight + padding.vertical;
+
+        // Offset the transform so the center remains aligned
+        transform.translate(-padding.left, -padding.top);
+
+        return Positioned(
+          width: paddedWidth,
+          height: paddedHeight,
+          child: Transform(
+            transform: transform,
+            alignment: Alignment.topLeft,
+            child: _buildSelectionOverlay(),
+          ),
+        );
+      },
+      child: widget.selected
+          ? widget.child
+          : DeferPointer(
+              key: ValueKey('Defer-${deferManager?.id ?? ''}-$layerId'),
+              child: widget.child,
+            ),
+    );
+  }
+
+  Widget _buildSelectionOverlay() {
     List<LayerInteractionItem> children =
         layerInteraction.widgets.children ?? _buildDefaultInteractions();
 
     return TooltipVisibility(
       visible: layerInteraction.style.showTooltips,
-      child: DeferPointer(
-        child: Stack(
-          fit: StackFit.passthrough,
-          alignment: Alignment.center,
-          children: [
-            layerInteraction.widgets.border
-                    ?.call(widget.child, widget.layerData) ??
-                Container(
-                  margin: EdgeInsets.all(
-                    layerInteraction.style.buttonRadius +
-                        layerInteraction.style.strokeWidth * 2,
-                  ),
-                  child: CustomPaint(
-                    foregroundPainter: LayerInteractionBorderPainter(
-                      style: layerInteraction.style,
-                    ),
-                    child: widget.child,
-                  ),
+      child: Stack(
+        fit: StackFit.passthrough,
+        alignment: Alignment.center,
+        children: [
+          layerInteraction.widgets.border
+                  ?.call(widget.child, widget.layerData) ??
+              Padding(
+                padding: EdgeInsets.all(
+                  layerInteraction.style.buttonRadius +
+                      layerInteraction.style.strokeWidth,
                 ),
-            ...children.map(
-              (item) => item.call(
-                _rebuildStream.stream,
-                widget.layerData,
-                LayerItemInteractions(
-                  edit: widget.onEditLayer ?? () {},
-                  remove: widget.onRemoveLayer ?? () {},
-                  scaleRotateDown: (event) {
-                    widget.onScaleRotateDown?.call(event);
-                  },
-                  scaleRotateUp: (event) {
-                    widget.onScaleRotateUp?.call(event);
-                  },
+                child: CustomPaint(
+                  foregroundPainter: LayerInteractionBorderPainter(
+                    style: layerInteraction.style,
+                  ),
                 ),
               ),
+          ...children.map(
+            (item) => item.call(
+              _rebuildStream.stream,
+              widget.layerData,
+              LayerItemInteractions(
+                edit: widget.onEditLayer ?? () {},
+                remove: widget.onRemoveLayer ?? () {},
+                scaleRotateDown: (event) {
+                  widget.onScaleRotateDown?.call(event);
+                },
+                scaleRotateUp: (event) {
+                  widget.onScaleRotateUp?.call(event);
+                },
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -247,12 +291,12 @@ class _LayerInteractionHelperWidgetState
           ),
       (rebuildStream, layer, interactions) => ReactiveWidget(
             stream: rebuildStream,
-            builder: (_) => _buildRotateScaleIcon(interactions),
+            builder: (_) => _buildRotateScaleButton(interactions),
           ),
     ];
   }
 
-  Widget _buildRotateScaleIcon(LayerItemInteractions interactions) {
+  Widget _buildRotateScaleButton(LayerItemInteractions interactions) {
     return layerInteraction.widgets.rotateScaleButton?.call(
           _rebuildStream.stream,
           (value) => widget.onScaleRotateDown?.call(value),

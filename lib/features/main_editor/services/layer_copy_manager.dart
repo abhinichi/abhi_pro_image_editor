@@ -39,6 +39,7 @@ class LayerCopyManager {
   TextLayer createCopyTextLayer(TextLayer layer) {
     return TextLayer(
       id: layer.id,
+      key: layer.key,
       text: layer.text,
       align: layer.align,
       fontScale: layer.fontScale,
@@ -72,6 +73,7 @@ class LayerCopyManager {
   EmojiLayer createCopyEmojiLayer(EmojiLayer layer) {
     return EmojiLayer(
       id: layer.id,
+      key: layer.key,
       emoji: layer.emoji,
       offset: Offset(layer.offset.dx, layer.offset.dy),
       rotation: layer.rotation,
@@ -87,6 +89,7 @@ class LayerCopyManager {
   WidgetLayer createCopyWidgetLayer(WidgetLayer layer) {
     return WidgetLayer(
       id: layer.id,
+      key: layer.key,
       widget: layer.widget,
       offset: Offset(layer.offset.dx, layer.offset.dy),
       rotation: layer.rotation,
@@ -103,6 +106,7 @@ class LayerCopyManager {
   PaintLayer createCopyPaintLayer(PaintLayer layer) {
     return PaintLayer(
       id: layer.id,
+      key: layer.key,
       offset: Offset(layer.offset.dx, layer.offset.dy),
       rotation: layer.rotation,
       scale: layer.scale,

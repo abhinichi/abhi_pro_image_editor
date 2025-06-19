@@ -31,6 +31,7 @@ class EmojiLayer extends Layer {
     super.isDeleted,
     super.meta,
     super.boxConstraints,
+    super.key,
   });
 
   /// Factory constructor for creating an EmojiLayer instance from a Layer

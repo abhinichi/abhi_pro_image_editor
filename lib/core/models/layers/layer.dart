@@ -35,6 +35,7 @@ class Layer {
   /// The [enableInteraction] parameter controls if a user can interact with
   /// the layer
   Layer({
+    GlobalKey? key,
     String? id,
     LayerInteraction? interaction,
     this.offset = Offset.zero,
@@ -45,7 +46,8 @@ class Layer {
     this.isDeleted = false,
     this.meta,
     this.boxConstraints,
-  })  : id = id ?? generateUniqueId(),
+  })  : key = key ??= GlobalKey(),
+        id = id ?? generateUniqueId(),
         interaction = interaction ?? LayerInteraction();
 
   /// Factory constructor for creating a Layer instance from a map and a list
@@ -126,7 +128,7 @@ class Layer {
 
   /// Global key associated with the Layer instance, used for accessing the
   /// widget tree.
-  GlobalKey key = GlobalKey();
+  GlobalKey key;
 
   /// The position offset of the widget.
   Offset offset;

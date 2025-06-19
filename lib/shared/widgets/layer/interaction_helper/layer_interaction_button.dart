@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 /// A stateless widget that represents a customizable button for interacting
 /// with layers.
@@ -119,23 +120,28 @@ class LayerInteractionButton extends StatelessWidget {
       angle: rotation,
       child: MouseRegion(
         cursor: cursor,
+        hitTestBehavior: HitTestBehavior.translucent,
         child: Tooltip(
           message: tooltip,
           child: Listener(
+            behavior: HitTestBehavior.translucent,
             onPointerDown: onScaleRotateDown,
             onPointerUp: onScaleRotateUp,
             child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
               onTap: onTap,
-              child: Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(buttonRadius * 2),
-                  color: background,
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: buttonRadius * 2,
+              child: HitTestTransparent(
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(buttonRadius * 2),
+                    color: background,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: color,
+                    size: buttonRadius * 2,
+                  ),
                 ),
               ),
             ),
@@ -143,5 +149,22 @@ class LayerInteractionButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class HitTestTransparent extends SingleChildRenderObjectWidget {
+  const HitTestTransparent({super.key, required super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _RenderHitTestTransparent();
+  }
+}
+
+class _RenderHitTestTransparent extends RenderProxyBox {
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    // Always skip this widget in hit testing
+    return false;
   }
 }

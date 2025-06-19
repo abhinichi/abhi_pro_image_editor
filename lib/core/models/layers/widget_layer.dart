@@ -41,6 +41,7 @@ class WidgetLayer extends Layer {
     super.isDeleted,
     super.meta,
     super.boxConstraints,
+    super.key,
   });
 
   /// Factory constructor for creating a WidgetLayer instance from a

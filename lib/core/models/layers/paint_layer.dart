@@ -41,6 +41,7 @@ class PaintLayer extends Layer {
     super.isDeleted,
     super.meta,
     super.boxConstraints,
+    super.key,
   });
 
   /// Factory constructor for creating a PaintLayer instance from a
