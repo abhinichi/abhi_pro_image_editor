@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+
+import '../layers/layer.dart';
 import 'utils/custom_widgets_typedef.dart';
 
 export '/shared/widgets/layer/models/layer_item_interaction.dart';
@@ -32,12 +35,19 @@ class LayerInteractionWidgets {
   /// * [border]: An optional border to be displayed around the interaction
   /// layer.
   const LayerInteractionWidgets({
+    this.overlayChildBuilder,
     this.editButton,
     this.removeButton,
     this.rotateScaleButton,
     this.children,
     this.border,
   });
+
+  /// This will completly replace the existing overlay when editing a layer.
+  final Widget Function(
+    OverlayChildLayoutInfo info,
+    Layer layer,
+  )? overlayChildBuilder;
 
   /// The button for the edit interaction, represented by
   /// [LayerInteractionTapButton].
@@ -166,6 +176,10 @@ class LayerInteractionWidgets {
   /// * [children]: Updates the list of child widgets.
   /// * [border]: Updates the border of the interaction layer.
   LayerInteractionWidgets copyWith({
+    Widget Function(
+      OverlayChildLayoutInfo info,
+      Layer layer,
+    )? overlayChildBuilder,
     LayerInteractionTapButton? editButton,
     LayerInteractionTapButton? removeButton,
     LayerInteractionScaleRotateButton? rotateScaleButton,
@@ -173,6 +187,7 @@ class LayerInteractionWidgets {
     LayerInteractionBorder? border,
   }) {
     return LayerInteractionWidgets(
+      overlayChildBuilder: overlayChildBuilder ?? this.overlayChildBuilder,
       editButton: editButton ?? this.editButton,
       removeButton: removeButton ?? this.removeButton,
       rotateScaleButton: rotateScaleButton ?? this.rotateScaleButton,

@@ -201,6 +201,13 @@ class _LayerInteractionHelperWidgetState
     return OverlayPortal.overlayChildLayoutBuilder(
       controller: _overlayCtrl,
       overlayChildBuilder: (context, info) {
+        if (layerInteraction.widgets.overlayChildBuilder != null) {
+          return layerInteraction.widgets.overlayChildBuilder!(
+            info,
+            widget.layerData,
+          );
+        }
+
         final padding = layerInteraction.style.overlayPadding;
         final Matrix4 transform = info.childPaintTransform.clone();
 
