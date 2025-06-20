@@ -1,3 +1,4 @@
+import 'package:example/features/layer_select_design.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -111,6 +112,12 @@ List<Example> kImageEditorExamples = const [
     name: 'Selectable-Layers',
     icon: Icons.select_all_rounded,
     page: SelectableLayerExample(),
+  ),
+  Example(
+    path: '/layer-selection-design',
+    name: 'Selected Layer Design',
+    icon: Icons.design_services_outlined,
+    page: LayerSelectDesignExample(),
   ),
   Example(
     path: '/generation-configs',

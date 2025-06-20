@@ -137,7 +137,7 @@ class WidgetLayer extends Layer {
   WidgetLayerExportConfigs exportConfigs;
 
   @override
-  bool get isWidgetLayer => false;
+  bool get isWidgetLayer => true;
 
   /// Converts this transform object to a Map suitable for representing a
   /// widget.

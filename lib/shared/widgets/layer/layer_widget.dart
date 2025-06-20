@@ -37,6 +37,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     this.onTap,
     this.onEditTap,
     this.onRemoveTap,
+    this.onDuplicate,
     this.highPerformanceMode = false,
     this.enableHitDetection = false,
     this.selected = false,
@@ -74,6 +75,9 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
 
   /// Callback when a tap up event occurs.
   final Function()? onTapUp;
+
+  /// Callback triggered when a layer should be copied.
+  final Function()? onDuplicate;
 
   /// Callback when a tap event occurs.
   final Function(Layer)? onTap;
@@ -344,6 +348,7 @@ class _LayerWidgetState extends State<LayerWidget>
       },
       onScaleRotateUp: widget.onScaleRotateUp,
       onRemoveLayer: widget.onRemoveTap,
+      onDuplicate: widget.onDuplicate,
       child: _buildCursor(
         child: ValueListenableBuilder(
             valueListenable: _lastHitState,

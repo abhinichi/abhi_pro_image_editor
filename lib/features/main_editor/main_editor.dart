@@ -11,7 +11,6 @@ import '/core/mixins/editor_callbacks_mixin.dart';
 import '/core/mixins/editor_configs_mixin.dart';
 import '/core/models/history/last_layer_interaction_position.dart';
 import '/core/models/styles/draggable_sheet_style.dart';
-import '/core/platform/io/io_helper.dart';
 import '/features/main_editor/widgets/main_editor_appbar.dart';
 import '/features/main_editor/widgets/main_editor_background_image.dart';
 import '/features/main_editor/widgets/main_editor_background_video.dart';
@@ -1731,16 +1730,60 @@ class ProImageEditorState extends State<ProImageEditor>
     required int oldIndex,
     required int newIndex,
   }) {
-    List<Layer> layers = _layerCopyManager.copyLayerList(activeLayers);
-    if (newIndex > oldIndex) {
-      var item = layers.removeAt(oldIndex);
-      layers.insert(newIndex - 1, item);
-    } else {
-      var item = layers.removeAt(oldIndex);
+    if (oldIndex == newIndex || oldIndex < 0 || newIndex < 0) return;
+
+    final layers = _layerCopyManager.copyLayerList(activeLayers);
+
+    if (oldIndex < layers.length && newIndex <= layers.length) {
+      final item = layers.removeAt(oldIndex);
+
+      // Insert directly at newIndex, no adjustment needed
       layers.insert(newIndex, item);
+
+      addHistory(layers: layers);
+      setState(() {});
     }
-    addHistory(layers: layers);
-    setState(() {});
+  }
+
+  /// Moves the given layer one step forward in the stack.
+  /// Does nothing if the layer is already at the top.
+  void moveLayerForward(Layer layer) {
+    int oldIndex = getLayerStackIndex(layer);
+    if (oldIndex >= activeLayers.length - 1) return;
+    moveLayerListPosition(oldIndex: oldIndex, newIndex: oldIndex + 1);
+  }
+
+  /// Moves the given layer one step backward in the stack.
+  /// Does nothing if the layer is already at the bottom.
+  void moveLayerBackward(Layer layer) {
+    int oldIndex = getLayerStackIndex(layer);
+    if (oldIndex <= 0) return;
+    moveLayerListPosition(oldIndex: oldIndex, newIndex: oldIndex - 1);
+  }
+
+  /// Moves the given layer to the top of the stack.
+  /// Does nothing if the layer is already at the top.
+  void moveLayerToFront(Layer layer) {
+    int oldIndex = getLayerStackIndex(layer);
+    if (oldIndex == -1 || oldIndex == activeLayers.length - 1) return;
+    moveLayerListPosition(
+      oldIndex: oldIndex,
+      newIndex: activeLayers.length - 1,
+    );
+  }
+
+  /// Moves the given layer to the bottom of the stack.
+  /// Does nothing if the layer is already at the bottom.
+  void moveLayerToBack(Layer layer) {
+    int oldIndex = getLayerStackIndex(layer);
+    if (oldIndex <= 0) return;
+    moveLayerListPosition(oldIndex: oldIndex, newIndex: 0);
+  }
+
+  /// Returns the index of the given layer in the active layer stack.
+  /// Returns -1 if the layer is not found.
+  int getLayerStackIndex(Layer layer) {
+    return activeLayers.indexWhere((item) => item.id == layer.id);
   }
 
   /// Undo the last editing action.
@@ -2373,6 +2416,10 @@ class ProImageEditorState extends State<ProImageEditor>
       setTempLayer: _setTempLayer,
       onContextMenuToggled: (isOpen) {
         _isContextMenuOpen = isOpen;
+      },
+      onDuplicateLayer: (layer) {
+        var duplication = _layerCopyManager.duplicateLayer(layer);
+        addLayer(duplication);
       },
     );
   }

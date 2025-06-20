@@ -93,9 +93,6 @@ class _ImportExportExampleState extends State<ImportExportExample>
             ),
           ),
           configs: ProImageEditorConfigs(
-            imageGeneration: const ImageGenerationConfigs(
-              enableBackgroundGeneration: false,
-            ),
             designMode: platformDesignMode,
             mainEditor: MainEditorConfigs(
               enableCloseButton: !isDesktopMode(context),

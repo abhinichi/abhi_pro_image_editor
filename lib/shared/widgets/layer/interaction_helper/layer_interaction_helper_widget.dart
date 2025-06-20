@@ -55,6 +55,7 @@ class LayerInteractionHelperWidget extends StatefulWidget
     required this.configs,
     this.onEditLayer,
     this.onRemoveLayer,
+    this.onDuplicate,
     this.onScaleRotateDown,
     this.onScaleRotateUp,
     this.selected = false,
@@ -88,6 +89,9 @@ class LayerInteractionHelperWidget extends StatefulWidget
   /// This callback is triggered when the user selects the edit option for a
   /// layer, allowing for modifications to the layer's content.
   final Function()? onEditLayer;
+
+  /// Callback triggered when a layer should be copied.
+  final Function()? onDuplicate;
 
   /// Callback for handling the remove layer action.
   ///
@@ -182,6 +186,16 @@ class _LayerInteractionHelperWidgetState
     return -widget.layerData.rotation;
   }
 
+  LayerItemInteractions get _layerInteractions {
+    return LayerItemInteractions(
+      duplicated: widget.onDuplicate ?? () {},
+      edit: widget.onEditLayer ?? () {},
+      remove: widget.onRemoveLayer ?? () {},
+      scaleRotateDown: _handleScaleRotateDown,
+      scaleRotateUp: _handleScaleRotateUp,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.forceIgnoreGestures) {
@@ -203,8 +217,10 @@ class _LayerInteractionHelperWidgetState
       overlayChildBuilder: (context, info) {
         if (layerInteraction.widgets.overlayChildBuilder != null) {
           return layerInteraction.widgets.overlayChildBuilder!(
+            _rebuildStream.stream,
             info,
             widget.layerData,
+            _layerInteractions,
           );
         }
 
@@ -278,12 +294,7 @@ class _LayerInteractionHelperWidgetState
             (item) => item.call(
               _rebuildStream.stream,
               widget.layerData,
-              LayerItemInteractions(
-                edit: widget.onEditLayer ?? () {},
-                remove: widget.onRemoveLayer ?? () {},
-                scaleRotateDown: _handleScaleRotateDown,
-                scaleRotateUp: _handleScaleRotateUp,
-              ),
+              _layerInteractions,
             ),
           ),
         ],

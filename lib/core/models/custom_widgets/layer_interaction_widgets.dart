@@ -1,6 +1,3 @@
-import 'package:flutter/widgets.dart';
-
-import '../layers/layer.dart';
 import 'utils/custom_widgets_typedef.dart';
 
 export '/shared/widgets/layer/models/layer_item_interaction.dart';
@@ -43,11 +40,8 @@ class LayerInteractionWidgets {
     this.border,
   });
 
-  /// This will completly replace the existing overlay when editing a layer.
-  final Widget Function(
-    OverlayChildLayoutInfo info,
-    Layer layer,
-  )? overlayChildBuilder;
+  /// This will completely replace the existing overlay when editing a layer.
+  final LayerOverlayBuilder? overlayChildBuilder;
 
   /// The button for the edit interaction, represented by
   /// [LayerInteractionTapButton].
@@ -176,10 +170,7 @@ class LayerInteractionWidgets {
   /// * [children]: Updates the list of child widgets.
   /// * [border]: Updates the border of the interaction layer.
   LayerInteractionWidgets copyWith({
-    Widget Function(
-      OverlayChildLayoutInfo info,
-      Layer layer,
-    )? overlayChildBuilder,
+    LayerOverlayBuilder? overlayChildBuilder,
     LayerInteractionTapButton? editButton,
     LayerInteractionTapButton? removeButton,
     LayerInteractionScaleRotateButton? rotateScaleButton,

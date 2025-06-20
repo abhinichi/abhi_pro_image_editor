@@ -53,6 +53,7 @@ class MainEditorLayers extends StatefulWidget {
     required this.state,
     required this.setTempLayer,
     required this.onContextMenuToggled,
+    required this.onDuplicateLayer,
   });
 
   /// Represents the current state of the editor.
@@ -93,6 +94,9 @@ class MainEditorLayers extends StatefulWidget {
 
   /// Callback to temporarily set a layer for interaction.
   final Function(Layer layer) setTempLayer;
+
+  /// Callback triggered when a layer should be copied.
+  final Function(Layer layer) onDuplicateLayer;
 
   /// Callback triggered when the context menu is toggled.
   final Function(bool isOpen)? onContextMenuToggled;
@@ -274,6 +278,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
       onTapDown: () => _handleTapDown(index, layer),
       onScaleRotateDown: (details, layerOriginalSize) =>
           _handleScaleRotateDown(index, layerOriginalSize, layer),
+      onDuplicate: () => widget.onDuplicateLayer(layer),
       onContextMenuToggled: widget.onContextMenuToggled,
       onScaleRotateUp: (details) => _handleScaleRotateUp(),
       onRemoveTap: () => _handleRemoveLayer(layer),

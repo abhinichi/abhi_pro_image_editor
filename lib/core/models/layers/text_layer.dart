@@ -192,7 +192,7 @@ class TextLayer extends Layer {
   TextStyle? textStyle;
 
   @override
-  bool get isTextLayer => false;
+  bool get isTextLayer => true;
 
   @override
   Map<String, dynamic> toMap() {

@@ -63,7 +63,7 @@ class EmojiLayer extends Layer {
   String emoji;
 
   @override
-  bool get isEmojiLayer => false;
+  bool get isEmojiLayer => true;
 
   @override
   Map<String, dynamic> toMap() {
