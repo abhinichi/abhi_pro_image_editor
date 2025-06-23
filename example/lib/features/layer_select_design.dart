@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:example/core/constants/example_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' hide Layer;
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -21,7 +20,7 @@ class _LayerSelectDesignExampleState extends State<LayerSelectDesignExample>
     with ExampleHelperState<LayerSelectDesignExample> {
   final _outsideSpace = 5.0;
   final _strokeWidth = 2.0;
-  final _handlerLength = 20.0;
+  final _handlerLength = !isDesktop ? 36.0 : 20.0;
   final _handlerGap = 10.0;
   final _strokeColor = const Color(0xFFFFFFFF);
   final _positions = const [
@@ -37,7 +36,7 @@ class _LayerSelectDesignExampleState extends State<LayerSelectDesignExample>
   @override
   void initState() {
     super.initState();
-    preCacheImage(assetPath: kImageEditorExampleAssetPath);
+    preCacheImage(networkUrl: 'https://picsum.photos/id/19/2000');
   }
 
   @override
@@ -52,8 +51,8 @@ class _LayerSelectDesignExampleState extends State<LayerSelectDesignExample>
 
     return Stack(
       children: [
-        ProImageEditor.asset(
-          kImageEditorExampleAssetPath,
+        ProImageEditor.network(
+          'https://picsum.photos/id/19/2000',
           key: editorKey,
           callbacks: ProImageEditorCallbacks(
             onImageEditingStarted: onImageEditingStarted,

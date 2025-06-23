@@ -14,6 +14,9 @@
 - **FIX**(text-layer): Resolve textLayer opening without requiring double-tap.
 - **FIX**(autoSource): Resolve issue where an error is thrown when the 'file' argument in the 'autoSource' constructor is null. This resolves issue [#509](https://github.com/hm21/pro_image_editor/issues/509).
 
+<br/>
+
+- **DOCS**(example): Introduce a new [example](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/features/layer_select_design.dart) to showcase a more contemporary layer selection design.
 
 #### Breaking Changes
 - Removed all deprecated configuration settings.
