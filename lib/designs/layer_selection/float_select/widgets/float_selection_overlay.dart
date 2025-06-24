@@ -45,15 +45,10 @@ class FloatSelectionOverlay extends StatefulWidget {
 /// State for [FloatSelectionOverlay]
 class _FloatSelectionOverlayState extends State<FloatSelectionOverlay> {
   final _overlayCtrl = OverlayPortalController();
+
   final _transformedLayerKey = GlobalKey();
   final _stackKey = GlobalKey();
-
-  FloatSelectWidgets get _widgets => widget.configs.widgets;
-  FloatSelectStyle get _style => widget.configs.style;
-  OverlayChildLayoutInfo get _info => widget.info;
-
-  double get _handlerLength =>
-      _style.handlerLength ?? (!isDesktop ? 36.0 : 20.0);
+  final _toolbarKey = GlobalKey();
 
   final _positions = const [
     _Position(bottom: 0, left: 0),
@@ -62,20 +57,90 @@ class _FloatSelectionOverlayState extends State<FloatSelectionOverlay> {
     _Position(bottom: 0, right: 0),
   ];
 
+  FloatSelectWidgets get _widgets => widget.configs.widgets;
+  FloatSelectStyle get _style => widget.configs.style;
+  OverlayChildLayoutInfo get _info => widget.info;
+
+  double get _handlerLength =>
+      _style.handlerLength ?? (!isDesktop ? 36.0 : 20.0);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _overlayCtrl.show();
+      // Ensure toolbar bounding-box is calculated.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {});
+      });
+    });
+  }
+
   @override
   void dispose() {
     if (_overlayCtrl.isShowing) _overlayCtrl.hide();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (!_overlayCtrl.isShowing) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _overlayCtrl.show();
-      });
+  /// Calculates the toolbar offset with clamping to the visible area
+  Offset _calculateToolbarOffset() {
+    final renderBox = _transformedLayerKey.currentContext?.findRenderObject();
+    final parentBox = _stackKey.currentContext?.findRenderObject();
+    final toolbarBox = _toolbarKey.currentContext?.findRenderObject();
+
+    if (renderBox is! RenderBox ||
+        parentBox is! RenderBox ||
+        !renderBox.hasSize ||
+        !parentBox.hasSize) {
+      return Offset.zero;
     }
 
+    final layerSize = renderBox.size;
+    final parentSize = parentBox.size;
+
+    // Convert corners of the layer to local coordinates
+    final topLeft =
+        parentBox.globalToLocal(renderBox.localToGlobal(Offset.zero));
+    final topRight = parentBox
+        .globalToLocal(renderBox.localToGlobal(Offset(layerSize.width, 0)));
+    final bottomLeft = parentBox
+        .globalToLocal(renderBox.localToGlobal(Offset(0, layerSize.height)));
+    final bottomRight = parentBox.globalToLocal(
+        renderBox.localToGlobal(Offset(layerSize.width, layerSize.height)));
+
+    // Get bounds and center
+    final allX = [topLeft.dx, topRight.dx, bottomLeft.dx, bottomRight.dx];
+    final allY = [topLeft.dy, topRight.dy, bottomLeft.dy, bottomRight.dy];
+    final minX = allX.reduce(min);
+    final maxX = allX.reduce(max);
+    final minY = allY.reduce(min);
+    final centerX = (minX + maxX) / 2;
+
+    // Toolbar size
+    double toolboxWidth = 0;
+    double toolboxHeight = 0;
+    if (toolbarBox is RenderBox) {
+      toolboxWidth = toolbarBox.size.width;
+      toolboxHeight = toolbarBox.size.height;
+    }
+
+    // Final clamped position
+    final dx = (centerX + _style.offset.dx).clamp(
+      toolboxWidth / 2,
+      parentSize.width - toolboxWidth / 2,
+    );
+    final dy = (minY + _style.offset.dy).clamp(
+      toolboxHeight,
+      parentSize.height,
+    );
+
+    return Offset(dx, dy);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final padding = _style.selectionPadding;
     final Matrix4 transform = _info.childPaintTransform.clone();
     final childWidth = _info.childSize.width;
@@ -89,58 +154,26 @@ class _FloatSelectionOverlayState extends State<FloatSelectionOverlay> {
     return OverlayPortal(
       controller: _overlayCtrl,
       overlayChildBuilder: (context) {
-        double layerTopY = 0.0;
-        double layerCenterX = 0.0;
+        if (_widgets.overlayToolbar != null) return _widgets.overlayToolbar!;
 
-        final renderBox =
-            _transformedLayerKey.currentContext?.findRenderObject();
-        final parentBox = _stackKey.currentContext?.findRenderObject();
-
-        if (renderBox is RenderBox &&
-            parentBox is RenderBox &&
-            renderBox.hasSize &&
-            parentBox.hasSize) {
-          final size = renderBox.size;
-          final topLeft =
-              parentBox.globalToLocal(renderBox.localToGlobal(Offset.zero));
-          final topRight = parentBox
-              .globalToLocal(renderBox.localToGlobal(Offset(size.width, 0)));
-          final bottomLeft = parentBox
-              .globalToLocal(renderBox.localToGlobal(Offset(0, size.height)));
-          final bottomRight = parentBox.globalToLocal(
-              renderBox.localToGlobal(Offset(size.width, size.height)));
-
-          final allX = [topLeft.dx, topRight.dx, bottomLeft.dx, bottomRight.dx];
-          final allY = [topLeft.dy, topRight.dy, bottomLeft.dy, bottomRight.dy];
-
-          final minX = allX.reduce(min);
-          final maxX = allX.reduce(max);
-          final minY = allY.reduce(min);
-
-          layerCenterX = (minX + maxX) / 2;
-          layerTopY = minY;
-        }
-
-        return _widgets.overlayToolbar ??
-            Positioned(
-              // FIXME: ensure overlay is inside the view area.
-              top: max(0, layerTopY + _style.offset.dy),
-              left: max(0, layerCenterX + _style.offset.dx),
-              child: FractionalTranslation(
-                translation: const Offset(-0.5, -1),
-                child: LayoutBuilder(
-                  builder: (_, constraints) {
-                    return _widgets.toolbar ??
-                        FloatSelectToolbar(
-                          layer: widget.layer,
-                          interactions: widget.interactions,
-                          editorKey: widget.editorKey,
-                          configs: widget.configs,
-                        );
-                  },
-                ),
-              ),
-            );
+        final offset = _calculateToolbarOffset();
+        return Positioned(
+          top: offset.dy,
+          left: offset.dx,
+          child: FractionalTranslation(
+            translation: const Offset(-0.5, -1),
+            child: SizedBox(
+              key: _toolbarKey,
+              child: _widgets.toolbar ??
+                  FloatSelectToolbar(
+                    layer: widget.layer,
+                    interactions: widget.interactions,
+                    editorKey: widget.editorKey,
+                    configs: widget.configs,
+                  ),
+            ),
+          ),
+        );
       },
       child: Stack(
         key: _stackKey,
