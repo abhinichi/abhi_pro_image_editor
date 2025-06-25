@@ -136,7 +136,6 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
 
 class _LayerWidgetState extends State<LayerWidget>
     with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
-  /// The type of layer being represented.
   late LayerWidgetType _layerType;
 
   /// Flag to control the display of a move cursor.
@@ -160,31 +159,26 @@ class _LayerWidgetState extends State<LayerWidget>
   @override
   void initState() {
     super.initState();
-    switch (widget.layerData.runtimeType) {
-      case const (TextLayer):
-        _layerType = LayerWidgetType.text;
-        _fractionalOffset = configs.textEditor.layerFractionalOffset;
-        break;
-      case const (EmojiLayer):
-        _layerType = LayerWidgetType.emoji;
-        _fractionalOffset = configs.emojiEditor.layerFractionalOffset;
-        break;
-      case const (WidgetLayer):
-        _layerType = LayerWidgetType.widget;
-        _fractionalOffset = configs.stickerEditor.layerFractionalOffset;
-        break;
-      case const (PaintLayer):
-        var layer = widget.layerData as PaintLayer;
-        _layerType = layer.item.mode == PaintMode.blur ||
-                layer.item.mode == PaintMode.pixelate
-            ? LayerWidgetType.censor
-            : LayerWidgetType.canvas;
-        _fractionalOffset = configs.paintEditor.layerFractionalOffset;
-        break;
-      default:
-        _layerType = LayerWidgetType.unknown;
-        _fractionalOffset = const Offset(-0.5, -0.5);
-        break;
+
+    if (_layer.isTextLayer) {
+      _layerType = LayerWidgetType.text;
+      _fractionalOffset = configs.textEditor.layerFractionalOffset;
+    } else if (_layer.isEmojiLayer) {
+      _layerType = LayerWidgetType.emoji;
+      _fractionalOffset = configs.emojiEditor.layerFractionalOffset;
+    } else if (_layer.isWidgetLayer) {
+      _layerType = LayerWidgetType.widget;
+      _fractionalOffset = configs.stickerEditor.layerFractionalOffset;
+    } else if (_layer.isPaintLayer) {
+      var layer = _layer as PaintLayer;
+      _layerType = layer.item.mode == PaintMode.blur ||
+              layer.item.mode == PaintMode.pixelate
+          ? LayerWidgetType.censor
+          : LayerWidgetType.canvas;
+      _fractionalOffset = configs.paintEditor.layerFractionalOffset;
+    } else {
+      _layerType = LayerWidgetType.unknown;
+      _fractionalOffset = const Offset(-0.5, -0.5);
     }
   }
 
@@ -260,13 +254,12 @@ class _LayerWidgetState extends State<LayerWidget>
 
   /// Checks if the hit is outside the canvas for certain types of layers.
   bool _isHitOutsideInCanvas() {
-    return _layerType == LayerWidgetType.canvas &&
-        !(_layer as PaintLayer).item.hit;
+    return _layer.isPaintLayer && !(_layer as PaintLayer).item.hit;
   }
 
   /// Checks if the hit is outside the canvas for certain types of layers.
   bool _isHitOutsideInText() {
-    return _layerType == LayerWidgetType.text && !(_layer as TextLayer).hit;
+    return _layer.isTextLayer && !(_layer as TextLayer).hit;
   }
 
   /// Calculates the transformation matrix for the layer's position and
@@ -289,21 +282,16 @@ class _LayerWidgetState extends State<LayerWidget>
   double get offsetY => _layer.offset.dy + widget.editorCenterY;
 
   void _onHoverEnter() {
-    if (_layerType != LayerWidgetType.canvas &&
-        _layerType != LayerWidgetType.text) {
+    if (!_layer.isPaintLayer && !_layer.isTextLayer) {
       _showMoveCursor.value = true;
     }
   }
 
   void _onHoverLeave() {
-    switch (_layerType) {
-      case LayerWidgetType.canvas:
-        (widget.layerData as PaintLayer).item.hit = false;
-        break;
-      case LayerWidgetType.text:
-        (widget.layerData as TextLayer).hit = false;
-        break;
-      default:
+    if (_layer.isPaintLayer) {
+      (widget.layerData as PaintLayer).item.hit = false;
+    } else if (_layer.isTextLayer) {
+      (widget.layerData as TextLayer).hit = false;
     }
     _showMoveCursor.value = false;
     _lastHitState.value = false;
@@ -370,9 +358,7 @@ class _LayerWidgetState extends State<LayerWidget>
     );
   }
 
-  Widget _buildCursor({
-    required Widget child,
-  }) {
+  Widget _buildCursor({required Widget child}) {
     return ValueListenableBuilder(
         valueListenable: _showMoveCursor,
         builder: (_, showCursor, __) {
