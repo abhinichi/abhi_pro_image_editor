@@ -91,22 +91,31 @@ class _TextEditorInputState extends State<TextEditorInput> {
     BuildContext fromHeroContext,
     BuildContext toHeroContext,
   ) {
-    if (flightDirection == HeroFlightDirection.pop) {
-      return fromHeroContext.widget;
-    }
+    final Hero toHero = toHeroContext.widget as Hero;
 
-    void animationStatusListener(AnimationStatus status) {
-      if (status == AnimationStatus.completed) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          widget.focusNode.requestFocus();
-        });
-        animation.removeStatusListener(animationStatusListener);
+    final isOpening = flightDirection == HeroFlightDirection.push;
+
+    if (isOpening) {
+      void animationStatusListener(AnimationStatus status) {
+        if (status == AnimationStatus.completed) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            widget.focusNode.requestFocus();
+          });
+          animation.removeStatusListener(animationStatusListener);
+        }
       }
+
+      animation.addStatusListener(animationStatusListener);
     }
-
-    animation.addStatusListener(animationStatusListener);
-
-    return toHeroContext.widget;
+    return isOpening
+        ? SingleChildScrollView(
+            clipBehavior: Clip.none,
+            scrollDirection: Axis.horizontal,
+            child: IntrinsicWidth(
+              child: toHero.child,
+            ),
+          )
+        : toHero.child;
   }
 
   @override
@@ -119,13 +128,7 @@ class _TextEditorInputState extends State<TextEditorInput> {
         child: IntrinsicWidth(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Hero(
-              flightShuttleBuilder: _flightShuttleBuilder,
-              tag: widget.heroTag ?? 'Text-Image-Editor-Empty-Hero',
-              createRectTween: (begin, end) =>
-                  RectTween(begin: begin, end: end),
-              child: _buildInputField(),
-            ),
+            child: _buildInputField(),
           ),
         ),
       ),
@@ -135,47 +138,51 @@ class _TextEditorInputState extends State<TextEditorInput> {
   Widget _buildInputField() {
     return Transform.scale(
       scale: widget.scaleFactor,
-      child: RoundedBackgroundTextField(
-        key: const ValueKey('rounded-background-text-editor-field'),
-        controller: widget.textCtrl,
-        focusNode: widget.focusNode,
-        onChanged: (value) {
-          widget.callbacks?.handleChanged(value);
-          setState(() {});
-        },
-        onEditingComplete: widget.callbacks?.handleEditingComplete,
-        onSubmitted: widget.callbacks?.handleSubmitted,
-        autocorrect: widget.configs.enableAutocorrect,
-        enableSuggestions: widget.configs.enableSuggestions,
-        keyboardType: TextInputType.multiline,
-        textInputAction: TextInputAction.newline,
-        textCapitalization: TextCapitalization.sentences,
-        textAlign:
-            widget.textCtrl.text.isEmpty ? TextAlign.center : widget.align,
-        maxLines: null,
-        cursorColor: widget.configs.style.inputCursorColor,
-        cursorHeight: widget.textFontSize * 1.2,
-        scrollPhysics: const NeverScrollableScrollPhysics(),
-        hint: widget.textCtrl.text.isEmpty ? widget.i18n.inputHintText : '',
-        hintStyle: widget.selectedTextStyle.copyWith(
-          color: widget.configs.style.inputHintColor,
-          fontSize: widget.textFontSize,
-          height: 1.35,
-          shadows: [],
-        ),
-        backgroundColor: widget.backgroundColor,
-        style: widget.selectedTextStyle.copyWith(
-          color: widget.textColor,
-          fontSize: widget.textFontSize,
-          height: 1.35,
-          letterSpacing: 0,
-          decoration: TextDecoration.none,
-          shadows: [],
-        ),
+      child: Hero(
+        flightShuttleBuilder: _flightShuttleBuilder,
+        tag: widget.heroTag ?? 'Text-Image-Editor-Empty-Hero',
+        child: RoundedBackgroundTextField(
+          key: const ValueKey('rounded-background-text-editor-field'),
+          controller: widget.textCtrl,
+          focusNode: widget.focusNode,
+          onChanged: (value) {
+            widget.callbacks?.handleChanged(value);
+            setState(() {});
+          },
+          onEditingComplete: widget.callbacks?.handleEditingComplete,
+          onSubmitted: widget.callbacks?.handleSubmitted,
+          autocorrect: widget.configs.enableAutocorrect,
+          enableSuggestions: widget.configs.enableSuggestions,
+          keyboardType: TextInputType.multiline,
+          textInputAction: TextInputAction.newline,
+          textCapitalization: TextCapitalization.sentences,
+          textAlign:
+              widget.textCtrl.text.isEmpty ? TextAlign.center : widget.align,
+          maxLines: null,
+          cursorColor: widget.configs.style.inputCursorColor,
+          cursorHeight: widget.textFontSize * 1.2,
+          scrollPhysics: const NeverScrollableScrollPhysics(),
+          hint: widget.textCtrl.text.isEmpty ? widget.i18n.inputHintText : '',
+          hintStyle: widget.selectedTextStyle.copyWith(
+            color: widget.configs.style.inputHintColor,
+            fontSize: widget.textFontSize,
+            height: 1.35,
+            shadows: [],
+          ),
+          backgroundColor: widget.backgroundColor,
+          style: widget.selectedTextStyle.copyWith(
+            color: widget.textColor,
+            fontSize: widget.textFontSize,
+            height: 1.35,
+            letterSpacing: 0,
+            decoration: TextDecoration.none,
+            shadows: [],
+          ),
 
-        /// If we edit an layer we focus to the textfield after the
-        /// hero animation is done
-        autofocus: widget.layer == null,
+          /// If we edit an layer we focus to the textfield after the
+          /// hero animation is done
+          autofocus: widget.layer == null,
+        ),
       ),
     );
   }
