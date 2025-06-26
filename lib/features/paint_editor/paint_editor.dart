@@ -29,12 +29,12 @@ import '/shared/widgets/slider_bottom_sheet.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/filtered_widget.dart';
 import 'controllers/paint_controller.dart';
-import 'models/painted_model.dart';
 import 'services/paint_desktop_interaction_manager.dart';
 import 'widgets/paint_canvas.dart';
 
 export 'enums/paint_editor_enum.dart';
 export 'models/paint_bottom_bar_item.dart';
+export 'models/painted_model.dart';
 export 'widgets/draw_paint_item.dart';
 
 /// The `PaintEditor` widget allows users to editing images with paint
@@ -467,6 +467,14 @@ class PaintEditorState extends State<PaintEditor>
     paintEditorCallbacks?.handleOpacity(value);
   }
 
+  /// Gets the current opacity value from the paint controller.
+  double get opacity => paintCtrl.opacity;
+
+  /// Sets the opacity value using the [setOpacity] method.
+  ///
+  /// The [value] parameter specifies the new opacity to be set.
+  set opacity(double value) => setOpacity(value);
+
   /// Toggles the fill mode.
   void toggleFill() {
     _isFillMode = !_isFillMode;
@@ -532,6 +540,18 @@ class PaintEditorState extends State<PaintEditor>
       transform: initialTransformConfigs,
     );
     paintEditorCallbacks?.handleDone();
+  }
+
+  /// Adds a new [PaintedModel] item to the paint controller and updates the UI.
+  ///
+  /// This method calls [paintCtrl.addPaintInfo] to add the provided [item] to
+  /// the list of painted models, and then triggers a UI rebuild by calling
+  /// [setState].
+  ///
+  /// [item] - The [PaintedModel] instance to be added.
+  void addPainting(PaintedModel item) {
+    paintCtrl.addPaintInfo(item);
+    setState(() {});
   }
 
   /// Exports the painted items as a list of [PaintLayer].
@@ -907,6 +927,8 @@ class PaintEditorState extends State<PaintEditor>
       paintEditorConfigs: paintEditorConfigs,
       drawAreaSize: mainBodySize ?? editorBodySize,
       freeStyleHighPerformance: _freeStyleHighPerformance,
+      onTap: (details) =>
+          callbacks.paintEditorCallbacks?.onTap?.call(this, details),
       onRemoveLayer: (idList) {
         paintCtrl.removeLayers(idList);
         setState(() {});

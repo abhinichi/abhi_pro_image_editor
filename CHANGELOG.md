@@ -11,6 +11,7 @@
 - **FEAT**(cropMode): The `CropMode` can now be dynamically switched inside the `cropRotateEditor` by updating the `cropMode` value.
 - **FEAT**(crop-editor): The `CropEditor` now supports every aspect ratio for the round cropper, not just aspect ratio 1.
 - **FEAT**(crop-editor): Changing the aspect ratio no longer resets other applied changes like flip or rotate.
+- **FEAT**(paint-editor): Add `addPainting` method that allows to programmatically create new paintings.
 
 <br/>
 

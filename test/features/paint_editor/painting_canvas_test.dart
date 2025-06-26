@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -39,12 +41,12 @@ void main() {
       // Simulate scale start gesture
       final TestGesture gesture = await tester.startGesture(center);
 
+      // Simulate scale update gesture
+      Offset updatedPoint = center + const Offset(50, 50);
+      await gesture.moveTo(updatedPoint);
+
       /// Assuming the start point is not null
       expect(ctrl.start, isNotNull);
-
-      // Simulate scale update gesture
-      Offset updatedPoint = center + const Offset(10, 10);
-      await gesture.moveTo(updatedPoint);
 
       /// Assuming the end point is not null
       expect(ctrl.end, isNotNull);
@@ -89,9 +91,9 @@ void main() {
       final TestGesture gesture = await tester.startGesture(center);
 
       // Simulate scale update gesture
-      await gesture.moveTo(center + const Offset(0, 10));
-      await gesture.moveTo(center + const Offset(10, 0));
-      await gesture.moveTo(center + const Offset(10, 10));
+      await gesture.moveTo(center + const Offset(0, 50));
+      await gesture.moveTo(center + const Offset(50, 0));
+      await gesture.moveTo(center + const Offset(50, 50));
 
       /// Assuming the offset length is correct
       expect(ctrl.offsets.length, 4);
@@ -129,9 +131,8 @@ void main() {
       );
 
       // Simulate scale start gesture
-      const Offset startPoint = Offset(50, 50);
+      const Offset startPoint = Offset(0, 0);
       final TestGesture gesture = await tester.startGesture(startPoint);
-      await tester.pump();
 
       // Simulate scale update gesture
       const Offset updatedPoint = Offset(70, 70);
