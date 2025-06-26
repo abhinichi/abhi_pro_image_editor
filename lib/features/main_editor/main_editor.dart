@@ -701,6 +701,40 @@ class ProImageEditorState extends State<ProImageEditor>
     bool blockSelectLayer = false,
     bool blockCaptureScreenshot = false,
   }) {
+    void correctOffset() {
+      Offset fractionalOffset = const Offset(-0.5, -0.5);
+      if (layer.isTextLayer) {
+        fractionalOffset = textEditorConfigs.layerFractionalOffset;
+      } else if (layer.isEmojiLayer) {
+        fractionalOffset = emojiEditorConfigs.layerFractionalOffset;
+      } else if (layer.isPaintLayer) {
+        fractionalOffset = paintEditorConfigs.layerFractionalOffset;
+      } else if (layer.isWidgetLayer) {
+        fractionalOffset = stickerEditorConfigs.layerFractionalOffset;
+      }
+
+      if (fractionalOffset != const Offset(-0.5, -0.5)) {
+        final overlayPadding = layerInteraction.style.overlayPadding;
+        double dxCorrected = 0;
+        double dyCorrected = 0;
+
+        if (fractionalOffset.dx == 0) {
+          dxCorrected = -overlayPadding.left;
+        } else if (fractionalOffset.dx == 1) {
+          dxCorrected = overlayPadding.right;
+        }
+        if (fractionalOffset.dy == 0) {
+          dyCorrected = -overlayPadding.top;
+        } else if (fractionalOffset.dy == 1) {
+          dyCorrected = overlayPadding.bottom;
+        }
+
+        layer.offset += Offset(dxCorrected, dyCorrected);
+      }
+    }
+
+    correctOffset();
+
     layerInteractionManager.selectedLayerId = '';
 
     addHistory(newLayer: layer, blockCaptureScreenshot: blockCaptureScreenshot);

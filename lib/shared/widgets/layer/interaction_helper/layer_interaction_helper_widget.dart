@@ -224,7 +224,6 @@ class _LayerInteractionHelperWidgetState
           );
         }
 
-        final padding = layerInteraction.style.overlayPadding;
         final Matrix4 transform = info.childPaintTransform.clone();
 
         // The child size
@@ -232,11 +231,8 @@ class _LayerInteractionHelperWidgetState
         final childHeight = info.childSize.height;
 
         // The new padded size
-        final paddedWidth = childWidth + padding.horizontal;
-        final paddedHeight = childHeight + padding.vertical;
-
-        // Offset the transform so the center remains aligned
-        transform.translate(-padding.left, -padding.top);
+        final paddedWidth = childWidth;
+        final paddedHeight = childHeight;
 
         return Positioned(
           width: paddedWidth,

@@ -249,7 +249,8 @@ class _LayerWidgetState extends State<LayerWidget>
   }
 
   bool _isOutsideHitBox() {
-    return _isHitOutsideInCanvas() || _isHitOutsideInText();
+    return (_isHitOutsideInCanvas() || _isHitOutsideInText()) &&
+        !widget.selected;
   }
 
   /// Checks if the hit is outside the canvas for certain types of layers.
@@ -282,7 +283,7 @@ class _LayerWidgetState extends State<LayerWidget>
   double get offsetY => _layer.offset.dy + widget.editorCenterY;
 
   void _onHoverEnter() {
-    if (!_layer.isPaintLayer && !_layer.isTextLayer) {
+    if ((!_layer.isPaintLayer && !_layer.isTextLayer) || widget.selected) {
       _showMoveCursor.value = true;
     }
   }
@@ -337,23 +338,33 @@ class _LayerWidgetState extends State<LayerWidget>
       onScaleRotateUp: widget.onScaleRotateUp,
       onRemoveLayer: widget.onRemoveTap,
       onDuplicate: widget.onDuplicate,
-      child: _buildCursor(
-        child: ValueListenableBuilder(
-            valueListenable: _lastHitState,
-            builder: (_, __, ___) {
-              return GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
-                child: Listener(
+      child: Padding(
+        padding: widget.selected
+            ? EdgeInsets.zero
+            : layerInteraction.style.overlayPadding,
+        child: _buildCursor(
+          child: ValueListenableBuilder(
+              valueListenable: _lastHitState,
+              builder: (_, __, ___) {
+                return GestureDetector(
                   behavior: HitTestBehavior.translucent,
-                  onPointerDown: _onPointerDown,
-                  onPointerUp: _onPointerUp,
-                  child: FittedBox(
-                    child: _buildContent(),
+                  onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
+                  child: Listener(
+                    behavior: HitTestBehavior.translucent,
+                    onPointerDown: _onPointerDown,
+                    onPointerUp: _onPointerUp,
+                    child: Padding(
+                      padding: !widget.selected
+                          ? EdgeInsets.zero
+                          : layerInteraction.style.overlayPadding,
+                      child: FittedBox(
+                        child: _buildContent(),
+                      ),
+                    ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+        ),
       ),
     );
   }
