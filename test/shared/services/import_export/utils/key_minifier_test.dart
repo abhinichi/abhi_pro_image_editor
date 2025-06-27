@@ -1,5 +1,3 @@
-// ignore: depend_on_referenced_packages
-import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/shared/services/import_export/constants/minified_keys.dart';
 import 'package:pro_image_editor/shared/services/import_export/utils/key_minifier.dart';
@@ -13,6 +11,23 @@ void main() {
       minifier = EditorKeyMinifier(enableMinify: true);
       noMinifier = EditorKeyMinifier(enableMinify: false);
     });
+
+    bool deepEquals(dynamic a, dynamic b) {
+      if (a is Map && b is Map) {
+        if (a.length != b.length) return false;
+        for (final key in a.keys) {
+          if (!b.containsKey(key) || !deepEquals(a[key], b[key])) return false;
+        }
+        return true;
+      } else if (a is List && b is List) {
+        if (a.length != b.length) return false;
+        for (int i = 0; i < a.length; i++) {
+          if (!deepEquals(a[i], b[i])) return false;
+        }
+        return true;
+      }
+      return a == b;
+    }
 
     test('convertMainKey returns minified key when enabled', () {
       final key = kMinifiedMainKeys.keys.first;
@@ -84,7 +99,7 @@ void main() {
         }
       ];
       final result = noMinifier.convertListOfLayerKeys(layers);
-      expect(const DeepCollectionEquality().equals(result, layers), isTrue);
+      expect(deepEquals(result, layers), isTrue);
     });
 
     test('convertReferenceKeys returns original when minify disabled', () {
@@ -95,7 +110,7 @@ void main() {
         }
       };
       final result = noMinifier.convertReferenceKeys(references);
-      expect(const DeepCollectionEquality().equals(result, references), isTrue);
+      expect(deepEquals(result, references), isTrue);
     });
 
     test('_generateAlphabeticalKey generates correct keys', () {
@@ -143,12 +158,8 @@ void main() {
         'layer1': {'data': 1}
       };
       final response = noMinifier.convertLayerId(history, references);
-      expect(const DeepCollectionEquality().equals(response.history, history),
-          isTrue);
-      expect(
-          const DeepCollectionEquality()
-              .equals(response.references, references),
-          isTrue);
+      expect(deepEquals(response.history, history), isTrue);
+      expect(deepEquals(response.references, references), isTrue);
     });
   });
 }
