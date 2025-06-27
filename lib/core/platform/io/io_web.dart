@@ -24,6 +24,16 @@ class File {
   String readAsStringSync() {
     throw ArgumentError('This function is not supported on the web.');
   }
+
+  /// Delete the file
+  Future<void> delete() async {
+    throw ArgumentError('This function is not supported on the web.');
+  }
+
+  /// Delete the file sync
+  Future<void> deleteSync() async {
+    throw ArgumentError('This function is not supported on the web.');
+  }
 }
 
 /// Information about the environment in which the current program is running.

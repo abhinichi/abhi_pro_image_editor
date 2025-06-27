@@ -12,7 +12,6 @@ import '/core/mixins/standalone_editor.dart';
 import '/core/models/editor_image.dart';
 import '/core/models/init_configs/blur_editor_init_configs.dart';
 import '/core/models/transform_helper.dart';
-import '/core/platform/io/io_helper.dart';
 import '/core/utils/size_utils.dart';
 import '/features/blur_editor/widgets/blur_editor_bottombar.dart';
 import '/shared/controllers/video_controller.dart';
@@ -64,7 +63,7 @@ class BlurEditor extends StatefulWidget
 
   /// Constructs a `BlurEditor` widget with an image loaded from a file.
   factory BlurEditor.file(
-    File file, {
+    dynamic file, {
     Key? key,
     required BlurEditorInitConfigs initConfigs,
   }) {
@@ -108,7 +107,7 @@ class BlurEditor extends StatefulWidget
   factory BlurEditor.autoSource({
     Key? key,
     Uint8List? byteArray,
-    File? file,
+    dynamic file,
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
@@ -122,7 +121,7 @@ class BlurEditor extends StatefulWidget
           : editorImage ??
               EditorImage(
                 byteArray: byteArray,
-                file: file == null ? null : ensureFileInstance(file),
+                file: file,
                 networkUrl: networkUrl,
                 assetPath: assetPath,
               ),

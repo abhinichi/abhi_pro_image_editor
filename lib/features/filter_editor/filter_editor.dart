@@ -10,7 +10,6 @@ import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
 import '/core/models/transform_helper.dart';
-import '/core/platform/io/io_helper.dart';
 import '/core/utils/size_utils.dart';
 import '/features/filter_editor/widgets/filter_editor_appbar.dart';
 import '/pro_image_editor.dart';
@@ -66,7 +65,7 @@ class FilterEditor extends StatefulWidget
 
   /// Constructs a `FilterEditor` widget with an image loaded from a file.
   factory FilterEditor.file(
-    File file, {
+    dynamic file, {
     Key? key,
     required FilterEditorInitConfigs initConfigs,
   }) {
@@ -111,7 +110,7 @@ class FilterEditor extends StatefulWidget
   factory FilterEditor.autoSource({
     Key? key,
     Uint8List? byteArray,
-    File? file,
+    dynamic file,
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
@@ -125,7 +124,7 @@ class FilterEditor extends StatefulWidget
           : editorImage ??
               EditorImage(
                 byteArray: byteArray,
-                file: file == null ? null : ensureFileInstance(file),
+                file: file,
                 networkUrl: networkUrl,
                 assetPath: assetPath,
               ),

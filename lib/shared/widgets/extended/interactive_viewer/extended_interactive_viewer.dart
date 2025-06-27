@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import '/core/models/editor_configs/utils/zoom_configs.dart';
+import 'extended_raw_interactive_viewer.dart';
 
 /// A widget that provides interactive viewing capabilities with zoom and pan
 /// functionality.
@@ -19,6 +20,7 @@ class ExtendedInteractiveViewer extends StatefulWidget {
     required this.onInteractionEnd,
     this.onMatrix4Change,
     this.initialMatrix4,
+    this.enableExternalGestureDetector = false,
   });
 
   /// Configuration options that control zoom behavior and limits.
@@ -35,6 +37,13 @@ class ExtendedInteractiveViewer extends StatefulWidget {
   ///
   /// Default value is `true`.
   final bool enableInteraction;
+
+  /// Determines whether an external gesture detector should be enabled.
+  ///
+  /// When set to `true`, gesture detection is handled externally, allowing
+  /// for custom gesture handling outside of this widget. If `false`, the
+  /// widget manages its own gesture detection internally.
+  final bool enableExternalGestureDetector;
 
   /// Called when the user ends a pan or scale gesture on the widget.
   ///
@@ -112,14 +121,15 @@ class ExtendedInteractiveViewer extends StatefulWidget {
 /// The state for [ExtendedInteractiveViewer], managing the interactivity state.
 class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer>
     with TickerProviderStateMixin {
-  late TransformationController _transformCtrl;
+  final _rawViewerKey = GlobalKey<ExtendedRawInteractiveViewerState>();
+  late ExtendedTransformationController _transformCtrl;
   late final AnimationController _animationCtrl;
   late bool _enableInteraction;
 
   @override
   void initState() {
     super.initState();
-    _transformCtrl = TransformationController(widget.initialMatrix4)
+    _transformCtrl = ExtendedTransformationController(widget.initialMatrix4)
       ..addListener(() {
         widget.onMatrix4Change?.call(_transformCtrl.value);
       });
@@ -248,19 +258,45 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer>
     );
   }
 
+  /// Handles the start of a scaling gesture by forwarding the [details]
+  /// to the underlying raw viewer's `onScaleStart` method.
+  void onScaleStart(ScaleStartDetails details) {
+    if (!widget.zoomConfigs.enableZoom) return;
+    _rawViewerKey.currentState!.onScaleStart(details);
+  }
+
+  /// Handles the scale update gesture by forwarding the [details] to the
+  /// underlying interactive viewer's state. This allows for updating the
+  /// scale (zoom) and position of the content in response to user gestures
+  /// such as pinch-to-zoom or drag.
+  ///
+  /// [details] contains information about the current state of the scale
+  /// gesture.
+  void onScaleUpdate(ScaleUpdateDetails details) {
+    if (!widget.zoomConfigs.enableZoom) return;
+    _rawViewerKey.currentState!.onScaleUpdate(details);
+  }
+
+  /// Handles the end of a scaling gesture by forwarding the [details]
+  /// to the underlying raw viewer's `onScaleEnd` method.
+  ///
+  /// This method is typically called when the user completes a pinch or zoom
+  /// gesture, allowing the widget to perform any necessary cleanup or state
+  /// updates related to the gesture.
+  ///
+  /// [details] contains information about the velocity and focal point of the
+  /// gesture.
+  void onScaleEnd(ScaleEndDetails details) {
+    if (!widget.zoomConfigs.enableZoom) return;
+    _rawViewerKey.currentState!.onScaleEnd(details);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!widget.zoomConfigs.enableZoom) return widget.child;
 
-    /// If we disable the interaction we need to return it as Transform widget
-    /// that the InteractiveViewer will not absorb the scale events.
-    if (!_enableInteraction) {
-      return Transform(
-        transform: _transformCtrl.value,
-        child: widget.child,
-      );
-    }
-    return InteractiveViewer(
+    return ExtendedRawInteractiveViewer(
+      key: _rawViewerKey,
       boundaryMargin: widget.zoomConfigs.boundaryMargin,
       transformationController: _transformCtrl,
       panEnabled: _enableInteraction,
@@ -270,6 +306,7 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer>
       onInteractionStart: widget.onInteractionStart,
       onInteractionUpdate: widget.onInteractionUpdate,
       onInteractionEnd: widget.onInteractionEnd,
+      enableExternalGestureDetector: widget.enableExternalGestureDetector,
       child: widget.child,
     );
   }

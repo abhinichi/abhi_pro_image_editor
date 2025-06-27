@@ -26,6 +26,7 @@ class PaintCanvas extends StatefulWidget {
     this.onStart,
     this.onCreated,
     this.onRemoveLayer,
+    this.onTap,
     this.freeStyleHighPerformance = false,
     required this.drawAreaSize,
     required this.paintCtrl,
@@ -39,6 +40,14 @@ class PaintCanvas extends StatefulWidget {
   ///
   /// Receives a list of layer identifiers that have been removed.
   final ValueChanged<List<String>>? onRemoveLayer;
+
+  /// Callback function that is triggered when a tap down event occurs on the
+  /// canvas.
+  ///
+  /// The [details] parameter provides information about the position and
+  /// characteristics of the tap event. This callback can be used to handle
+  /// custom tap interactions within the paint editor.
+  final Function(TapDownDetails details)? onTap;
 
   /// Callback invoked when paint starts.
   final VoidCallback? onStart;
@@ -71,6 +80,7 @@ class PaintCanvasState extends State<PaintCanvas> {
 
   /// Stream controller for updating paint events.
   late final StreamController<void> _activePaintStreamCtrl;
+  TapDownDetails? _tapDownDetails;
 
   @override
   void initState() {
@@ -290,6 +300,14 @@ class PaintCanvasState extends State<PaintCanvas> {
           onScaleStart: _onScaleStart,
           onScaleUpdate: _onScaleUpdate,
           onScaleEnd: _onScaleEnd,
+          onTapDown: (details) {
+            _tapDownDetails = details;
+          },
+          onTap: () {
+            if (_tapDownDetails != null) {
+              widget.onTap?.call(_tapDownDetails!);
+            }
+          },
           child: _paintCtrl.busy
               ? _paintCtrl.mode == PaintMode.blur ||
                       _paintCtrl.mode == PaintMode.pixelate

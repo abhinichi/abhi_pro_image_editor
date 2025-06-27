@@ -8,12 +8,16 @@ class LayerItemInteractions {
   LayerItemInteractions({
     required this.edit,
     required this.remove,
+    required this.duplicated,
     required this.scaleRotateDown,
     required this.scaleRotateUp,
   });
 
   /// Callback function for editing the layer.
   final Function() edit;
+
+  /// Callback triggered when a layer should be copied.
+  final Function() duplicated;
 
   /// Callback function for removing the layer.
   final Function() remove;

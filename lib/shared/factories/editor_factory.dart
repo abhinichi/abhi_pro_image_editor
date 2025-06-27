@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '/core/models/editor_callbacks/standalone_editor_callbacks.dart';
 import '/pro_image_editor.dart';
 
@@ -9,7 +11,8 @@ class EditorFactory {
   ///
   /// This map is initialized with constant instances of each editor's
   /// callbacks.
-  static final Map<EditorMode, StandaloneEditorCallbacks> _editorMap = {
+  @visibleForTesting
+  static final Map<EditorMode, StandaloneEditorCallbacks> editorMap = {
     EditorMode.paint: const PaintEditorCallbacks(),
     EditorMode.cropRotate: const CropRotateEditorCallbacks(),
     EditorMode.filter: const FilterEditorCallbacks(),
@@ -35,7 +38,7 @@ class EditorFactory {
   /// Throws:
   /// - [UnimplementedError] if the provided [mode] is not supported.
   static StandaloneEditorCallbacks getEditor(EditorMode mode) {
-    final callback = _editorMap[mode];
+    final callback = editorMap[mode];
     if (callback != null) {
       return callback;
     } else {

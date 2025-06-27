@@ -11,30 +11,29 @@ import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
 import '/core/models/transform_helper.dart';
-import '/core/platform/io/io_helper.dart';
+import '/core/utils/size_utils.dart';
 import '/features/paint_editor/widgets/paint_editor_appbar.dart';
 import '/features/paint_editor/widgets/paint_editor_bottombar.dart';
 import '/features/paint_editor/widgets/paint_editor_color_picker.dart';
 import '/pro_image_editor.dart';
+import '/shared/mixins/editor_zoom.mixin.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/services/shader_manager.dart';
 import '/shared/styles/platform_text_styles.dart';
 import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/auto_image.dart';
-import '/shared/widgets/extended/extended_interactive_viewer.dart';
+import '/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/slider_bottom_sheet.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
-import '../../core/utils/size_utils.dart';
-import '../../shared/mixins/editor_zoom.mixin.dart';
 import '../filter_editor/widgets/filtered_widget.dart';
 import 'controllers/paint_controller.dart';
-import 'models/painted_model.dart';
 import 'services/paint_desktop_interaction_manager.dart';
 import 'widgets/paint_canvas.dart';
 
 export 'enums/paint_editor_enum.dart';
 export 'models/paint_bottom_bar_item.dart';
+export 'models/painted_model.dart';
 export 'widgets/draw_paint_item.dart';
 
 /// The `PaintEditor` widget allows users to editing images with paint
@@ -80,7 +79,7 @@ class PaintEditor extends StatefulWidget
 
   /// Constructs a `PaintEditor` widget with an image loaded from a file.
   factory PaintEditor.file(
-    File file, {
+    dynamic file, {
     Key? key,
     required PaintEditorInitConfigs initConfigs,
   }) {
@@ -144,7 +143,7 @@ class PaintEditor extends StatefulWidget
   factory PaintEditor.autoSource({
     Key? key,
     Uint8List? byteArray,
-    File? file,
+    dynamic file,
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
@@ -158,7 +157,7 @@ class PaintEditor extends StatefulWidget
           : editorImage ??
               EditorImage(
                 byteArray: byteArray,
-                file: file == null ? null : ensureFileInstance(file),
+                file: file,
                 networkUrl: networkUrl,
                 assetPath: assetPath,
               ),
@@ -453,6 +452,7 @@ class PaintEditorState extends State<PaintEditor>
   /// When the `fill` parameter is `true`, drawing elements will be filled;
   /// otherwise, they will be outlined.
   void setFill(bool fill) {
+    _isFillMode = fill;
     paintCtrl.setFill(fill);
     _uiAppbarStream.add(null);
     paintEditorCallbacks?.handleToggleFill(fill);
@@ -466,6 +466,14 @@ class PaintEditorState extends State<PaintEditor>
     _uiAppbarStream.add(null);
     paintEditorCallbacks?.handleOpacity(value);
   }
+
+  /// Gets the current opacity value from the paint controller.
+  double get opacity => paintCtrl.opacity;
+
+  /// Sets the opacity value using the [setOpacity] method.
+  ///
+  /// The [value] parameter specifies the new opacity to be set.
+  set opacity(double value) => setOpacity(value);
 
   /// Toggles the fill mode.
   void toggleFill() {
@@ -534,6 +542,18 @@ class PaintEditorState extends State<PaintEditor>
     paintEditorCallbacks?.handleDone();
   }
 
+  /// Adds a new [PaintedModel] item to the paint controller and updates the UI.
+  ///
+  /// This method calls [paintCtrl.addPaintInfo] to add the provided [item] to
+  /// the list of painted models, and then triggers a UI rebuild by calling
+  /// [setState].
+  ///
+  /// [item] - The [PaintedModel] instance to be added.
+  void addPainting(PaintedModel item) {
+    paintCtrl.addPaintInfo(item);
+    setState(() {});
+  }
+
   /// Exports the painted items as a list of [PaintLayer].
   ///
   /// This method converts the paint history into a list of
@@ -574,6 +594,12 @@ class PaintEditorState extends State<PaintEditor>
         Offset(rightmostX, bottommostY),
       );
     }
+
+    final mainEditorSize = widget.initConfigs.mainBodySize ?? editorBodySize;
+    final mainEditorSizeFactor = max(
+      mainEditorSize.width / editorBodySize.width,
+      mainEditorSize.height / editorBodySize.height,
+    );
 
     // Convert to free positions
     return paintCtrl.activePaintItemList.map((e) {
@@ -634,7 +660,8 @@ class PaintEditorState extends State<PaintEditor>
           max(size.height, layer.strokeWidth),
         ),
         opacity: layer.opacity,
-        offset: finalOffset,
+        offset: finalOffset * mainEditorSizeFactor,
+        scale: mainEditorSizeFactor,
       );
     }).toList();
   }
@@ -907,6 +934,8 @@ class PaintEditorState extends State<PaintEditor>
       paintEditorConfigs: paintEditorConfigs,
       drawAreaSize: mainBodySize ?? editorBodySize,
       freeStyleHighPerformance: _freeStyleHighPerformance,
+      onTap: (details) =>
+          callbacks.paintEditorCallbacks?.onTap?.call(this, details),
       onRemoveLayer: (idList) {
         paintCtrl.removeLayers(idList);
         setState(() {});

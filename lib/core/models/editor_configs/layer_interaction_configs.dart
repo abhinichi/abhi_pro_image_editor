@@ -27,6 +27,7 @@ class LayerInteractionConfigs {
     this.initialSelected = false,
     this.hideToolbarOnInteraction = false,
     this.hideVideoControlsOnInteraction = true,
+    this.keepSelectionOnInteraction = true,
     this.videoControlsSwitchDuration = const Duration(milliseconds: 220),
     this.icons = const LayerInteractionIcons(),
     this.widgets = const LayerInteractionWidgets(),
@@ -51,6 +52,13 @@ class LayerInteractionConfigs {
   /// interacts with the editor.
   final bool hideVideoControlsOnInteraction;
 
+  /// Determines whether the current selection should be retained when
+  /// interacting with layers.
+  ///
+  /// If set to `true`, the selection remains active during layer interactions.
+  /// If set to `false`, the selection will be cleared upon interaction.
+  final bool keepSelectionOnInteraction;
+
   /// The duration of the switch animation when the video controls show/hide.
   final Duration videoControlsSwitchDuration;
 
@@ -74,6 +82,7 @@ class LayerInteractionConfigs {
     bool? initialSelected,
     bool? hideToolbarOnInteraction,
     bool? hideVideoControlsOnInteraction,
+    bool? keepSelectionOnInteraction,
     Duration? videoControlsSwitchDuration,
     LayerInteractionIcons? icons,
     LayerInteractionWidgets? widgets,
@@ -88,6 +97,8 @@ class LayerInteractionConfigs {
           hideToolbarOnInteraction ?? this.hideToolbarOnInteraction,
       hideVideoControlsOnInteraction:
           hideVideoControlsOnInteraction ?? this.hideVideoControlsOnInteraction,
+      keepSelectionOnInteraction:
+          keepSelectionOnInteraction ?? this.keepSelectionOnInteraction,
       videoControlsSwitchDuration:
           videoControlsSwitchDuration ?? this.videoControlsSwitchDuration,
       style: style ?? this.style,

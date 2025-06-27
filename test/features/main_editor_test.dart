@@ -3,17 +3,20 @@ import 'dart:typed_data';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
+import 'package:network_image_mock/network_image_mock.dart';
 
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/shared/widgets/layer/layer_widget.dart';
-import 'fake/fake_image.dart';
+
+import '../mock/mock_image.dart';
 
 void main() {
-  ProImageEditorConfigs configs = const ProImageEditorConfigs(
+  const configs = ProImageEditorConfigs(
     progressIndicatorConfigs: ProgressIndicatorConfigs(
       widgets: ProgressIndicatorWidgets(
         circularProgressIndicator: SizedBox.shrink(),
@@ -24,28 +27,224 @@ void main() {
       enableBackgroundGeneration: false,
     ),
   );
+  final callbacks = ProImageEditorCallbacks(
+    onImageEditingComplete: (Uint8List bytes) async {},
+  );
 
-  testWidgets('ProImageEditor initializes correctly',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: ProImageEditor.memory(
-        fakeMemoryImage,
+  group('MainEditor Initialization', () {
+    testWidgets('creates MainEditor using memory image',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: ProImageEditor.memory(
+          mockMemoryImage,
+          configs: configs,
+          callbacks: callbacks,
+        ),
+      ));
+
+      expect(find.byType(ProImageEditor), findsOneWidget);
+    });
+    testWidgets('creates MainEditor using network image',
+        (WidgetTester tester) async {
+      await mockNetworkImagesFor(() async {
+        await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.network(
+            mockNetworkImage,
+            configs: configs,
+            callbacks: callbacks,
+          ),
+        ));
+      });
+
+      expect(find.byType(ProImageEditor), findsOneWidget);
+    });
+    testWidgets('creates MainEditor using file image',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: ProImageEditor.file(
+          mockFileImage,
+          configs: configs,
+          callbacks: callbacks,
+        ),
+      ));
+
+      expect(find.byType(ProImageEditor), findsOneWidget);
+    });
+    testWidgets('creates MainEditor using file path',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: ProImageEditor.file(
+          '',
+          configs: configs,
+          callbacks: callbacks,
+        ),
+      ));
+
+      expect(find.byType(ProImageEditor), findsOneWidget);
+    });
+    group('creates MainEditor using autoSource constructor', () {
+      testWidgets('Auto-detects from memory image',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.autoSource(
+            byteArray: mockMemoryImage,
+            configs: configs,
+            callbacks: callbacks,
+          ),
+        ));
+
+        expect(find.byType(ProImageEditor), findsOneWidget);
+      });
+      testWidgets('Auto-detects from network image',
+          (WidgetTester tester) async {
+        await mockNetworkImagesFor(() async {
+          await tester.pumpWidget(MaterialApp(
+            home: ProImageEditor.autoSource(
+              networkUrl: mockNetworkImage,
+              configs: configs,
+              callbacks: callbacks,
+            ),
+          ));
+        });
+
+        expect(find.byType(ProImageEditor), findsOneWidget);
+      });
+      testWidgets('Auto-detects from file image', (WidgetTester tester) async {
+        await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.autoSource(
+            file: mockFileImage,
+            configs: configs,
+            callbacks: callbacks,
+          ),
+        ));
+
+        expect(find.byType(ProImageEditor), findsOneWidget);
+      });
+      testWidgets('Auto-detects from file path', (WidgetTester tester) async {
+        await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.autoSource(
+            file: '',
+            configs: configs,
+            callbacks: callbacks,
+          ),
+        ));
+
+        expect(find.byType(ProImageEditor), findsOneWidget);
+      });
+    });
+  });
+
+  group('MainEditor sub-editor launch tests', () {
+    testWidgets('Launches PaintEditor via button tap',
+        (WidgetTester tester) async {
+      final key = GlobalKey<ProImageEditorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProImageEditor.memory(
+            mockMemoryImage,
+            key: key,
+            configs: configs,
+            callbacks: ProImageEditorCallbacks(
+              onImageEditingComplete: (Uint8List bytes) async {},
+            ),
+          ),
+        ),
+      );
+
+      final openBtn = find.byKey(const ValueKey('open-paint-editor-btn'));
+      expect(openBtn, findsOneWidget);
+      await tester.tap(openBtn);
+
+      await tester.pumpAndSettle();
+      expect(find.byType(PaintEditor), findsOneWidget);
+    });
+
+    testWidgets('Launches TextEditor via button tap',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.memory(
+        mockMemoryImage,
         configs: configs,
         callbacks: ProImageEditorCallbacks(
           onImageEditingComplete: (Uint8List bytes) async {},
         ),
-      ),
-    ));
+      )));
 
-    expect(find.byType(ProImageEditor), findsOneWidget);
+      final openBtn = find.byKey(const ValueKey('open-text-editor-btn'));
+      expect(openBtn, findsOneWidget);
+      await tester.tap(openBtn);
+
+      await tester.pumpAndSettle();
+      expect(find.byType(TextEditor), findsOneWidget);
+    });
+
+    testWidgets('Launches FilterEditor via button tap',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.memory(
+        mockMemoryImage,
+        configs: configs,
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: (Uint8List bytes) async {},
+        ),
+      )));
+
+      final openBtn = find.byKey(const ValueKey('open-filter-editor-btn'));
+      expect(openBtn, findsOneWidget);
+      await tester.tap(openBtn);
+
+      await tester.pumpAndSettle();
+      expect(find.byType(FilterEditor), findsOneWidget);
+    });
+
+    testWidgets('Launches BlurEditor via button tap',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.memory(
+        mockMemoryImage,
+        configs: configs,
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: (Uint8List bytes) async {},
+        ),
+      )));
+
+      final openBtn = find.byKey(const ValueKey('open-blur-editor-btn'));
+      expect(openBtn, findsOneWidget);
+      await tester.tap(openBtn);
+
+      await tester.pumpAndSettle();
+      expect(find.byType(BlurEditor), findsOneWidget);
+    });
+
+    testWidgets('Launches EmojiEditor via button tap and waits for animation',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.memory(
+        mockMemoryImage,
+        configs: configs,
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: (Uint8List bytes) async {},
+        ),
+      )));
+
+      final openBtn = find.byKey(const ValueKey('open-emoji-editor-btn'));
+      expect(openBtn, findsOneWidget);
+      await tester.tap(openBtn);
+
+      // Wait for the modal bottom sheet animation to complete
+      await tester.pump(); // Start the animation
+      await tester.pump(const Duration(seconds: 1)); // Wait for it to finish
+
+      expect(find.byType(EmojiEditor), findsOneWidget);
+    });
   });
 
-  testWidgets('ProImageEditor performs undo and redo action',
+  testWidgets('MainEditor Undo/Redo operations restore editor state correctly',
       (WidgetTester tester) async {
     final key = GlobalKey<ProImageEditorState>();
     await tester.pumpWidget(MaterialApp(
         home: ProImageEditor.memory(
-      fakeMemoryImage,
+      mockMemoryImage,
       key: key,
       configs: configs,
       callbacks: ProImageEditorCallbacks(
@@ -94,121 +293,18 @@ void main() {
     expect(layers3, findsOneWidget);
   });
 
-  group('ProImageEditor open subeditors', () {
-    testWidgets('ProImageEditor opens PaintEditor',
-        (WidgetTester tester) async {
-      final key = GlobalKey<ProImageEditorState>();
-      await tester.pumpWidget(
-        MaterialApp(
-          home: ProImageEditor.memory(
-            fakeMemoryImage,
-            key: key,
-            configs: configs,
-            callbacks: ProImageEditorCallbacks(
-              onImageEditingComplete: (Uint8List bytes) async {},
-            ),
-          ),
-        ),
-      );
-
-      final openBtn = find.byKey(const ValueKey('open-paint-editor-btn'));
-      expect(openBtn, findsOneWidget);
-      await tester.tap(openBtn);
-
-      await tester.pumpAndSettle();
-      expect(find.byType(PaintEditor), findsOneWidget);
-    });
-
-    testWidgets('ProImageEditor opens TextEditor', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-          home: ProImageEditor.memory(
-        fakeMemoryImage,
-        configs: configs,
-        callbacks: ProImageEditorCallbacks(
-          onImageEditingComplete: (Uint8List bytes) async {},
-        ),
-      )));
-
-      final openBtn = find.byKey(const ValueKey('open-text-editor-btn'));
-      expect(openBtn, findsOneWidget);
-      await tester.tap(openBtn);
-
-      await tester.pumpAndSettle();
-      expect(find.byType(TextEditor), findsOneWidget);
-    });
-
-    testWidgets('ProImageEditor opens FilterEditor',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-          home: ProImageEditor.memory(
-        fakeMemoryImage,
-        configs: configs,
-        callbacks: ProImageEditorCallbacks(
-          onImageEditingComplete: (Uint8List bytes) async {},
-        ),
-      )));
-
-      final openBtn = find.byKey(const ValueKey('open-filter-editor-btn'));
-      expect(openBtn, findsOneWidget);
-      await tester.tap(openBtn);
-
-      await tester.pumpAndSettle();
-      expect(find.byType(FilterEditor), findsOneWidget);
-    });
-
-    testWidgets('ProImageEditor opens BlurEditor', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-          home: ProImageEditor.memory(
-        fakeMemoryImage,
-        configs: configs,
-        callbacks: ProImageEditorCallbacks(
-          onImageEditingComplete: (Uint8List bytes) async {},
-        ),
-      )));
-
-      final openBtn = find.byKey(const ValueKey('open-blur-editor-btn'));
-      expect(openBtn, findsOneWidget);
-      await tester.tap(openBtn);
-
-      await tester.pumpAndSettle();
-      expect(find.byType(BlurEditor), findsOneWidget);
-    });
-
-    testWidgets('ProImageEditor opens EmojiEditor',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-          home: ProImageEditor.memory(
-        fakeMemoryImage,
-        configs: configs,
-        callbacks: ProImageEditorCallbacks(
-          onImageEditingComplete: (Uint8List bytes) async {},
-        ),
-      )));
-
-      final openBtn = find.byKey(const ValueKey('open-emoji-editor-btn'));
-      expect(openBtn, findsOneWidget);
-      await tester.tap(openBtn);
-
-      // Wait for the modal bottom sheet animation to complete
-      await tester.pump(); // Start the animation
-      await tester.pump(const Duration(seconds: 1)); // Wait for it to finish
-
-      expect(find.byType(EmojiEditor), findsOneWidget);
-    });
-  });
-
-  group('When applying constraints to the opened bottom sheet', () {
+  group('MainEditor bottom-sheet tests with layout constraints', () {
     const widgetKey = ValueKey('example-widget');
     const expectedConstraints = BoxConstraints(
       maxWidth: 720,
     );
 
-    testWidgets('ProImageEditor opens StickerEditor with constraints',
+    testWidgets('StickerEditor opens with max width constraint',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: ProImageEditor.memory(
-            fakeMemoryImage,
+            mockMemoryImage,
             callbacks: ProImageEditorCallbacks(
               onImageEditingComplete: (Uint8List bytes) async {},
             ),
@@ -247,12 +343,12 @@ void main() {
       );
     });
 
-    testWidgets('ProImageEditor opens EmojiEditor with constraints',
+    testWidgets('EmojiEditor opens with max width constraint',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: ProImageEditor.memory(
-            fakeMemoryImage,
+            mockMemoryImage,
             configs: ProImageEditorConfigs(
               emojiEditor: EmojiEditorConfigs(
                 style: EmojiEditorStyle(

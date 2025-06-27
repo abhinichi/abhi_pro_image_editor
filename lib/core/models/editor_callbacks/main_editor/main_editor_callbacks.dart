@@ -1,6 +1,8 @@
 // Flutter imports:
 import 'package:flutter/widgets.dart';
 
+import '/features/main_editor/main_editor.dart';
+import '/shared/services/import_export/import_state_history.dart';
 import '../../../enums/sub_editors_name.dart';
 import '../../layers/layer.dart';
 import '../standalone_editor_callbacks.dart';
@@ -32,6 +34,10 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     this.helperLines = const HelperLinesCallbacks(),
     this.onSelectedLayerChanged,
     this.onEditorZoomMatrix4Change,
+    this.onLayerTapDown,
+    this.onLayerTapUp,
+    this.onImportHistoryStart,
+    this.onImportHistoryEnd,
     super.onInit,
     super.onAfterViewInit,
     super.onUpdateUI,
@@ -40,26 +46,36 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     super.onUndo,
   });
 
+  /// Callback triggered when a layer receives a tap down event.
+  ///
+  /// The [Layer] parameter provides the layer that was tapped.
+  final Function(Layer layer)? onLayerTapDown;
+
+  /// Callback triggered when a layer receives a tap up event.
+  ///
+  /// The [Layer] parameter provides the layer that was tapped.
+  final Function(Layer layer)? onLayerTapUp;
+
   /// A callback function that is triggered when a layer is added.
   ///
   /// The [Layer] parameter provides information about the added layer.
-  final Function(Layer)? onAddLayer;
+  final Function(Layer layer)? onAddLayer;
 
   /// A callback function that is triggered when a layer is updated.
   ///
   /// The [Layer] parameter provides information about the updated layer.
-  final Function(Layer)? onUpdateLayer;
+  final Function(Layer layer)? onUpdateLayer;
 
   /// A callback function that is triggered when a layer is removed.
   ///
   /// The [Layer] parameter provides information about the removed layer.
-  final Function(Layer)? onRemoveLayer;
+  final Function(Layer layer)? onRemoveLayer;
 
   /// A callback function that is triggered when a sub-editor is opened.
   ///
   /// The [SubEditor] parameter provides information about the opened
   /// sub-editor.
-  final Function(SubEditor)? onOpenSubEditor;
+  final Function(SubEditor editor)? onOpenSubEditor;
 
   /// A callback that is triggered when a sub-editor finishes closing.
   ///
@@ -69,7 +85,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   /// resources or updating the UI.
   ///
   /// This can be `null` if no action is required when the sub-editor closes.
-  final Function(SubEditor)? onEndCloseSubEditor;
+  final Function(SubEditor editor)? onEndCloseSubEditor;
 
   /// A callback that is triggered when a sub-editor starts to close.
   ///
@@ -80,7 +96,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   ///
   /// This can be `null` if no action is required at the start of the close
   /// process.
-  final Function(SubEditor)? onStartCloseSubEditor;
+  final Function(SubEditor editor)? onStartCloseSubEditor;
 
   /// A callback function that is triggered when the user `tap` on the body.
   final Function()? onTap;
@@ -98,6 +114,30 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   /// This function is called when the ESC key is pressed.
   /// By default it is null, which runs the default "close" behavior.
   final Function()? onEscapeButton;
+
+  /// Callback triggered when the import of the editor's history starts.
+  ///
+  /// [state] provides the current state of the ProImageEditor.
+  /// [import] contains information about the import operation.
+
+  /// Callback triggered when the import of the editor's history ends.
+  ///
+  /// [state] provides the current state of the ProImageEditor.
+  /// [import] contains information about the import operation.
+  final Function(ProImageEditorState state, ImportStateHistory import)?
+      onImportHistoryStart;
+
+  /// Callback triggered when the import of the editor's history is done.
+  ///
+  /// [state] provides the current state of the ProImageEditor.
+  /// [import] contains information about the import operation.
+
+  /// Callback triggered when the import of the editor's history ends.
+  ///
+  /// [state] provides the current state of the ProImageEditor.
+  /// [import] contains information about the import operation.
+  final Function(ProImageEditorState state, ImportStateHistory import)?
+      onImportHistoryEnd;
 
   /// A callback function that is triggered when a scaling gesture starts.
   ///
@@ -308,12 +348,14 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Creates a copy with modified editor callbacks.
   MainEditorCallbacks copyWith({
-    Function(Layer)? onAddLayer,
-    Function(Layer)? onUpdateLayer,
-    Function(Layer)? onRemoveLayer,
-    Function(SubEditor)? onOpenSubEditor,
-    Function(SubEditor)? onEndCloseSubEditor,
-    Function(SubEditor)? onStartCloseSubEditor,
+    Function(Layer layer)? onLayerTapDown,
+    Function(Layer layer)? onLayerTapUp,
+    Function(Layer layer)? onAddLayer,
+    Function(Layer layer)? onUpdateLayer,
+    Function(Layer layer)? onRemoveLayer,
+    Function(SubEditor editor)? onOpenSubEditor,
+    Function(SubEditor editor)? onEndCloseSubEditor,
+    Function(SubEditor editor)? onStartCloseSubEditor,
     Function()? onTap,
     Function()? onDoubleTap,
     Function()? onLongPress,
@@ -334,8 +376,14 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     Function()? onDone,
     Function()? onRedo,
     Function()? onUndo,
+    Function(ProImageEditorState state, ImportStateHistory import)?
+        onImportHistoryStart,
+    Function(ProImageEditorState state, ImportStateHistory import)?
+        onImportHistoryEnd,
   }) {
     return MainEditorCallbacks(
+      onLayerTapDown: onLayerTapDown ?? this.onLayerTapDown,
+      onLayerTapUp: onLayerTapUp ?? this.onLayerTapUp,
       onAddLayer: onAddLayer ?? this.onAddLayer,
       onUpdateLayer: onUpdateLayer ?? this.onUpdateLayer,
       onRemoveLayer: onRemoveLayer ?? this.onRemoveLayer,
@@ -367,6 +415,8 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
       onDone: onDone ?? this.onDone,
       onRedo: onRedo ?? this.onRedo,
       onUndo: onUndo ?? this.onUndo,
+      onImportHistoryStart: onImportHistoryStart ?? this.onImportHistoryStart,
+      onImportHistoryEnd: onImportHistoryEnd ?? this.onImportHistoryEnd,
     );
   }
 }

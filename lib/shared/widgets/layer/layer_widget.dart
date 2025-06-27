@@ -37,6 +37,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     this.onTap,
     this.onEditTap,
     this.onRemoveTap,
+    this.onDuplicate,
     this.highPerformanceMode = false,
     this.enableHitDetection = false,
     this.selected = false,
@@ -74,6 +75,9 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
 
   /// Callback when a tap up event occurs.
   final Function()? onTapUp;
+
+  /// Callback triggered when a layer should be copied.
+  final Function()? onDuplicate;
 
   /// Callback when a tap event occurs.
   final Function(Layer)? onTap;
@@ -132,7 +136,6 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
 
 class _LayerWidgetState extends State<LayerWidget>
     with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
-  /// The type of layer being represented.
   late LayerWidgetType _layerType;
 
   /// Flag to control the display of a move cursor.
@@ -147,29 +150,35 @@ class _LayerWidgetState extends State<LayerWidget>
     onRemoveTap: widget.onRemoveTap,
   );
 
+  late final Offset _fractionalOffset;
+
+  final double _tapSlop = 18.0;
+  Offset? _downPosition;
+  DateTime _tapDownTimestamp = DateTime.now();
+
   @override
   void initState() {
     super.initState();
-    switch (widget.layerData.runtimeType) {
-      case const (TextLayer):
-        _layerType = LayerWidgetType.text;
-        break;
-      case const (EmojiLayer):
-        _layerType = LayerWidgetType.emoji;
-        break;
-      case const (WidgetLayer):
-        _layerType = LayerWidgetType.widget;
-        break;
-      case const (PaintLayer):
-        var layer = widget.layerData as PaintLayer;
-        _layerType = layer.item.mode == PaintMode.blur ||
-                layer.item.mode == PaintMode.pixelate
-            ? LayerWidgetType.censor
-            : LayerWidgetType.canvas;
-        break;
-      default:
-        _layerType = LayerWidgetType.unknown;
-        break;
+
+    if (_layer.isTextLayer) {
+      _layerType = LayerWidgetType.text;
+      _fractionalOffset = configs.textEditor.layerFractionalOffset;
+    } else if (_layer.isEmojiLayer) {
+      _layerType = LayerWidgetType.emoji;
+      _fractionalOffset = configs.emojiEditor.layerFractionalOffset;
+    } else if (_layer.isWidgetLayer) {
+      _layerType = LayerWidgetType.widget;
+      _fractionalOffset = configs.stickerEditor.layerFractionalOffset;
+    } else if (_layer.isPaintLayer) {
+      var layer = _layer as PaintLayer;
+      _layerType = layer.item.mode == PaintMode.blur ||
+              layer.item.mode == PaintMode.pixelate
+          ? LayerWidgetType.censor
+          : LayerWidgetType.canvas;
+      _fractionalOffset = configs.paintEditor.layerFractionalOffset;
+    } else {
+      _layerType = LayerWidgetType.unknown;
+      _fractionalOffset = const Offset(-0.5, -0.5);
     }
   }
 
@@ -187,20 +196,17 @@ class _LayerWidgetState extends State<LayerWidget>
     _contextManager.open(
       context: context,
       details: details,
-      enableEditButton: _layerType == LayerWidgetType.text &&
-          widget.layerData.interaction.enableEdit,
+      enableEditButton:
+          _layerType == LayerWidgetType.text && _layer.interaction.enableEdit,
       enableRemoveButton: true,
     );
   }
 
-  /// Handles a tap event on the layer.
-  void _onTap() {
-    if (_isOutsideHitBox()) return;
-    widget.onTap?.call(_layer);
-  }
-
   /// Handles a pointer down event on the layer.
   void _onPointerDown(PointerDownEvent event) {
+    _downPosition = event.position;
+    _tapDownTimestamp = DateTime.now();
+
     if (_isOutsideHitBox()) return;
     if (!isDesktop || event.buttons != kSecondaryMouseButton) {
       widget.onTapDown?.call();
@@ -209,22 +215,52 @@ class _LayerWidgetState extends State<LayerWidget>
 
   /// Handles a pointer up event on the layer.
   void _onPointerUp(PointerUpEvent event) {
+    // Notify optional onTapUp callback
     widget.onTapUp?.call();
+
+    if (widget.selected) return;
+
+    /// Important: To avoid gesture conflicts, we need to create our own
+    /// onTap event using the Listener widget instead of GestureDetector.
+    /// Below is a minimal example of how this can work. If anyone has
+    /// issues with this, please open a new issue.
+
+    // Cancel if down position is not set
+    if (_downPosition == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final interaction = _layer.interaction;
+      final offsetDistance = (event.position - _downPosition!).distance;
+      final timeElapsed =
+          DateTime.now().difference(_tapDownTimestamp).inMilliseconds;
+
+      // Ignore if pointer moved too much (exceeds tap slop)
+      if (offsetDistance >= _tapSlop) return;
+
+      // Ignore if tap took too long (not a quick tap)
+      if (timeElapsed > 250) return;
+
+      // Fire onTap only if selection/edit is enabled and pointer is inside hit box
+      if ((interaction.enableSelection || interaction.enableEdit) &&
+          !_isOutsideHitBox()) {
+        widget.onTap?.call(_layer);
+      }
+    });
   }
 
   bool _isOutsideHitBox() {
-    return _isHitOutsideInCanvas() || _isHitOutsideInText();
+    return (_isHitOutsideInCanvas() || _isHitOutsideInText()) &&
+        !widget.selected;
   }
 
   /// Checks if the hit is outside the canvas for certain types of layers.
   bool _isHitOutsideInCanvas() {
-    return _layerType == LayerWidgetType.canvas &&
-        !(_layer as PaintLayer).item.hit;
+    return _layer.isPaintLayer && !(_layer as PaintLayer).item.hit;
   }
 
   /// Checks if the hit is outside the canvas for certain types of layers.
   bool _isHitOutsideInText() {
-    return _layerType == LayerWidgetType.text && !(_layer as TextLayer).hit;
+    return _layer.isTextLayer && !(_layer as TextLayer).hit;
   }
 
   /// Calculates the transformation matrix for the layer's position and
@@ -247,21 +283,16 @@ class _LayerWidgetState extends State<LayerWidget>
   double get offsetY => _layer.offset.dy + widget.editorCenterY;
 
   void _onHoverEnter() {
-    if (_layerType != LayerWidgetType.canvas &&
-        _layerType != LayerWidgetType.text) {
+    if ((!_layer.isPaintLayer && !_layer.isTextLayer) || widget.selected) {
       _showMoveCursor.value = true;
     }
   }
 
   void _onHoverLeave() {
-    switch (_layerType) {
-      case LayerWidgetType.canvas:
-        (widget.layerData as PaintLayer).item.hit = false;
-        break;
-      case LayerWidgetType.text:
-        (widget.layerData as TextLayer).hit = false;
-        break;
-      default:
+    if (_layer.isPaintLayer) {
+      (_layer as PaintLayer).item.hit = false;
+    } else if (_layer.isTextLayer) {
+      (_layer as TextLayer).hit = false;
     }
     _showMoveCursor.value = false;
     _lastHitState.value = false;
@@ -275,11 +306,11 @@ class _LayerWidgetState extends State<LayerWidget>
       top: offsetY,
       left: offsetX,
       child: FractionalTranslation(
-        translation: const Offset(-0.5, -0.5),
+        translation: _fractionalOffset,
         child: Hero(
           // Important that hero is above transform
           createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-          tag: widget.layerData.id,
+          tag: _layer.id,
           child: Transform(
             transform: transformMatrix,
             alignment: Alignment.center,
@@ -291,9 +322,9 @@ class _LayerWidgetState extends State<LayerWidget>
   }
 
   Widget _buildInteractionHandlers() {
-    var interaction = widget.layerData.interaction;
+    var interaction = _layer.interaction;
     return LayerInteractionHelperWidget(
-      layerData: widget.layerData,
+      layerData: _layer,
       configs: configs,
       callbacks: callbacks,
       selected: widget.selected,
@@ -306,44 +337,45 @@ class _LayerWidgetState extends State<LayerWidget>
       },
       onScaleRotateUp: widget.onScaleRotateUp,
       onRemoveLayer: widget.onRemoveTap,
-      child: _buildCursor(
-        child: ValueListenableBuilder(
-            valueListenable: _lastHitState,
-            builder: (_, __, ___) {
-              return GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
-                onTap:
-                    (interaction.enableSelection || interaction.enableEdit) &&
-                            !_isOutsideHitBox()
-                        ? _onTap
-                        : null,
-                child: Listener(
+      onDuplicate: widget.onDuplicate,
+      child: Padding(
+        padding: widget.selected
+            ? EdgeInsets.zero
+            : layerInteraction.style.overlayPadding,
+        child: _buildCursor(
+          child: ValueListenableBuilder(
+              valueListenable: _lastHitState,
+              builder: (_, __, ___) {
+                return GestureDetector(
                   behavior: HitTestBehavior.translucent,
-                  onPointerDown: _onPointerDown,
-                  onPointerUp: _onPointerUp,
-                  child: Padding(
-                    padding: EdgeInsets.all(widget.selected ? 7.0 : 0),
-                    child: FittedBox(
-                      child: _buildContent(),
+                  onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
+                  child: Listener(
+                    behavior: HitTestBehavior.translucent,
+                    onPointerDown: _onPointerDown,
+                    onPointerUp: _onPointerUp,
+                    child: Padding(
+                      padding: !widget.selected
+                          ? EdgeInsets.zero
+                          : layerInteraction.style.overlayPadding,
+                      child: FittedBox(
+                        child: _buildContent(),
+                      ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+        ),
       ),
     );
   }
 
-  Widget _buildCursor({
-    required Widget child,
-  }) {
+  Widget _buildCursor({required Widget child}) {
     return ValueListenableBuilder(
         valueListenable: _showMoveCursor,
         builder: (_, showCursor, __) {
           return MouseRegion(
             hitTestBehavior: HitTestBehavior.translucent,
-            cursor: showCursor && widget.layerData.interaction.enableMove
+            cursor: showCursor && _layer.interaction.enableMove
                 ? layerInteraction.style.hoverCursor
                 : MouseCursor.defer,
             onEnter: (event) => _onHoverEnter(),
@@ -381,7 +413,7 @@ class _LayerWidgetState extends State<LayerWidget>
       case LayerWidgetType.canvas:
         content = LayerWidgetPaintItem(
           layer: _layer as PaintLayer,
-          scale: widget.layerData.scale,
+          scale: _layer.scale,
           isSelected: widget.selected,
           enableHitDetection: widget.enableHitDetection,
           isHighPerformanceMode: widget.highPerformanceMode,

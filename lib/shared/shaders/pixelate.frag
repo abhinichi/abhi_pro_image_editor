@@ -2,7 +2,7 @@
 
 uniform vec2 u_size;                // Layer size
 uniform float u_pixel_block_size;   // The pixelation block size
-uniform vec2 u_device_size;         // The pixelation block size
+uniform vec2 u_device_size;         // The device size
 uniform float u_fit_to_width;       // If the image fits the device, it is 1, if not, it is 0.
 uniform sampler2D u_texture_input;
 

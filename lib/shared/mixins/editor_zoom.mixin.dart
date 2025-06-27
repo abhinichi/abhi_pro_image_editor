@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '/core/models/editor_configs/utils/zoom_configs.dart';
 import '../utils/debounce.dart';
-import '../widgets/extended/extended_interactive_viewer.dart';
+import '../widgets/extended/interactive_viewer/extended_interactive_viewer.dart';
 
 /// A mixin that provides zoom-related behavior for image or content editors.
 ///

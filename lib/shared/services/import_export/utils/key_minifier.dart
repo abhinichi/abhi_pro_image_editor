@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '/shared/services/import_export/constants/minified_keys.dart';
 
 /// A service class responsible for minifying or preserving keys in data
@@ -168,7 +170,8 @@ class EditorKeyMinifier {
 
   /// Function to generate sequential alphabetical keys
   /// (A, B, ..., Z, AA, AB, ...)
-  String _generateAlphabeticalKey(int index) {
+  @visibleForTesting
+  String generateAlphabeticalKey(int index) {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     String key = '';
     while (index >= 0) {
@@ -199,7 +202,7 @@ class EditorKeyMinifier {
     List<Map<String, dynamic>> updatedHistory = history;
 
     for (var entry in references.entries) {
-      String newKey = _generateAlphabeticalKey(index);
+      String newKey = generateAlphabeticalKey(index);
       updatedReferences[newKey] = entry.value;
 
       for (var historyEntry in updatedHistory) {

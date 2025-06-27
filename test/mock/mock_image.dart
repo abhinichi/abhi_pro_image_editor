@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:pro_image_editor/core/platform/io/io_helper.dart';
 
-Uint8List get fakeMemoryImage => Uint8List.fromList([
+Uint8List get mockMemoryImage => Uint8List.fromList([
       0x89,
       0x50,
       0x4E,
@@ -73,6 +73,6 @@ Uint8List get fakeMemoryImage => Uint8List.fromList([
       0x82
     ]);
 
-final fakeFileImage = File('');
+final mockFileImage = File('');
 
-const fakeNetworkImage = 'https://picsum.photos/200';
+const mockNetworkImage = 'https://picsum.photos/200';
