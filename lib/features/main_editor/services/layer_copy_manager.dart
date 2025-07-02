@@ -30,15 +30,37 @@ class LayerCopyManager {
     }
   }
 
+  /// Creates a duplicate of the given layer.
+  ///
+  /// Returns a new copy of the layer with the same content. If the layer type
+  /// is not supported, it returns the original layer without duplication.
+  Layer duplicateLayer(Layer layer) {
+    if (layer is TextLayer) {
+      return createCopyTextLayer(layer, enableDuplicate: true);
+    } else if (layer is EmojiLayer) {
+      return createCopyEmojiLayer(layer, enableDuplicate: true);
+    } else if (layer is PaintLayer) {
+      return createCopyPaintLayer(layer, enableDuplicate: true);
+    } else if (layer is WidgetLayer) {
+      return createCopyWidgetLayer(layer, enableDuplicate: true);
+    } else {
+      return layer;
+    }
+  }
+
   /// Copy a list of layers to create a new instances of the same type.
   List<Layer> copyLayerList(List<Layer> layers) {
     return layers.map(copyLayer).toList();
   }
 
   /// Create a copy of a TextLayer instance.
-  TextLayer createCopyTextLayer(TextLayer layer) {
+  TextLayer createCopyTextLayer(
+    TextLayer layer, {
+    bool enableDuplicate = false,
+  }) {
     return TextLayer(
-      id: layer.id,
+      id: enableDuplicate ? null : layer.id,
+      key: enableDuplicate ? null : layer.key,
       text: layer.text,
       align: layer.align,
       fontScale: layer.fontScale,
@@ -56,7 +78,10 @@ class LayerCopyManager {
       ),
       colorMode: layer.colorMode,
       colorPickerPosition: layer.colorPickerPosition,
-      offset: Offset(layer.offset.dx, layer.offset.dy),
+      offset: Offset(
+        layer.offset.dx + (enableDuplicate ? 30 : 0),
+        layer.offset.dy + (enableDuplicate ? 30 : 0),
+      ),
       rotation: layer.rotation,
       textStyle: layer.textStyle,
       scale: layer.scale,
@@ -69,11 +94,18 @@ class LayerCopyManager {
   }
 
   /// Create a copy of an EmojiLayer instance.
-  EmojiLayer createCopyEmojiLayer(EmojiLayer layer) {
+  EmojiLayer createCopyEmojiLayer(
+    EmojiLayer layer, {
+    bool enableDuplicate = false,
+  }) {
     return EmojiLayer(
-      id: layer.id,
+      id: enableDuplicate ? null : layer.id,
+      key: enableDuplicate ? null : layer.key,
       emoji: layer.emoji,
-      offset: Offset(layer.offset.dx, layer.offset.dy),
+      offset: Offset(
+        layer.offset.dx + (enableDuplicate ? 30 : 0),
+        layer.offset.dy + (enableDuplicate ? 30 : 0),
+      ),
       rotation: layer.rotation,
       scale: layer.scale,
       flipX: layer.flipX,
@@ -84,11 +116,18 @@ class LayerCopyManager {
   }
 
   /// Create a copy of an WidgetLayer instance.
-  WidgetLayer createCopyWidgetLayer(WidgetLayer layer) {
+  WidgetLayer createCopyWidgetLayer(
+    WidgetLayer layer, {
+    bool enableDuplicate = false,
+  }) {
     return WidgetLayer(
-      id: layer.id,
+      id: enableDuplicate ? null : layer.id,
+      key: enableDuplicate ? null : layer.key,
       widget: layer.widget,
-      offset: Offset(layer.offset.dx, layer.offset.dy),
+      offset: Offset(
+        layer.offset.dx + (enableDuplicate ? 30 : 0),
+        layer.offset.dy + (enableDuplicate ? 30 : 0),
+      ),
       rotation: layer.rotation,
       scale: layer.scale,
       flipX: layer.flipX,
@@ -100,10 +139,17 @@ class LayerCopyManager {
   }
 
   /// Create a copy of a PaintLayer instance.
-  PaintLayer createCopyPaintLayer(PaintLayer layer) {
+  PaintLayer createCopyPaintLayer(
+    PaintLayer layer, {
+    bool enableDuplicate = false,
+  }) {
     return PaintLayer(
-      id: layer.id,
-      offset: Offset(layer.offset.dx, layer.offset.dy),
+      id: enableDuplicate ? null : layer.id,
+      key: enableDuplicate ? null : layer.key,
+      offset: Offset(
+        layer.offset.dx + (enableDuplicate ? 30 : 0),
+        layer.offset.dy + (enableDuplicate ? 30 : 0),
+      ),
       rotation: layer.rotation,
       scale: layer.scale,
       flipX: layer.flipX,

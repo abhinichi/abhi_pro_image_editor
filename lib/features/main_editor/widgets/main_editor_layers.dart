@@ -53,6 +53,7 @@ class MainEditorLayers extends StatefulWidget {
     required this.state,
     required this.setTempLayer,
     required this.onContextMenuToggled,
+    required this.onDuplicateLayer,
   });
 
   /// Represents the current state of the editor.
@@ -94,6 +95,9 @@ class MainEditorLayers extends StatefulWidget {
   /// Callback to temporarily set a layer for interaction.
   final Function(Layer layer) setTempLayer;
 
+  /// Callback triggered when a layer should be copied.
+  final Function(Layer layer) onDuplicateLayer;
+
   /// Callback triggered when the context menu is toggled.
   final Function(bool isOpen)? onContextMenuToggled;
 
@@ -109,6 +113,8 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
 
   /// Key for managing mouse cursor regions.
   final _mouseCursorsKey = GlobalKey<ExtendedRebuildMouseRegionState>();
+
+  bool _isScaleInteractionActive = false;
 
   // Helper methods for handling layer interactions
   void _handleEditTap(int index, Layer layer) {
@@ -134,6 +140,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   }
 
   void _handleTapUp(Layer layer) {
+    if (_isScaleInteractionActive) return;
     if (widget.layerInteractionManager.hoverRemoveBtn) {
       widget.state.removeLayer(layer);
     }
@@ -141,6 +148,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
     widget.state.selectedLayerIndex = -1;
     widget.checkInteractiveViewer();
+    widget.callbacks.mainEditorCallbacks?.onLayerTapUp?.call(layer);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -149,12 +157,15 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   }
 
   void _handleTapDown(int index, Layer layer) {
+    if (_isScaleInteractionActive) return;
     widget.state.selectedLayerIndex = index;
     widget.setTempLayer(layer);
     widget.checkInteractiveViewer();
+    widget.callbacks.mainEditorCallbacks?.onLayerTapDown?.call(layer);
   }
 
   void _handleScaleRotateDown(int index, Size layerOriginalSize, Layer layer) {
+    _isScaleInteractionActive = true;
     widget.state.selectedLayerIndex = index;
     widget.layerInteractionManager
       ..rotateScaleLayerSizeHelper = layerOriginalSize
@@ -163,6 +174,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   }
 
   void _handleScaleRotateUp() {
+    _isScaleInteractionActive = false;
     widget.layerInteractionManager
       ..rotateScaleLayerSizeHelper = null
       ..rotateScaleLayerScaleHelper = null;
@@ -266,6 +278,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
       onTapDown: () => _handleTapDown(index, layer),
       onScaleRotateDown: (details, layerOriginalSize) =>
           _handleScaleRotateDown(index, layerOriginalSize, layer),
+      onDuplicate: () => widget.onDuplicateLayer(layer),
       onContextMenuToggled: widget.onContextMenuToggled,
       onScaleRotateUp: (details) => _handleScaleRotateUp(),
       onRemoveTap: () => _handleRemoveLayer(layer),

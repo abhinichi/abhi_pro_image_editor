@@ -44,6 +44,7 @@ class TextLayer extends Layer {
     super.isDeleted,
     super.meta,
     super.boxConstraints,
+    super.key,
   });
 
   /// Factory constructor for creating a TextLayer instance from a Layer
@@ -189,6 +190,9 @@ class TextLayer extends Layer {
   /// A custom text style for the text. Be careful the editor allow not to
   /// import and export this style.
   TextStyle? textStyle;
+
+  @override
+  bool get isTextLayer => true;
 
   @override
   Map<String, dynamic> toMap() {
