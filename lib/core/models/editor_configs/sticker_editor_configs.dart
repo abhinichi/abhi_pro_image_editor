@@ -1,10 +1,9 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove deprecated
 import 'package:flutter/widgets.dart';
 
 import '/core/models/layers/layer.dart';
 import '../icons/sticker_editor_icons.dart';
 import '../styles/sticker_editor_style.dart';
+import 'utils/base_editor_layer_configs.dart';
 export '../icons/sticker_editor_icons.dart';
 export '../styles/sticker_editor_style.dart';
 
@@ -24,14 +23,14 @@ export '../styles/sticker_editor_style.dart';
 ///   },
 /// );
 /// ```
-class StickerEditorConfigs {
+class StickerEditorConfigs implements BaseEditorLayerConfigs {
   /// Creates an instance of StickerEditorConfigs with optional settings.
   ///
   /// By default, the editor is disabled (if not specified), and other
   /// properties are set to reasonable defaults.
   const StickerEditorConfigs({
+    this.layerFractionalOffset = const Offset(-0.5, -0.5),
     this.builder,
-    @Deprecated('Use [builder] instead') this.buildStickers,
     this.initWidth = 100,
     this.minScale = double.negativeInfinity,
     this.maxScale = double.infinity,
@@ -41,6 +40,10 @@ class StickerEditorConfigs {
   })  : assert(initWidth > 0, 'initWidth must be positive'),
         assert(maxScale >= minScale,
             'maxScale must be greater than or equal to minScale');
+
+  /// {@macro layerFractionalOffset}
+  @override
+  final Offset layerFractionalOffset;
 
   /// Indicates whether the sticker editor is enabled.
   ///
@@ -54,10 +57,6 @@ class StickerEditorConfigs {
   /// Specifies the starting width of the stickers when they are first placed
   /// in the editor. This value is in logical pixels.
   final double initWidth;
-
-  /// A callback that builds the stickers.
-  @Deprecated('Use [builder] instead')
-  final BuildStickers? buildStickers;
 
   /// A callback that builds the stickers.
   ///
@@ -86,20 +85,21 @@ class StickerEditorConfigs {
   /// [StickerEditorConfigs] with some properties updated while keeping the
   /// others unchanged.
   StickerEditorConfigs copyWith({
+    Offset? layerFractionalOffset,
     bool? enabled,
     double? initWidth,
     StickerBuilder? builder,
-    @Deprecated('Use [builder] instead') BuildStickers? buildStickers,
     double? minScale,
     double? maxScale,
     StickerEditorStyle? style,
     StickerEditorIcons? icons,
   }) {
     return StickerEditorConfigs(
+      layerFractionalOffset:
+          layerFractionalOffset ?? this.layerFractionalOffset,
       enabled: enabled ?? this.enabled,
       initWidth: initWidth ?? this.initWidth,
       builder: builder ?? this.builder,
-      buildStickers: buildStickers ?? this.buildStickers,
       minScale: minScale ?? this.minScale,
       maxScale: maxScale ?? this.maxScale,
       style: style ?? this.style,

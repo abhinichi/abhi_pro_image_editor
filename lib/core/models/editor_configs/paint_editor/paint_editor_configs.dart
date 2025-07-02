@@ -4,6 +4,7 @@ import '/features/paint_editor/enums/paint_editor_enum.dart';
 import '../../custom_widgets/paint_editor_widgets.dart';
 import '../../icons/paint_editor_icons.dart';
 import '../../styles/paint_editor_style.dart';
+import '../utils/base_editor_layer_configs.dart';
 import '../utils/editor_safe_area.dart';
 import '../utils/zoom_configs.dart';
 import 'censor_configs.dart';
@@ -36,7 +37,7 @@ export 'censor_configs.dart';
 ///   initialPaintMode: PaintMode.freeStyle,
 /// );
 /// ```
-class PaintEditorConfigs extends ZoomConfigs {
+class PaintEditorConfigs extends ZoomConfigs implements BaseEditorLayerConfigs {
   /// Creates an instance of PaintEditorConfigs with optional settings.
   ///
   /// By default, the editor is enabled, and most drawing tools are enabled.
@@ -55,6 +56,7 @@ class PaintEditorConfigs extends ZoomConfigs {
     this.colorPickerTop,
     this.colorPickerLeft,
     this.colorPickerRight,
+    this.layerFractionalOffset = const Offset(-0.5, -0.5),
     this.enableModeFreeStyle = true,
     this.enableModeArrow = true,
     this.enableModeLine = true,
@@ -89,6 +91,11 @@ class PaintEditorConfigs extends ZoomConfigs {
             'maxScale must be greater than or equal to minScale'),
         assert(editorMaxScale > editorMinScale,
             'editorMaxScale must be greater than editorMinScale');
+
+  /// {@macro layerFractionalOffset}
+  @override
+  final Offset layerFractionalOffset;
+
   /// Indicates whether the paint editor is enabled.
   final bool enabled;
 
@@ -227,6 +234,7 @@ class PaintEditorConfigs extends ZoomConfigs {
   /// [PaintEditorConfigs] with some properties updated while keeping the
   /// others unchanged.
   PaintEditorConfigs copyWith({
+    Offset? layerFractionalOffset,
     bool? enabled,
     bool? enableModeFreeStyle,
     bool? enableModeArrow,
@@ -272,59 +280,62 @@ class PaintEditorConfigs extends ZoomConfigs {
     EdgeInsets? colorPickerPadding,
   }) {
     return PaintEditorConfigs(
-      enabled: enabled ?? this.enabled,
-      enableModeFreeStyle: enableModeFreeStyle ?? this.enableModeFreeStyle,
-      enableModeArrow: enableModeArrow ?? this.enableModeArrow,
-      enableModeLine: enableModeLine ?? this.enableModeLine,
-      enableModeRect: enableModeRect ?? this.enableModeRect,
-      enableModeCircle: enableModeCircle ?? this.enableModeCircle,
-      enableModeDashLine: enableModeDashLine ?? this.enableModeDashLine,
-      enableModePolygon: enableModePolygon ?? this.enableModePolygon,
-      enableModeBlur: enableModeBlur ?? this.enableModeBlur,
-      enableModePixelate: enableModePixelate ?? this.enableModePixelate,
-      enableModeEraser: enableModeEraser ?? this.enableModeEraser,
-      showToggleFillButton: showToggleFillButton ?? this.showToggleFillButton,
-      showLineWidthAdjustmentButton:
-          showLineWidthAdjustmentButton ?? this.showLineWidthAdjustmentButton,
-      showOpacityAdjustmentButton:
-          showOpacityAdjustmentButton ?? this.showOpacityAdjustmentButton,
-      isInitiallyFilled: isInitiallyFilled ?? this.isInitiallyFilled,
-      showLayers: showLayers ?? this.showLayers,
-      enableShareZoomMatrix:
-          enableShareZoomMatrix ?? this.enableShareZoomMatrix,
-      enableFreeStyleHighPerformanceScaling:
-          enableFreeStyleHighPerformanceScaling ??
-              this.enableFreeStyleHighPerformanceScaling,
-      enableFreeStyleHighPerformanceMoving:
-          enableFreeStyleHighPerformanceMoving ??
-              this.enableFreeStyleHighPerformanceMoving,
-      enableFreeStyleHighPerformanceHero: enableFreeStyleHighPerformanceHero ??
-          this.enableFreeStyleHighPerformanceHero,
-      initialPaintMode: initialPaintMode ?? this.initialPaintMode,
-      censorConfigs: censorConfigs ?? this.censorConfigs,
-      minScale: minScale ?? this.minScale,
-      maxScale: maxScale ?? this.maxScale,
-      safeArea: safeArea ?? this.safeArea,
-      style: style ?? this.style,
-      icons: icons ?? this.icons,
-      widgets: widgets ?? this.widgets,
-      enableZoom: enableZoom ?? this.enableZoom,
-      editorMinScale: editorMinScale ?? this.editorMinScale,
-      editorMaxScale: editorMaxScale ?? this.editorMaxScale,
-      polygonConnectionThreshold:
-          polygonConnectionThreshold ?? this.polygonConnectionThreshold,
-      enableDoubleTapZoom: enableDoubleTapZoom ?? this.enableDoubleTapZoom,
-      doubleTapZoomFactor: doubleTapZoomFactor ?? this.doubleTapZoomFactor,
-      doubleTapZoomDuration:
-          doubleTapZoomDuration ?? this.doubleTapZoomDuration,
-      doubleTapZoomCurve: doubleTapZoomCurve ?? this.doubleTapZoomCurve,
-      boundaryMargin: boundaryMargin ?? this.boundaryMargin,
-      colorPickerBottom: colorPickerBottom ?? this.colorPickerBottom,
-      colorPickerTop: colorPickerTop ?? this.colorPickerTop,
-      colorPickerLeft: colorPickerLeft ?? this.colorPickerLeft,
-      colorPickerRight: colorPickerRight ?? this.colorPickerRight,
-      colorPickerPadding: colorPickerPadding ?? this.colorPickerPadding,
-      isColorPickerHorizontal: isColorPickerHorizontal ?? this.isColorPickerHorizontal
-    );
+        layerFractionalOffset:
+            layerFractionalOffset ?? this.layerFractionalOffset,
+        enabled: enabled ?? this.enabled,
+        enableModeFreeStyle: enableModeFreeStyle ?? this.enableModeFreeStyle,
+        enableModeArrow: enableModeArrow ?? this.enableModeArrow,
+        enableModeLine: enableModeLine ?? this.enableModeLine,
+        enableModeRect: enableModeRect ?? this.enableModeRect,
+        enableModeCircle: enableModeCircle ?? this.enableModeCircle,
+        enableModeDashLine: enableModeDashLine ?? this.enableModeDashLine,
+        enableModePolygon: enableModePolygon ?? this.enableModePolygon,
+        enableModeBlur: enableModeBlur ?? this.enableModeBlur,
+        enableModePixelate: enableModePixelate ?? this.enableModePixelate,
+        enableModeEraser: enableModeEraser ?? this.enableModeEraser,
+        showToggleFillButton: showToggleFillButton ?? this.showToggleFillButton,
+        showLineWidthAdjustmentButton:
+            showLineWidthAdjustmentButton ?? this.showLineWidthAdjustmentButton,
+        showOpacityAdjustmentButton:
+            showOpacityAdjustmentButton ?? this.showOpacityAdjustmentButton,
+        isInitiallyFilled: isInitiallyFilled ?? this.isInitiallyFilled,
+        showLayers: showLayers ?? this.showLayers,
+        enableShareZoomMatrix:
+            enableShareZoomMatrix ?? this.enableShareZoomMatrix,
+        enableFreeStyleHighPerformanceScaling:
+            enableFreeStyleHighPerformanceScaling ??
+                this.enableFreeStyleHighPerformanceScaling,
+        enableFreeStyleHighPerformanceMoving:
+            enableFreeStyleHighPerformanceMoving ??
+                this.enableFreeStyleHighPerformanceMoving,
+        enableFreeStyleHighPerformanceHero:
+            enableFreeStyleHighPerformanceHero ??
+                this.enableFreeStyleHighPerformanceHero,
+        initialPaintMode: initialPaintMode ?? this.initialPaintMode,
+        censorConfigs: censorConfigs ?? this.censorConfigs,
+        minScale: minScale ?? this.minScale,
+        maxScale: maxScale ?? this.maxScale,
+        safeArea: safeArea ?? this.safeArea,
+        style: style ?? this.style,
+        icons: icons ?? this.icons,
+        widgets: widgets ?? this.widgets,
+        enableZoom: enableZoom ?? this.enableZoom,
+        editorMinScale: editorMinScale ?? this.editorMinScale,
+        editorMaxScale: editorMaxScale ?? this.editorMaxScale,
+        polygonConnectionThreshold:
+            polygonConnectionThreshold ?? this.polygonConnectionThreshold,
+        enableDoubleTapZoom: enableDoubleTapZoom ?? this.enableDoubleTapZoom,
+        doubleTapZoomFactor: doubleTapZoomFactor ?? this.doubleTapZoomFactor,
+        doubleTapZoomDuration:
+            doubleTapZoomDuration ?? this.doubleTapZoomDuration,
+        doubleTapZoomCurve: doubleTapZoomCurve ?? this.doubleTapZoomCurve,
+        boundaryMargin: boundaryMargin ?? this.boundaryMargin,
+        colorPickerBottom: colorPickerBottom ?? this.colorPickerBottom,
+        colorPickerTop: colorPickerTop ?? this.colorPickerTop,
+        colorPickerLeft: colorPickerLeft ?? this.colorPickerLeft,
+        colorPickerRight: colorPickerRight ?? this.colorPickerRight,
+        colorPickerPadding: colorPickerPadding ?? this.colorPickerPadding,
+        isColorPickerHorizontal:
+            isColorPickerHorizontal ?? this.isColorPickerHorizontal);
   }
 }

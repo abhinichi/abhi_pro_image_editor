@@ -6,6 +6,7 @@ import '../custom_widgets/text_editor_widgets.dart';
 import '../icons/text_editor_icons.dart';
 import '../layers/enums/layer_background_mode.dart';
 import '../styles/text_editor_style.dart';
+import 'utils/base_editor_layer_configs.dart';
 import 'utils/editor_safe_area.dart';
 
 export '../custom_widgets/text_editor_widgets.dart';
@@ -27,12 +28,13 @@ export '../styles/text_editor_style.dart';
 ///   initFontSize: 24.0,
 /// );
 /// ```
-class TextEditorConfigs {
+class TextEditorConfigs implements BaseEditorLayerConfigs {
   /// Creates an instance of TextEditorConfigs with optional settings.
   ///
   /// By default, the text editor is enabled, and most text formatting options
   /// are enabled. The initial font size is set to 24.0.
   const TextEditorConfigs({
+    this.layerFractionalOffset = const Offset(-0.5, -0.5),
     this.enableSuggestions = true,
     this.enabled = true,
     this.enableAutocorrect = true,
@@ -43,6 +45,7 @@ class TextEditorConfigs {
     this.enableMainEditorZoomFactor = false,
     this.initFontSize = 24.0,
     this.initialTextAlign = TextAlign.center,
+    this.inputTextFieldAlign = Alignment.center,
     this.initFontScale = 1.0,
     this.maxFontScale = 3.0,
     this.minFontScale = 0.3,
@@ -58,6 +61,10 @@ class TextEditorConfigs {
   })  : assert(initFontSize > 0, 'initFontSize must be positive'),
         assert(maxScale >= minScale,
             'maxScale must be greater than or equal to minScale');
+
+  /// {@macro layerFractionalOffset}
+  @override
+  final Offset layerFractionalOffset;
 
   /// Indicates whether the text editor is enabled.
   final bool enabled;
@@ -84,6 +91,13 @@ class TextEditorConfigs {
 
   /// The initial text alignment for the layer.
   final TextAlign initialTextAlign;
+
+  /// The alignment of the input text field within the editor.
+  ///
+  /// Determines how the text field is positioned relative to its parent widget.
+  /// For example, [Alignment.center] will center the text field, while
+  /// [Alignment.topLeft] will align it to the top-left corner.
+  final Alignment inputTextFieldAlign;
 
   /// The initial font scale for text.
   final double initFontScale;
@@ -145,11 +159,13 @@ class TextEditorConfigs {
   /// [TextEditorConfigs] with some properties updated while keeping the
   /// others unchanged.
   TextEditorConfigs copyWith({
+    Offset? layerFractionalOffset,
     bool? enabled,
     bool? showSelectFontStyleBottomBar,
     bool? enableMainEditorZoomFactor,
     double? initFontSize,
     TextAlign? initialTextAlign,
+    Alignment? inputTextFieldAlign,
     double? initFontScale,
     double? maxFontScale,
     double? minFontScale,
@@ -166,6 +182,8 @@ class TextEditorConfigs {
     TextEditorWidgets? widgets,
   }) {
     return TextEditorConfigs(
+      layerFractionalOffset:
+          layerFractionalOffset ?? this.layerFractionalOffset,
       safeArea: safeArea ?? this.safeArea,
       enabled: enabled ?? this.enabled,
       showSelectFontStyleBottomBar:
@@ -174,6 +192,7 @@ class TextEditorConfigs {
           enableMainEditorZoomFactor ?? this.enableMainEditorZoomFactor,
       initFontSize: initFontSize ?? this.initFontSize,
       initialTextAlign: initialTextAlign ?? this.initialTextAlign,
+      inputTextFieldAlign: inputTextFieldAlign ?? this.inputTextFieldAlign,
       initFontScale: initFontScale ?? this.initFontScale,
       maxFontScale: maxFontScale ?? this.maxFontScale,
       minFontScale: minFontScale ?? this.minFontScale,

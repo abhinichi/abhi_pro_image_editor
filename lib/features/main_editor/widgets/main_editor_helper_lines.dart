@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
-import '/shared/widgets/extended/extended_interactive_viewer.dart';
+import '../../../shared/widgets/extended/interactive_viewer/extended_interactive_viewer.dart';
 import '../controllers/main_editor_controllers.dart';
 import '../services/layer_interaction_manager.dart';
 import '../services/sizes_manager.dart';

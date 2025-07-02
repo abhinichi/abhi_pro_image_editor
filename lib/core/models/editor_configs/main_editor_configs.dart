@@ -27,6 +27,7 @@ class MainEditorConfigs extends ZoomConfigs {
     this.transformSetup,
     this.enableCloseButton = true,
     this.enableEscapeButton = true,
+    this.canZoomWhenLayerSelected = true,
     this.style = const MainEditorStyle(),
     this.icons = const MainEditorIcons(),
     this.widgets = const MainEditorWidgets(),
@@ -44,6 +45,13 @@ class MainEditorConfigs extends ZoomConfigs {
   ///
   /// This flag has no effect when the `onEscapeButton` callback is set.
   final bool enableEscapeButton;
+
+  /// Determines whether zooming is allowed when a layer is selected in the
+  /// editor.
+  ///
+  /// If set to `true`, users can zoom in or out while a layer is selected.
+  /// If set to `false`, zooming is disabled when a layer is selected.
+  final bool canZoomWhenLayerSelected;
 
   /// Initializes the editor with pre-configured transformations,
   /// such as cropping, based on the provided setup.
@@ -79,6 +87,7 @@ class MainEditorConfigs extends ZoomConfigs {
     double? editorMaxScale,
     EdgeInsets? boundaryMargin,
     bool? enableDoubleTapZoom,
+    bool? canZoomWhenLayerSelected,
     double? doubleTapZoomFactor,
     Duration? doubleTapZoomDuration,
     Curve? doubleTapZoomCurve,
@@ -95,6 +104,8 @@ class MainEditorConfigs extends ZoomConfigs {
       editorMinScale: editorMinScale ?? this.editorMinScale,
       editorMaxScale: editorMaxScale ?? this.editorMaxScale,
       enableDoubleTapZoom: enableDoubleTapZoom ?? this.enableDoubleTapZoom,
+      canZoomWhenLayerSelected:
+          canZoomWhenLayerSelected ?? this.canZoomWhenLayerSelected,
       doubleTapZoomFactor: doubleTapZoomFactor ?? this.doubleTapZoomFactor,
       doubleTapZoomDuration:
           doubleTapZoomDuration ?? this.doubleTapZoomDuration,

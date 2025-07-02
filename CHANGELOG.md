@@ -1,5 +1,54 @@
 # Changelog
 
+## 10.1.2
+- **FIX**(compat): Increased minimum Flutter SDK version to 3.32.0 to ensure compatibility with updated OverlayPortal APIs.
+
+## 10.1.1
+- **FIX**(gestures): Add new widget `GestureInterceptor` to prevent unnecessary gesture bubbling up the widget tree.
+
+## 10.1.0
+- **FEAT**(callbacks): Add new `onKeyboardEvent` callback to `MainEditorCallbacks`.
+
+## 10.0.0
+- **FEAT**(layer): Move the layer selection to the overlay to prevent it from being captured. This change allows layers to remain selected even after an interaction. The behavior can be controlled using the `keepSelectionOnInteraction` variable in the `LayerInteractionConfigs`.
+- **FEAT**(layer-stack): Add `moveLayerForward` and `moveLayerBackward` to move a layer one step forward or backward in the stack.
+- **FEAT**(layer-stack): Add `moveLayerToFront` and `moveLayerToBack` to move a layer to the top or bottom of the stack.
+- **FEAT**(layer-stack): Add `getLayerStackIndex` to retrieve a layer's index in the stack.
+- **FEAT**(layer): Add `duplicateLayer` to the `LayerCopyManager`.
+- **FEAT**(callback): Add `onLayerTapDown` and `onLayerTapUp` to the `MainEditorCallbacks`.
+- **FEAT**(layer): Add layer type identification for emoji, text, paint, and widget layers.
+- **FEAT**(cropMode): The `CropMode` can now be dynamically switched inside the `cropRotateEditor` by updating the `cropMode` value.
+- **FEAT**(crop-editor): The `CropEditor` now supports every aspect ratio for the round cropper, not just aspect ratio 1.
+- **FEAT**(crop-editor): Changing the aspect ratio no longer resets other applied changes like flip or rotate.
+- **FEAT**(paint-editor): Add `addPainting` method that allows to programmatically create new paintings.
+
+<br/>
+
+- **FIX**(text-layer): Resolve textLayer opening without requiring double-tap.
+- **FIX**(autoSource): Resolve issue where an error is thrown when the 'file' argument in the 'autoSource' constructor is null. This resolves issue [#509](https://github.com/hm21/pro_image_editor/issues/509).
+- **FIX**(text-editor): Resolve the issue of input text auto-wrapping, which does not happen in the main editor. This resolves issue [#469](https://github.com/hm21/pro_image_editor/issues/469). 
+- **FIX**(paint-editor): Resolve the issue where drawings shift when the AppBar or BottomBar is missing in the main editor. This resolves issue [#410](https://github.com/hm21/pro_image_editor/issues/410). 
+
+<br/>
+
+- **DOCS**(example): Introduce a new [example](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/features/layer_select_design_example.dart) to showcase a more contemporary layer selection design.
+
+<br/>
+
+- **TEST**: Added more than 200 new unit and widget tests to improve coverage and ensure more robust error detection.
+
+<br/>
+
+#### Breaking Changes
+- Removed all deprecated configuration settings.
+- Changed the layer selection system to use an overlay-based approach. This may lead to different results in certain edge cases. If you have implemented a custom selection behavior, review it to ensure compatibility.
+- Remove the configuration `enableRoundCropper` from `CropRotateEditorConfigs` and add the configuration `initialCropMode`.
+
+
+## 9.13.0
+- **FEAT**(Text-Editor): Add the `inputTextFieldAlign` property to the `TextEditorConfigs` to dynamically align the input field. This was requested in [#502](https://github.com/hm21/pro_image_editor/issues/502).
+
+
 ## 9.12.0
 - **FEAT**(import): Add `enableInitialEmptyState` to `ImportEditorConfigs` so the editor can replace the existing state history without including an empty first page.
 
@@ -11,6 +60,10 @@
 
 ## 9.11.0
 - **FEAT**(video-editor): Added new parameters to `CompleteParameters` required for extending the editor with video editing.
+
+<br/>
+
+
 - **FIX**(video-editor): Fixed issue where filter previews were displayed incorrectly.
 - **FIX**(video-editor): Fixed issue where the trim bar lost its state when moving a layer.
 
@@ -82,6 +135,10 @@
 
 ## 9.4.0
 - **FEAT**(jpeg-encoder): Add `jpegBackgroundColor` option to `ImageGenerationConfigs` to allow customization of JPEG background color.
+
+<br/>
+
+
 - **FIX**(crop_editor): Add missing copyWith parameters to ensure proper cloning of configuration states.
 - **FIX**(PaintEditor.drawing): Ensure `cropToImageBounds` is `false` to prevent unintended cropping behavior.
 
@@ -125,6 +182,8 @@
 - **FEAT**(callbacks): Add new callbacks that are triggered when a layer intersects with a helper line.
 - **FEAT**(TextLayer): Improve the text layer hit box for better gesture recognition.
 - **FEAT**(File): The file constructor in the main editor and sub-editors now supports adding just the file path in addition to the File itself.
+
+<br/>
 
 - **FIX**(Layers): Fix incorrect layer selection when drawing lines overlay other layers
 

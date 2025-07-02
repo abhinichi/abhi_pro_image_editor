@@ -35,6 +35,7 @@ class Layer {
   /// The [enableInteraction] parameter controls if a user can interact with
   /// the layer
   Layer({
+    GlobalKey? key,
     String? id,
     LayerInteraction? interaction,
     this.offset = Offset.zero,
@@ -45,7 +46,8 @@ class Layer {
     this.isDeleted = false,
     this.meta,
     this.boxConstraints,
-  })  : id = id ?? generateUniqueId(),
+  })  : key = key ??= GlobalKey(),
+        id = id ?? generateUniqueId(),
         interaction = interaction ?? LayerInteraction();
 
   /// Factory constructor for creating a Layer instance from a map and a list
@@ -126,7 +128,7 @@ class Layer {
 
   /// Global key associated with the Layer instance, used for accessing the
   /// widget tree.
-  GlobalKey key = GlobalKey();
+  GlobalKey key;
 
   /// The position offset of the widget.
   Offset offset;
@@ -157,6 +159,30 @@ class Layer {
   /// This can be used to store additional information about the layer
   /// that may be needed for processing or rendering.
   Map<String, dynamic>? meta;
+
+  /// Indicates whether this layer is a [TextLayer].
+  ///
+  /// Subclasses can override this to return `true` if the layer represents
+  /// a text-based element.
+  bool get isTextLayer => false;
+
+  /// Indicates whether this layer is a [PaintLayer].
+  ///
+  /// Subclasses can override this to return `true` if the layer contains
+  /// freehand drawing or painted content.
+  bool get isPaintLayer => false;
+
+  /// Indicates whether this layer is an [EmojiLayer].
+  ///
+  /// Subclasses can override this to return `true` if the layer represents
+  /// an emoji or similar symbolic element.
+  bool get isEmojiLayer => false;
+
+  /// Indicates whether this layer is a [WidgetLayer].
+  ///
+  /// Subclasses can override this to return `true` if the layer hosts a
+  /// Flutter widget or sticker.
+  bool get isWidgetLayer => false;
 
   /// Converts this transform object to a Map.
   ///

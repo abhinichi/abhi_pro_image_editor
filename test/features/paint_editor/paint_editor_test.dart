@@ -8,76 +8,148 @@ import 'package:pro_image_editor/core/models/init_configs/paint_editor_init_conf
 import 'package:pro_image_editor/features/paint_editor/paint_editor.dart';
 import 'package:pro_image_editor/features/paint_editor/widgets/paint_canvas.dart';
 import 'package:pro_image_editor/shared/widgets/color_picker/bar_color_picker.dart';
+import 'package:pro_image_editor/shared/widgets/slider_bottom_sheet.dart';
 
 // Project imports:
-import '../../fake/fake_image.dart';
+import '../../mock/mock_image.dart';
 
 void main() {
-  group('PaintEditor Tests', () {
-    testWidgets('Initializes with memory constructor',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: PaintEditor.memory(
-          fakeMemoryImage,
-          initConfigs: PaintEditorInitConfigs(
-            theme: ThemeData(),
+  final initConfigs = PaintEditorInitConfigs(
+    theme: ThemeData(),
+  );
+  var key = GlobalKey<PaintEditorState>();
+  Future<void> pumpEditor(WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: PaintEditor.memory(
+            mockMemoryImage,
+            key: key,
+            initConfigs: initConfigs,
           ),
         ),
+      ),
+    );
+    expect(find.byType(PaintEditor), findsOneWidget);
+  }
+
+  group('PaintEditor Initialization', () {
+    testWidgets('creates PaintEditor using memory image',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: PaintEditor.memory(mockMemoryImage, initConfigs: initConfigs),
       ));
 
       expect(find.byType(PaintEditor), findsOneWidget);
     });
-    testWidgets('Initializes with network constructor',
+    testWidgets('creates PaintEditor using network image',
         (WidgetTester tester) async {
       await mockNetworkImagesFor(() async {
         await tester.pumpWidget(MaterialApp(
-          home: PaintEditor.network(
-            fakeNetworkImage,
-            initConfigs: PaintEditorInitConfigs(
-              theme: ThemeData(),
-            ),
+          home: PaintEditor.network(mockNetworkImage, initConfigs: initConfigs),
+        ));
+      });
+
+      expect(find.byType(PaintEditor), findsOneWidget);
+    });
+    testWidgets('creates PaintEditor using file image',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: PaintEditor.file(mockFileImage, initConfigs: initConfigs),
+      ));
+
+      expect(find.byType(PaintEditor), findsOneWidget);
+    });
+    testWidgets('creates PaintEditor using file path',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: PaintEditor.file('', initConfigs: initConfigs),
+      ));
+
+      expect(find.byType(PaintEditor), findsOneWidget);
+    });
+    group('creates PaintEditor using autoSource constructor', () {
+      testWidgets('Auto-detects from memory image',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(MaterialApp(
+          home: PaintEditor.autoSource(
+            byteArray: mockMemoryImage,
+            initConfigs: initConfigs,
           ),
         ));
 
         expect(find.byType(PaintEditor), findsOneWidget);
       });
-    });
+      testWidgets('Auto-detects from network image',
+          (WidgetTester tester) async {
+        await mockNetworkImagesFor(() async {
+          await tester.pumpWidget(MaterialApp(
+            home: PaintEditor.autoSource(
+              networkUrl: mockNetworkImage,
+              initConfigs: initConfigs,
+            ),
+          ));
+        });
 
-    testWidgets('should render BarColorPicker', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: PaintEditor.memory(
-          fakeMemoryImage,
-          initConfigs: PaintEditorInitConfigs(
-            theme: ThemeData(),
+        expect(find.byType(PaintEditor), findsOneWidget);
+      });
+      testWidgets('Auto-detects from file image', (WidgetTester tester) async {
+        await tester.pumpWidget(MaterialApp(
+          home: PaintEditor.autoSource(
+            file: mockFileImage,
+            initConfigs: initConfigs,
           ),
-        ),
-      ));
+        ));
+
+        expect(find.byType(PaintEditor), findsOneWidget);
+      });
+      testWidgets('Auto-detects from file path', (WidgetTester tester) async {
+        await tester.pumpWidget(MaterialApp(
+          home: PaintEditor.autoSource(file: '', initConfigs: initConfigs),
+        ));
+
+        expect(find.byType(PaintEditor), findsOneWidget);
+      });
+    });
+  });
+
+  group('PaintEditor UI Components', () {
+    testWidgets('should render BarColorPicker', (WidgetTester tester) async {
+      await pumpEditor(tester);
 
       expect(find.byType(BarColorPicker), findsOneWidget);
     });
     testWidgets('should render Canvas', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: PaintEditor.memory(
-          fakeMemoryImage,
-          initConfigs: PaintEditorInitConfigs(
-            theme: ThemeData(),
-          ),
-        ),
-      ));
+      await pumpEditor(tester);
 
       expect(find.byType(PaintCanvas), findsOneWidget);
     });
+  });
+
+  group('PaintEditor Sheets', () {
+    testWidgets('should open linWidthBottomSheet via openLinWidthBottomSheet',
+        (tester) async {
+      await pumpEditor(tester);
+
+      key.currentState!.openLinWidthBottomSheet();
+      await tester.pump();
+
+      expect(find.byType(SliderBottomSheet<PaintEditorState>), findsOneWidget);
+    });
+    testWidgets('should open opacityBottomSheet via openOpacityBottomSheet',
+        (tester) async {
+      await pumpEditor(tester);
+
+      key.currentState!.openOpacityBottomSheet();
+      await tester.pump();
+
+      expect(find.byType(SliderBottomSheet<PaintEditorState>), findsOneWidget);
+    });
+  });
+
+  group('PaintEditor State Manipulation', () {
     testWidgets('should change paint-mode', (WidgetTester tester) async {
-      var key = GlobalKey<PaintEditorState>();
-      await tester.pumpWidget(MaterialApp(
-        home: PaintEditor.memory(
-          fakeMemoryImage,
-          key: key,
-          initConfigs: PaintEditorInitConfigs(
-            theme: ThemeData(),
-          ),
-        ),
-      ));
+      await pumpEditor(tester);
 
       /// Test if paintModes will change correctly
       key.currentState!.setMode(PaintMode.freeStyle);
@@ -90,16 +162,7 @@ void main() {
       expect(key.currentState!.paintMode, PaintMode.arrow);
     });
     testWidgets('should change stroke width', (WidgetTester tester) async {
-      var key = GlobalKey<PaintEditorState>();
-      await tester.pumpWidget(MaterialApp(
-        home: PaintEditor.memory(
-          fakeMemoryImage,
-          key: key,
-          initConfigs: PaintEditorInitConfigs(
-            theme: ThemeData(),
-          ),
-        ),
-      ));
+      await pumpEditor(tester);
 
       /// Test if paintModes will change correctly
       for (double i = 1; i <= 10; i++) {
@@ -108,16 +171,7 @@ void main() {
       }
     });
     testWidgets('should toggle fill state', (WidgetTester tester) async {
-      var key = GlobalKey<PaintEditorState>();
-      await tester.pumpWidget(MaterialApp(
-        home: PaintEditor.memory(
-          fakeMemoryImage,
-          key: key,
-          initConfigs: PaintEditorInitConfigs(
-            theme: ThemeData(),
-          ),
-        ),
-      ));
+      await pumpEditor(tester);
 
       bool filled = key.currentState!.fillBackground;
 
@@ -126,6 +180,49 @@ void main() {
 
       key.currentState!.toggleFill();
       expect(key.currentState!.fillBackground, filled);
+    });
+    testWidgets('should set fill via setFill', (WidgetTester tester) async {
+      await pumpEditor(tester);
+
+      final editor = key.currentState!;
+      bool initialIsFilled = editor.fillBackground;
+
+      editor.setFill(!initialIsFilled);
+
+      expect(editor.fillBackground, isNot(initialIsFilled));
+    });
+    testWidgets('should set opacity via setOpacity',
+        (WidgetTester tester) async {
+      await pumpEditor(tester);
+
+      final editor = key.currentState!;
+      double newOpacity = 0.21;
+
+      editor.setOpacity(newOpacity);
+
+      expect(editor.opacity, newOpacity);
+    });
+    testWidgets('should add custom paintings', (WidgetTester tester) async {
+      await pumpEditor(tester);
+
+      final editor = key.currentState!;
+
+      expect(editor.paintCtrl.paintHistory.length, 0);
+
+      editor.addPainting(
+        PaintedModel(
+          mode: PaintMode.rect,
+          offsets: [const Offset(0, 0), const Offset(100, 100)],
+          color: Colors.red,
+          strokeWidth: 5,
+          opacity: 1,
+        ),
+      );
+
+      await tester.pump();
+
+      expect(editor.paintCtrl.paintHistory.length, 1);
+      expect(find.byType(CustomPaint), findsAtLeast(1));
     });
   });
 }

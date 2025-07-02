@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 // Flutter imports:
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '/core/models/editor_image.dart';
@@ -67,7 +68,7 @@ class ImportStateHistory {
     final version = map[minifier.convertMainKey('version')] as String? ??
         ExportImportVersion.version_1_0_0;
     final stateHistory = <EditorStateHistory>[];
-    final widgetRecords = _parseWidgetRecords(map, version, minifier);
+    final widgetRecords = parseWidgetRecords(map, version, minifier);
     final lastRenderedImgSize =
         safeParseSize(map[minifier.convertMainKey('lastRenderedImgSize')]);
     final List<EditorImage> requirePrecacheList = [];
@@ -138,7 +139,7 @@ class ImportStateHistory {
           : null;
 
       /// Filters
-      final filters = _parseFilters(historyItem[filtersKey], version);
+      final filters = parseFilters(historyItem[filtersKey], version);
 
       /// Tune Adjustments
       final tuneAdjustments = (historyItem[tuneKey] as List<dynamic>? ?? [])
@@ -174,7 +175,8 @@ class ImportStateHistory {
   }
 
   /// Helper to parse filters
-  static List<List<double>> _parseFilters(dynamic filtersData, String version) {
+  @visibleForTesting
+  static List<List<double>> parseFilters(dynamic filtersData, String version) {
     if (filtersData == null) return [];
 
     switch (version) {
@@ -194,7 +196,9 @@ class ImportStateHistory {
     }
   }
 
-  static List<Uint8List> _parseWidgetRecords(
+  /// Helper to parse widget records
+  @visibleForTesting
+  static List<Uint8List> parseWidgetRecords(
     Map<String, dynamic> map,
     String version,
     EditorKeyMinifier minifier,
