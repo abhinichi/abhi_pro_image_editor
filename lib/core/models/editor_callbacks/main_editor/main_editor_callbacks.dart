@@ -277,6 +277,13 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   /// This callback is not called when [LayerInteractionSelectable] is disabled.
   final ValueChanged<String>? onSelectedLayerChanged;
 
+  /// Callback that is triggered when the hover state over the remove area
+  /// changes.
+  ///
+  /// The [isPointerInside] parameter indicates whether the pointer is
+  /// currently inside the remove area (`true`) or not (`false`). This can be
+  /// used to update UI elements or trigger specific actions when the user
+  /// hovers over or leaves the remove area.
   final Function(bool isPointerInside)? onHoverRemoveAreaChange;
 
   /// Handles the addition of a layer.
