@@ -1,5 +1,9 @@
 # Changelog
 
+## 10.2.5
+- **FEAT**(callbacks): Add `onStateHistoryChange` callback to `MainEditorCallbacks`.
+- **FEAT**(main-editor): Add `autoCorrectZoomOffset` and `AutoCorrectZoomScale` parameters to the `addLayer` method, allowing layers to be added inside the viewport even when the user is zoomed into a specific area of the editor.
+
 ## 10.2.4
 - **FEAT**(layer-interaction): Add `releaseThreshold` to control snapping behavior for helper lines.
 - **FEAT**(helper-lines): add `isDisabledAtZoom` property to control visibility based on zoom level.

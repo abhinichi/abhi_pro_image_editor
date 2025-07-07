@@ -383,7 +383,10 @@ class ProImageEditorState extends State<ProImageEditor>
   );
 
   /// Manager class for managing the state of the editor.
-  final StateManager stateManager = StateManager();
+  late final StateManager stateManager = StateManager(
+    onStateHistoryChange: () =>
+        mainEditorCallbacks?.onStateHistoryChange?.call(stateManager, this),
+  );
 
   late final _stateHistoryService = MainEditorStateHistoryService(
     sizesManager: sizesManager,
