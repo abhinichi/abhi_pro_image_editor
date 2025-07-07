@@ -378,6 +378,7 @@ class ProImageEditorState extends State<ProImageEditor>
   late final LayerInteractionManager layerInteractionManager =
       LayerInteractionManager(
     helperLinesCallbacks: mainEditorCallbacks?.helperLines,
+    helperLineConfigs: configs.helperLines,
     onSelectedLayerChanged: mainEditorCallbacks?.onSelectedLayerChanged,
   );
 
@@ -1116,7 +1117,6 @@ class ProImageEditorState extends State<ProImageEditor>
             paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
                 !isDesktop
         ..calculateScaleRotate(
-          editorScaleFactor: editorScaleFactor,
           configs: configs,
           activeLayer: _activeLayer!,
           detail: details,
