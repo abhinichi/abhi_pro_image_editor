@@ -42,6 +42,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     this.onImportHistoryEnd,
     this.onHoverRemoveAreaChange,
     this.onStateHistoryChange,
+    this.onImageDecoded,
     super.onInit,
     super.onAfterViewInit,
     super.onUpdateUI,
@@ -106,6 +107,9 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   /// changes.
   final Function(StateManager stateHistory, ProImageEditorState editor)?
       onStateHistoryChange;
+
+  /// Callback that is triggered after the image has been successfully decoded.
+  final Function()? onImageDecoded;
 
   /// A callback function that is triggered when the user `tap` on the body.
   final Function()? onTap;
@@ -413,6 +417,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     Function()? onDone,
     Function()? onRedo,
     Function()? onUndo,
+    Function()? onImageDecoded,
     Function(ProImageEditorState state, ImportStateHistory import)?
         onImportHistoryStart,
     Function(ProImageEditorState state, ImportStateHistory import)?
@@ -456,6 +461,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
       onDone: onDone ?? this.onDone,
       onRedo: onRedo ?? this.onRedo,
       onUndo: onUndo ?? this.onUndo,
+      onImageDecoded: onImageDecoded ?? this.onImageDecoded,
       onImportHistoryStart: onImportHistoryStart ?? this.onImportHistoryStart,
       onImportHistoryEnd: onImportHistoryEnd ?? this.onImportHistoryEnd,
       onHoverRemoveAreaChange:

@@ -37,7 +37,6 @@ import 'services/layer_copy_manager.dart';
 import 'services/layer_interaction_manager.dart';
 import 'services/main_editor_state_history_service.dart';
 import 'services/sizes_manager.dart';
-import 'services/state_manager.dart';
 import 'widgets/main_editor_interactive_content.dart';
 
 /// A widget for image editing using ProImageEditor.
@@ -953,6 +952,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (!_decodeImageCompleter.isCompleted) {
       _decodeImageCompleter.complete(true);
     }
+    mainEditorCallbacks?.onImageDecoded?.call();
 
     if (shouldImportStateHistory) {
       await importStateHistory(stateHistoryConfigs.initStateHistory!);
