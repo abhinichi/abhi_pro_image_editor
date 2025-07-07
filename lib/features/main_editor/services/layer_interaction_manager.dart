@@ -273,7 +273,6 @@ class LayerInteractionManager {
             touchPositionFromLayerCenter,
           );
 
-      if (editorScaleFactor != 1) return;
       checkRotationLine(
         activeLayer: activeLayer,
         editorSize: editorSize,
@@ -315,8 +314,6 @@ class LayerInteractionManager {
       activeLayer.offset.dx + detail.focalPointDelta.dx / editorScaleFactor,
       activeLayer.offset.dy + detail.focalPointDelta.dy / editorScaleFactor,
     );
-
-    if (editorScaleFactor > 1) return;
 
     final releaseThreshold = helperLineConfigs.releaseThreshold;
     bool hasLineHit = false;
@@ -376,6 +373,7 @@ class LayerInteractionManager {
       layerList: layerList,
       activeLayer: activeLayer,
       helperLineCtrl: helperLineCtrl,
+      editorScaleFactor: editorScaleFactor,
     );
 
     if (hasLineHit) {
@@ -390,7 +388,6 @@ class LayerInteractionManager {
 
   /// Calculates scaling and rotation of a layer based on user interactions.
   calculateScaleRotate({
-    required double editorScaleFactor,
     required ProImageEditorConfigs configs,
     required ScaleUpdateDetails detail,
     required Layer activeLayer,
@@ -406,12 +403,10 @@ class LayerInteractionManager {
     if (activeLayer.interaction.enableRotate) {
       activeLayer.rotation = baseAngleFactor + detail.rotation;
 
-      if (editorScaleFactor == 1) {
-        checkRotationLine(
-          activeLayer: activeLayer,
-          editorSize: editorSize,
-        );
-      }
+      checkRotationLine(
+        activeLayer: activeLayer,
+        editorSize: editorSize,
+      );
     }
 
     scaleDebounce(() => _activeScale = false);
@@ -651,8 +646,9 @@ class LayerInteractionManager {
     required Layer activeLayer,
     required ScaleUpdateDetails detail,
     required StreamController<void> helperLineCtrl,
+    required double editorScaleFactor,
   }) {
-    const snapThreshold = 3.0;
+    final snapThreshold = 3.0 / editorScaleFactor;
     final releaseThreshold = helperLineConfigs.releaseThreshold;
 
     final wasHorizontalGuideVisible = isHorizontalGuideVisible;

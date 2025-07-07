@@ -1117,7 +1117,6 @@ class ProImageEditorState extends State<ProImageEditor>
             paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
                 !isDesktop
         ..calculateScaleRotate(
-          editorScaleFactor: editorScaleFactor,
           configs: configs,
           activeLayer: _activeLayer!,
           detail: details,

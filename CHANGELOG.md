@@ -2,6 +2,7 @@
 
 ## 10.2.4
 - **FEAT**(layer-interaction): Add `releaseThreshold` to control snapping behavior for helper lines.
+- **FEAT**(helper-lines): add `isDisabledAtZoom` property to control visibility based on zoom level.
 
 ## 10.2.3
 - **FIX**(widget-layer): Resolved an issue where the edit button on editable `WidgetLayer` was visible even when interaction was disabled. This resolves issue [#532](https://github.com/hm21/pro_image_editor/issues/532).
