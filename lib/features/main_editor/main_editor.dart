@@ -1436,12 +1436,7 @@ class ProImageEditorState extends State<ProImageEditor>
       // Add a single history entry for all paint changes
       addHistory(
         layers: newLayers,
-        blockSelectLayer: true,
-        blockCaptureScreenshot:
-            false,
-        autoCorrectZoomOffset: false,
-        autoCorrectZoomScale: false,
-        // or true, depending on performance needs
+        blockCaptureScreenshot: false,
       );
 
       _selectLayerAfterHeroIsDone(paintItemLayers.last.id);
