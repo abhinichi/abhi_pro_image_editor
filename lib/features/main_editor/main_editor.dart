@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -9,7 +8,6 @@ import 'package:flutter/services.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_callbacks_mixin.dart';
 import '/core/mixins/editor_configs_mixin.dart';
-import '/core/models/history/last_layer_interaction_position.dart';
 import '/core/models/styles/draggable_sheet_style.dart';
 import '/core/services/gesture_manager.dart';
 import '/features/main_editor/widgets/main_editor_appbar.dart';
@@ -39,7 +37,6 @@ import 'services/layer_copy_manager.dart';
 import 'services/layer_interaction_manager.dart';
 import 'services/main_editor_state_history_service.dart';
 import 'services/sizes_manager.dart';
-import 'services/state_manager.dart';
 import 'widgets/main_editor_interactive_content.dart';
 
 /// A widget for image editing using ProImageEditor.
@@ -380,11 +377,15 @@ class ProImageEditorState extends State<ProImageEditor>
   late final LayerInteractionManager layerInteractionManager =
       LayerInteractionManager(
     helperLinesCallbacks: mainEditorCallbacks?.helperLines,
+    helperLineConfigs: configs.helperLines,
     onSelectedLayerChanged: mainEditorCallbacks?.onSelectedLayerChanged,
   );
 
   /// Manager class for managing the state of the editor.
-  final StateManager stateManager = StateManager();
+  late final StateManager stateManager = StateManager(
+    onStateHistoryChange: () =>
+        mainEditorCallbacks?.onStateHistoryChange?.call(stateManager, this),
+  );
 
   late final _stateHistoryService = MainEditorStateHistoryService(
     sizesManager: sizesManager,
@@ -701,6 +702,8 @@ class ProImageEditorState extends State<ProImageEditor>
     int removeLayerIndex = -1,
     bool blockSelectLayer = false,
     bool blockCaptureScreenshot = false,
+    bool autoCorrectZoomOffset = true,
+    bool autoCorrectZoomScale = true,
   }) {
     void correctOffset() {
       Offset fractionalOffset = const Offset(-0.5, -0.5);
@@ -735,6 +738,28 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     correctOffset();
+
+    final viewer = interactiveViewer.currentState;
+    if (viewer != null) {
+      final scaleDelta = viewer.scaleFactor;
+
+      if (autoCorrectZoomScale) {
+        layer.scale /= scaleDelta;
+      }
+      if (autoCorrectZoomOffset) {
+        final bodySize = sizesManager.bodySize;
+
+        final scaledSize = bodySize * scaleDelta;
+
+        final zoomOffset = Offset(
+              scaledSize.width - bodySize.width,
+              scaledSize.height - bodySize.height,
+            ) /
+            2;
+
+        layer.offset -= (viewer.offset + zoomOffset) / viewer.scaleFactor;
+      }
+    }
 
     layerInteractionManager.selectedLayerId = '';
 
@@ -927,6 +952,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (!_decodeImageCompleter.isCompleted) {
       _decodeImageCompleter.complete(true);
     }
+    mainEditorCallbacks?.onImageDecoded?.call();
 
     if (shouldImportStateHistory) {
       await importStateHistory(stateHistoryConfigs.initStateHistory!);
@@ -1030,27 +1056,11 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     _setTempLayer(layer);
-    layerInteractionManager
-      ..baseScaleFactor = layer.scale
-      ..baseAngleFactor = layer.rotation
-      ..snapStartRotation = layer.rotation * 180 / pi
-      ..snapLastRotation = layerInteractionManager.snapStartRotation
-      ..reset();
 
-    double posX = layer.offset.dx;
-    double posY = layer.offset.dy;
+    layerInteractionManager.onScaleStart(
+      selectedLayer: layer,
+    );
 
-    layerInteractionManager
-      ..lastPositionY = posY <= -layerInteractionManager.hitSpan
-          ? LayerLastPosition.top
-          : posY >= layerInteractionManager.hitSpan
-              ? LayerLastPosition.bottom
-              : LayerLastPosition.center
-      ..lastPositionX = posX <= -layerInteractionManager.hitSpan
-          ? LayerLastPosition.left
-          : posX >= layerInteractionManager.hitSpan
-              ? LayerLastPosition.right
-              : LayerLastPosition.center;
     setState(() {});
     mainEditorCallbacks?.handleScaleStart(details);
   }
@@ -1119,9 +1129,14 @@ class ProImageEditorState extends State<ProImageEditor>
           editorScaleFactor: editorScaleFactor,
           removeAreaKey: _removeAreaKey,
           activeLayer: _activeLayer!,
+          layerList: activeLayers,
           context: context,
           detail: details,
-          onHoveredRemoveChanged: _controllers.removeBtnCtrl.add,
+          onHoveredRemoveChanged: (value) {
+            _controllers.removeBtnCtrl.add(null);
+            mainEditorCallbacks?.onHoverRemoveAreaChange?.call(value);
+          },
+          helperLineCtrl: _controllers.helperLineCtrl,
         );
     } else if (details.pointerCount == 2) {
       layerInteractionManager
@@ -1129,7 +1144,6 @@ class ProImageEditorState extends State<ProImageEditor>
             paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
                 !isDesktop
         ..calculateScaleRotate(
-          editorScaleFactor: editorScaleFactor,
           configs: configs,
           activeLayer: _activeLayer!,
           detail: details,
@@ -1422,8 +1436,7 @@ class ProImageEditorState extends State<ProImageEditor>
       // Add a single history entry for all paint changes
       addHistory(
         layers: newLayers,
-        blockCaptureScreenshot:
-            false, // or true, depending on performance needs
+        blockCaptureScreenshot: false,
       );
 
       _selectLayerAfterHeroIsDone(paintItemLayers.last.id);
@@ -2027,6 +2040,19 @@ class ProImageEditorState extends State<ProImageEditor>
         Uint8List.fromList([]);
   }
 
+  /// Closes all active sub-editors within the main editor, including paint,
+  /// text, crop/rotate, filter, tune, and emoji editors.
+  /// This ensures that any open sub-editor is properly closed and the main
+  /// editor returns to its default state.
+  void closeSubEditor() {
+    paintEditor.currentState?.close();
+    textEditor.currentState?.close();
+    cropRotateEditor.currentState?.close();
+    filterEditor.currentState?.close();
+    tuneEditor.currentState?.close();
+    emojiEditor.currentState?.close();
+  }
+
   /// Close the image editor.
   ///
   /// This function allows the user to close the image editor without saving
@@ -2462,7 +2488,11 @@ class ProImageEditorState extends State<ProImageEditor>
       },
       onDuplicateLayer: (layer) {
         var duplication = _layerCopyManager.duplicateLayer(layer);
-        addLayer(duplication);
+        addLayer(
+          duplication,
+          autoCorrectZoomOffset: false,
+          autoCorrectZoomScale: false,
+        );
       },
     );
   }

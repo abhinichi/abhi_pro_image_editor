@@ -1,5 +1,31 @@
 # Changelog
 
+## 10.2.6
+- **FIX**(paint-editor): Resolved an issue where the `opacityBottomSheetBackground` was not applying any effect. This resolves issue [#540](https://github.com/hm21/pro_image_editor/issues/540).
+
+## 10.2.5
+- **FEAT**(callbacks): Add `onStateHistoryChange` callback to `MainEditorCallbacks`.
+- **FEAT**(callbacks): Add `onImageDecoded` callback to `MainEditorCallbacks`.
+- **FEAT**(main-editor): Add `autoCorrectZoomOffset` and `AutoCorrectZoomScale` parameters to the `addLayer` method, allowing layers to be added inside the viewport even when the user is zoomed into a specific area of the editor.
+- **FEAT**(main-editor): Add `closeSubEditor` method to close all subeditors.
+
+## 10.2.4
+- **FEAT**(layer-interaction): Add `releaseThreshold` to control snapping behavior for helper lines.
+- **FEAT**(helper-lines): add `isDisabledAtZoom` property to control visibility based on zoom level.
+
+## 10.2.3
+- **FIX**(widget-layer): Resolved an issue where the edit button on editable `WidgetLayer` was visible even when interaction was disabled. This resolves issue [#532](https://github.com/hm21/pro_image_editor/issues/532).
+- **FEAT**(callback): Add `onHoverRemoveAreaChange` to detect hover on remove area. This was requested in [#531](https://github.com/hm21/pro_image_editor/issues/531).
+
+## 10.2.2
+- **FIX**(export): Resolved an issue where exporting multiple layers could overwrite existing ones. This resolves issue [#527](https://github.com/hm21/pro_image_editor/issues/527).
+
+## 10.2.1
+- **FIX**(layer): Resolved an issue where importing a layer didn’t restore the `boxConstraints`.
+
+## 10.2.0
+- **FEAT**(layer): Show alignment guides when layers share the same x or y position.
+
 ## 10.1.2
 - **FIX**(compat): Increased minimum Flutter SDK version to 3.32.0 to ensure compatibility with updated OverlayPortal APIs.
 
