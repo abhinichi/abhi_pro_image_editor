@@ -49,7 +49,6 @@ List<Example> kImageEditorExamples = const [
     name: 'AI-Integration',
     icon: Icons.hub_outlined,
     page: AiGroupPage(),
-    disabled: kIsWeb,
     disabledMessage: 'That function is not supported on the web.',
   ),
   Example(
