@@ -375,9 +375,9 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Helper class for managing interactions with layers in the editor.
   late final LayerInteractionManager layerInteractionManager =
       LayerInteractionManager(
-    helperLinesCallbacks: mainEditorCallbacks?.helperLines,
-    helperLineConfigs: configs.helperLines,
     onSelectedLayerChanged: mainEditorCallbacks?.onSelectedLayerChanged,
+    helperLinesCallbacks: mainEditorCallbacks?.helperLines,
+    configs: configs,
   );
 
   /// Manager class for managing the state of the editor.
