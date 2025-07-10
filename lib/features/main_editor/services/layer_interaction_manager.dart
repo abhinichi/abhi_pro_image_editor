@@ -681,6 +681,7 @@ class LayerInteractionManager {
     List<Offset> uniqueDxOffsets = [];
     List<Offset> uniqueDyOffsets = [];
     final seenDx = <double>{};
+    final seenDy = <double>{};
 
     for (final layer in layerList) {
       if (layer == activeLayer) continue;
