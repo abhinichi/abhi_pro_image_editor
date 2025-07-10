@@ -688,7 +688,7 @@ class LayerInteractionManager {
       if (seenDx.add(dx)) uniqueDxOffsets.add(layer.offset);
 
       final dy = layer.offset.dy;
-      if (seenDx.add(dy)) uniqueDyOffsets.add(layer.offset);
+      if (seenDy.add(dy)) uniqueDyOffsets.add(layer.offset);
     }
 
     for (final layerOffset in uniqueDxOffsets) {
