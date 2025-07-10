@@ -38,16 +38,19 @@ class _AiGroupPageState extends State<AiGroupPage> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _openExample(const AiReplaceBackgroundExample()),
           ),
-          ListTile(
-            leading: const Icon(Icons.content_cut_outlined),
-            title: const Text('Remove background'),
-            trailing: const Icon(Icons.chevron_right),
-            subtitle: kIsWeb
-                ? const Text('That function is not supported on the web.')
-                : null,
-            onTap: kIsWeb
-                ? null
-                : () => _openExample(const BackgroundRemoverExample()),
+          Opacity(
+            opacity: kIsWeb ? 0.6 : 1,
+            child: ListTile(
+              leading: const Icon(Icons.content_cut_outlined),
+              title: const Text('Remove background'),
+              trailing: const Icon(Icons.chevron_right),
+              subtitle: kIsWeb
+                  ? const Text('That example is not supported on the web.')
+                  : null,
+              onTap: kIsWeb
+                  ? null
+                  : () => _openExample(const BackgroundRemoverExample()),
+            ),
           ),
         ],
       ),
