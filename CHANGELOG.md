@@ -2,6 +2,7 @@
 
 ## 10.3.2
 - **FIX**(helper-lines): Resolve issue where layers wouldn't release when positioned very close (1–3 pixels) on the same axis.
+- **FIX**(screen-resize): Resolve issue where layers resize incorrectly after image transformation. This resolves issue [#547](https://github.com/hm21/pro_image_editor/issues/547).
 
 ## 10.3.1
 - **FIX**(crop-rotate-editor): Resolve rotation reset issue after changing aspect ratio.
@@ -199,10 +200,10 @@
 - **FEAT**: Added `selectLayerById` method to select a layer by its unique ID.
 
 ## 9.1.0
-- **FEAT**: Replaced the external packages [`emoji_picker_flutter`](https://pub.dev/packages/emoji_picker_flutter), [`universal_io`](https://pub.dev/packages/universal_io), and [`flutter_web_plugins`](https://api.flutter.dev/flutter/flutter_web_plugins) with lightweight internal implementations.  
+- **FEAT**: Replaced the external packages [`emoji_picker_flutter`](https://pub.dev/packages/emoji_picker_flutter), [`universal_io`](https://pub.dev/packages/universal_io), and [`flutter_web_plugins`](https://api.flutter.dev/flutter/flutter_web_plugins) with lightweight internal implementations.
   The editor now only relies on official Dart and Flutter packages, reducing dependencies and improving maintainability.
-- **FEAT**: Added a new preview-only constructor for video editing: `ProImageEditor.video`.  
-  This feature allows previewing video edits but does not yet support video export.  
+- **FEAT**: Added a new preview-only constructor for video editing: `ProImageEditor.video`.
+  This feature allows previewing video edits but does not yet support video export.
   Example usage can be found [here](https://github.com/hm21/pro_image_editor/tree/stable/example/lib/features/video_examples).
 
 ## 9.0.7
@@ -279,7 +280,7 @@
 - **FEAT**(callback): Introduced `onEscapeButton` callback inside `MainEditorCallbacks` to allow external handling of the Escape key logic.
 
 ## 8.1.9
-- **FIX**(text-editor): Ensure text editor layer scales correctly when editing.  
+- **FIX**(text-editor): Ensure text editor layer scales correctly when editing.
 Added `enableMainEditorZoomFactor` to `textEditorConfigs` to apply the zoom factor in the text editor as well. Resolves [#349](https://github.com/hm21/pro_image_editor/issues/349).
 
 ## 8.1.8
@@ -292,13 +293,13 @@ Added `enableMainEditorZoomFactor` to `textEditorConfigs` to apply the zoom fact
 - **FEAT**(layer): Add meta field to layermodels for custom metadata in export/import.
 
 ## 8.1.5
-- **FEAT**(export): Optimize the export process by including only parameters that were modified in tune adjustments. This reduces the exported file size.  
+- **FEAT**(export): Optimize the export process by including only parameters that were modified in tune adjustments. This reduces the exported file size.
 
 ## 8.1.4
 - **FIX**(generation): Use `captureOnlyBackgroundImageArea` instead of `captureOnlyDrawingBounds` for background cropping.
 
 ## 8.1.3
-- **PERF**(capture-image): Improved image capture performance by minimizing its impact on the main thread.  
+- **PERF**(capture-image): Improved image capture performance by minimizing its impact on the main thread.
 
 ## 8.1.2
 - **FIX**(paint-editor): Ensure bottombar selection updates in UI when changed.
@@ -308,7 +309,7 @@ Added `enableMainEditorZoomFactor` to `textEditorConfigs` to apply the zoom fact
 
 ## 8.1.1
 - **FIX**(crop_rotate_editor): Fixed an issue where the crop-rotate editor would throw multiple errors when reopened. Resolves issue [#236](https://github.com/hm21/pro_image_editor/issues/236) and [#237](https://github.com/hm21/pro_image_editor/issues/237).
-- **PERF**(mediaquery): Replaces MediaQuery.of(...) with MediaQuery.sizeOf(...) to optimize performance and minimize unnecessary widget rebuilds.  
+- **PERF**(mediaquery): Replaces MediaQuery.of(...) with MediaQuery.sizeOf(...) to optimize performance and minimize unnecessary widget rebuilds.
 
 ## 8.1.0
 - **FEAT**(layer): Added new methods `lockAllLayers` and `unlockAllLayers` to the main editor, enabling direct locking or unlocking of all layers.
@@ -416,7 +417,6 @@ The current Flutter version `3.27.1` has an open issue with the `ColorFiltered` 
   - `custom widgets`, `icons`, and `theme` files are now located directly in the `configs` directory of the editor.
   - All theme classes are renamed to end with `Style` for consistency.
 
-  
 For more details on why these breaking changes were made and what improvements they bring, check out that [GitHub discussion](https://github.com/hm21/pro_image_editor/discussions/298).
 
 
