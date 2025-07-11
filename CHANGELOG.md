@@ -1,5 +1,8 @@
 # Changelog
 
+## 10.3.1
+- **FIX**(crop-rotate-editor): Resolve rotation reset issue after changing aspect ratio.
+
 ## 10.3.0
 - **FIX**(screen-resize): Resolve issue causing layers with custom `FractionalTranslation` to be misplaced.
 - **FIX**(paint-editor): Resolve issue where layers didn't resize with the screen.
