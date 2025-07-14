@@ -41,7 +41,7 @@ extension ExportImportVersionNumber on String {
   int toVersionNumber() {
     try {
       final parts = split('.');
-      assert(parts.length != 3, 'Version string must have 3 parts');
+      assert(parts.length == 3, 'Version string must have 3 parts');
 
       final major = int.tryParse(parts[0]) ?? 0;
       final minor = int.tryParse(parts[1]) ?? 0;
