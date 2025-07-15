@@ -481,6 +481,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// decoding operation.
   final Completer<bool> _decodeImageCompleter = Completer();
 
+  int? _lastPaintSessionHistoryIndex;
+
   @override
   void initState() {
     super.initState();
@@ -1402,6 +1404,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// After closing the paint editor, any changes made are applied to the
   /// image's layers.
   void openPaintEditor() async {
+    final prePaintHistoryIndex = stateManager.historyPointer;
     var paintCallbacks =
         callbacks.paintEditorCallbacks ?? const PaintEditorCallbacks();
     var overridenPaintCallbacks = paintCallbacks.copyWith(
@@ -1442,19 +1445,35 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (result == null) return;
 
-    for (var i = 0; i < result.layers.length; i++) {
-      final layer = result.layers[i];
-      addLayer(
-        _layerCopyManager.duplicateLayer(layer, offset: Offset.zero),
-        blockSelectLayer: true,
-        blockCaptureScreenshot: true,
-        autoCorrectZoomOffset: false,
-        autoCorrectZoomScale: false,
+    if (result.layers.isNotEmpty || result.removedLayers.isNotEmpty) {
+      // 1. Copy current layers
+      final currentLayers = _layerCopyManager.copyLayerList(activeLayers);
+
+      // 2. Add new paint layers
+      final newPaintLayers = result.layers.map((layer) {
+        return _layerCopyManager.duplicateLayer(layer, offset: Offset.zero);
+      }).toList();
+
+      currentLayers.addAll(newPaintLayers);
+
+      // 3. Remove any layers that should be removed
+      final removedIds = result.removedLayers.map((e) => e.id).toSet();
+      final finalLayers =
+      currentLayers.where((layer) => !removedIds.contains(layer.id)).toList();
+
+      // ✅ 4. Add a single history entry
+      addHistory(
+        layers: finalLayers,
+        blockCaptureScreenshot: false,
       );
+
+      // 🧠 (Optional) Store the paint action pointer
+      _lastPaintSessionHistoryIndex = prePaintHistoryIndex;
+
+      _selectLayerAfterHeroIsDone(newPaintLayers.last.id);
+      _takeScreenshot();
     }
-    for (Layer layer in result.removedLayers) {
-      removeLayer(layer, blockCaptureScreenshot: true);
-    }
+
 
     // if (paintItemLayers != null && paintItemLayers.isNotEmpty) {
     //   // Merge existing layers with new paint layers
@@ -1876,6 +1895,22 @@ class ProImageEditorState extends State<ProImageEditor>
   /// the previous state.
   void undoAction() {
     GestureManager.instance.stopPropagation();
+
+    // 🧠 Special case: just finished painting
+    if (_lastPaintSessionHistoryIndex != null &&
+        stateManager.historyPointer == _lastPaintSessionHistoryIndex! + 1) {
+      stateManager.undo(); // undo paint group
+      _lastPaintSessionHistoryIndex = null;
+      setState(() {
+        layerInteractionManager.selectedLayerId = '';
+        _checkInteractiveViewer();
+        decodeImage();
+      });
+      mainEditorCallbacks?.handleUndo();
+      return;
+    }
+
+    // Regular undo
     if (stateManager.canUndo) {
       setState(() {
         layerInteractionManager.selectedLayerId = '';
@@ -1886,6 +1921,7 @@ class ProImageEditorState extends State<ProImageEditor>
       mainEditorCallbacks?.handleUndo();
     }
   }
+
 
   /// Redo the previously undone editing action.
   ///
