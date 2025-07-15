@@ -844,9 +844,7 @@ class PaintEditorState extends State<PaintEditor>
 
   List<Widget> _buildInteractiveContent() {
     return [
-      Padding(
-        padding: configs.paintEditor.colorPickerPadding ?? EdgeInsets.zero,
-        child: Listener(
+       Listener(
           behavior: HitTestBehavior.translucent,
           onPointerDown: (details) {
             bool isDoubleTap = detectDoubleTap(details);
@@ -937,7 +935,6 @@ class PaintEditorState extends State<PaintEditor>
             ),
           ),
         ),
-      ),
 
       /// Build Color picker
       PaintEditorColorPicker(
