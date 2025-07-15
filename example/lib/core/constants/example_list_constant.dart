@@ -1,3 +1,5 @@
+import 'package:example/features/ai/ai_group.dart';
+import 'package:example/features/layer_select_design_example.dart';
 import 'package:flutter/material.dart';
 
 import '/features/crop_to_main_editor.dart';
@@ -40,6 +42,13 @@ List<Example> kImageEditorExamples = const [
     name: 'Default-Editor',
     icon: Icons.dashboard_outlined,
     page: DefaultExample(),
+  ),
+  Example(
+    path: '/ai',
+    name: 'AI-Integration',
+    icon: Icons.hub_outlined,
+    page: AiGroupPage(),
+    disabledMessage: 'That function is not supported on the web.',
   ),
   Example(
     path: '/designs',
@@ -100,6 +109,12 @@ List<Example> kImageEditorExamples = const [
     name: 'Selectable-Layers',
     icon: Icons.select_all_rounded,
     page: SelectableLayerExample(),
+  ),
+  Example(
+    path: '/layer-selection-design',
+    name: 'Selected Layer Design',
+    icon: Icons.design_services_outlined,
+    page: LayerSelectDesignExample(),
   ),
   Example(
     path: '/generation-configs',

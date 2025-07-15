@@ -2,7 +2,7 @@
 import 'package:flutter/widgets.dart';
 
 // Project imports:
-import '/features/paint_editor/enums/paint_editor_enum.dart';
+import '/features/paint_editor/paint_editor.dart';
 import 'standalone_editor_callbacks.dart';
 
 /// A class representing callbacks for the paint editor.
@@ -20,6 +20,7 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
     this.onEditorZoomMatrix4Change,
     this.onOpacityChange,
     this.onDoubleTap,
+    this.onTap,
     super.onInit,
     super.onAfterViewInit,
     super.onUndo,
@@ -58,6 +59,14 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
   /// A callback function that is triggered when the user `doubleTap`
   /// on the body.
   final Function()? onDoubleTap;
+
+  /// Callback function that is triggered when a tap down event occurs on the
+  /// canvas.
+  ///
+  /// The [details] parameter provides information about the position and
+  /// characteristics of the tap event. This callback can be used to handle
+  /// custom tap interactions within the paint editor.
+  final Function(PaintEditorState editor, TapDownDetails details)? onTap;
 
   /// Called when the user ends a pan or scale gesture on the widget.
   ///
@@ -195,6 +204,7 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
     Function(Matrix4 value)? onEditorZoomMatrix4Change,
     GestureScaleUpdateCallback? onEditorZoomScaleUpdate,
     Function()? onDoubleTap,
+    Function(PaintEditorState editor, TapDownDetails details)? onTap,
     Function()? onInit,
     Function()? onAfterViewInit,
     Function()? onUpdateUI,
@@ -218,6 +228,7 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
       onEditorZoomScaleUpdate:
           onEditorZoomScaleUpdate ?? this.onEditorZoomScaleUpdate,
       onDoubleTap: onDoubleTap ?? this.onDoubleTap,
+      onTap: onTap ?? this.onTap,
       onInit: onInit ?? this.onInit,
       onAfterViewInit: onAfterViewInit ?? this.onAfterViewInit,
       onUpdateUI: onUpdateUI ?? this.onUpdateUI,

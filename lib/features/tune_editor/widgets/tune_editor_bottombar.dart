@@ -105,8 +105,9 @@ class _TuneEditorBottombarState extends State<TuneEditorBottombar> {
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 4,
           children: [
-            widget.selectedIndex == -1 || widget.selectedIndex == 0
-                ?  const SizedBox()
+            widget.selectedIndex == -1
+                // || widget.selectedIndex == 0
+                ? const SizedBox()
                 : _buildSlider(),
             _buildItems(),
           ],

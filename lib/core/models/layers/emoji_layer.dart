@@ -31,6 +31,7 @@ class EmojiLayer extends Layer {
     super.isDeleted,
     super.meta,
     super.boxConstraints,
+    super.key,
   });
 
   /// Factory constructor for creating an EmojiLayer instance from a Layer
@@ -55,11 +56,15 @@ class EmojiLayer extends Layer {
       isDeleted: layer.isDeleted,
       meta: layer.meta,
       emoji: map[keyConverter('emoji')],
+      boxConstraints: layer.boxConstraints,
     );
   }
 
   /// The emoji to display on the layer.
   String emoji;
+
+  @override
+  bool get isEmojiLayer => true;
 
   @override
   Map<String, dynamic> toMap() {

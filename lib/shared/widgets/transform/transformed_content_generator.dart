@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
+import '/features/crop_rotate_editor/enums/crop_mode.enum.dart';
 
 /// A [StatefulWidget] that applies transformations to its [child] widget
 /// based on provided transformation and editor configurations.
@@ -37,11 +38,13 @@ class TransformedContentGenerator extends StatefulWidget {
 
 class _TransformedContentGeneratorState
     extends State<TransformedContentGenerator> {
+  TransformConfigs get _transformConfigs => widget.transformConfigs;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        TransformConfigs configs = widget.transformConfigs;
+        TransformConfigs configs = _transformConfigs;
         Size size = constraints.biggest;
 
         double fitHelper = 1;
@@ -126,7 +129,7 @@ class _TransformedContentGeneratorState
 
   Transform _buildRotationTransform({required Widget child}) {
     return Transform.rotate(
-      angle: widget.transformConfigs.angle,
+      angle: _transformConfigs.angle,
       alignment: Alignment.center,
       child: child,
     );
@@ -134,19 +137,24 @@ class _TransformedContentGeneratorState
 
   Transform _buildFlipTransform({required Widget child}) {
     return Transform.flip(
-      flipX: widget.transformConfigs.flipX,
-      flipY: widget.transformConfigs.flipY,
+      flipX: _transformConfigs.flipX,
+      flipY: _transformConfigs.flipY,
       child: child,
     );
   }
 
   Widget _buildCropPainter({required Widget child}) {
-    // TODO: Add support for web video player
     if (kIsWeb && widget.isVideoPlayer) return child;
 
-    CutOutsideArea clipper = CutOutsideArea(configs: widget.transformConfigs);
+    CropMode cropMode = _transformConfigs.cropMode ??
+        widget.configs.cropRotateEditor.initialCropMode;
 
-    if (widget.configs.cropRotateEditor.enableRoundCropper) {
+    final clipper = CutOutsideArea(
+      configs: _transformConfigs,
+      cropMode: cropMode,
+    );
+
+    if (cropMode == CropMode.oval) {
       return ClipOval(clipper: clipper, child: child);
     } else {
       return ClipRect(clipper: clipper, child: child);
@@ -155,7 +163,7 @@ class _TransformedContentGeneratorState
 
   Transform _buildUserScaleTransform({required Widget child}) {
     return Transform.scale(
-      scale: widget.transformConfigs.scaleUser,
+      scale: _transformConfigs.scaleUser,
       alignment: Alignment.center,
       child: child,
     );
@@ -163,7 +171,7 @@ class _TransformedContentGeneratorState
 
   Transform _buildTranslate({required Widget child}) {
     return Transform.translate(
-      offset: widget.transformConfigs.offset,
+      offset: _transformConfigs.offset,
       child: child,
     );
   }
@@ -175,13 +183,21 @@ class CutOutsideArea extends CustomClipper<Rect> {
   /// Creates an instance of [CutOutsideArea] with the given [configs].
   CutOutsideArea({
     required this.configs,
+    required this.cropMode,
   });
+
+  /// Defines the cropping shape to apply to an image or video.
+  final CropMode cropMode;
 
   /// The configuration object that provides the crop rectangle.
   final TransformConfigs configs;
+
   @override
   Rect getClip(Size size) {
     Rect cropRect = configs.cropRect;
+    if (configs.isEmpty && cropMode == CropMode.oval) {
+      cropRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    }
 
     return Rect.fromCenter(
       center: Offset(size.width / 2, size.height / 2),
@@ -192,6 +208,8 @@ class CutOutsideArea extends CustomClipper<Rect> {
 
   @override
   bool shouldReclip(covariant CustomClipper<Rect> oldClipper) {
-    return oldClipper is! CutOutsideArea || oldClipper.configs != configs;
+    return oldClipper is! CutOutsideArea ||
+        oldClipper.configs != configs ||
+        oldClipper.cropMode != cropMode;
   }
 }

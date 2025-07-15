@@ -35,6 +35,7 @@ class Layer {
   /// The [enableInteraction] parameter controls if a user can interact with
   /// the layer
   Layer({
+    GlobalKey? key,
     String? id,
     LayerInteraction? interaction,
     this.offset = Offset.zero,
@@ -45,7 +46,9 @@ class Layer {
     this.isDeleted = false,
     this.meta,
     this.boxConstraints,
-  })  : id = id ?? generateUniqueId(),
+  })  : key = key ??= GlobalKey(),
+        keyInternalSize = GlobalKey(),
+        id = id ?? generateUniqueId(),
         interaction = interaction ?? LayerInteraction();
 
   /// Factory constructor for creating a Layer instance from a map and a list
@@ -126,7 +129,10 @@ class Layer {
 
   /// Global key associated with the Layer instance, used for accessing the
   /// widget tree.
-  GlobalKey key = GlobalKey();
+  GlobalKey key;
+
+  /// A global key used to get the layer size.
+  GlobalKey keyInternalSize;
 
   /// The position offset of the widget.
   Offset offset;
@@ -157,6 +163,30 @@ class Layer {
   /// This can be used to store additional information about the layer
   /// that may be needed for processing or rendering.
   Map<String, dynamic>? meta;
+
+  /// Indicates whether this layer is a [TextLayer].
+  ///
+  /// Subclasses can override this to return `true` if the layer represents
+  /// a text-based element.
+  bool get isTextLayer => false;
+
+  /// Indicates whether this layer is a [PaintLayer].
+  ///
+  /// Subclasses can override this to return `true` if the layer contains
+  /// freehand drawing or painted content.
+  bool get isPaintLayer => false;
+
+  /// Indicates whether this layer is an [EmojiLayer].
+  ///
+  /// Subclasses can override this to return `true` if the layer represents
+  /// an emoji or similar symbolic element.
+  bool get isEmojiLayer => false;
+
+  /// Indicates whether this layer is a [WidgetLayer].
+  ///
+  /// Subclasses can override this to return `true` if the layer hosts a
+  /// Flutter widget or sticker.
+  bool get isWidgetLayer => false;
 
   /// Converts this transform object to a Map.
   ///
@@ -200,6 +230,61 @@ class Layer {
       if (layer.boxConstraints != boxConstraints)
         'boxConstraints': boxConstraints!.toMap()
     };
+  }
+
+  RenderBox? get _renderBox {
+    final renderObj = keyInternalSize.currentContext?.findRenderObject();
+    return renderObj is RenderBox ? renderObj : null;
+  }
+
+  /// Computes the global offset within the render box using a fractional
+  /// position relative to the center of the box.
+  ///
+  /// The [fractionalOffset] is specified with values relative to the center:
+  /// - (0, 0) represents the exact center of the box,
+  /// - (-0.5, -0.5) represents the top-left corner,
+  /// - (0.5, 0.5) represents the bottom-right corner.
+  ///
+  /// Returns the computed global [Offset] based on the size of the render box
+  /// and the provided [offset] as the origin. If the render box is not
+  /// available or the [fractionalOffset] equals `Offset(-0.5, -0.5)`, the
+  /// method returns [offset] directly as a fallback.
+  Offset computeOffsetFromCenterFraction(Offset fractionalOffset) {
+    final renderBox = _renderBox;
+    if (renderBox == null || fractionalOffset == const Offset(-0.5, -0.5)) {
+      return offset;
+    }
+
+    final size = renderBox.size;
+    final dx = offset.dx + size.width * (fractionalOffset.dx + 0.5);
+    final dy = offset.dy + size.height * (fractionalOffset.dy + 0.5);
+
+    return Offset(dx, dy);
+  }
+
+  /// Computes the local offset within the render box using a fractional
+  /// position relative to the center of the box (excluding the global
+  /// [offset]).
+  ///
+  /// The [fractionalOffset] is specified with values relative to the center:
+  /// - (0, 0) represents the center of the box,
+  /// - (-0.5, -0.5) represents the top-left corner,
+  /// - (0.5, 0.5) represents the bottom-right corner.
+  ///
+  /// Returns the computed local [Offset] inside the render box. If the render
+  /// box is not available or the [fractionalOffset] equals
+  /// `Offset(-0.5, -0.5)`, the method returns [Offset.zero] as a fallback.
+  Offset computeLocalCenterOffset(Offset fractionalOffset) {
+    final renderBox = _renderBox;
+    if (renderBox == null || fractionalOffset == const Offset(-0.5, -0.5)) {
+      return Offset.zero;
+    }
+
+    final size = renderBox.size;
+    final dx = size.width * (fractionalOffset.dx + 0.5);
+    final dy = size.height * (fractionalOffset.dy + 0.5);
+
+    return Offset(dx, dy);
   }
 
   @override

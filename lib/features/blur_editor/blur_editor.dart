@@ -12,7 +12,7 @@ import '/core/mixins/standalone_editor.dart';
 import '/core/models/editor_image.dart';
 import '/core/models/init_configs/blur_editor_init_configs.dart';
 import '/core/models/transform_helper.dart';
-import '/core/platform/io/io_helper.dart';
+import '/core/utils/size_utils.dart';
 import '/features/blur_editor/widgets/blur_editor_bottombar.dart';
 import '/shared/controllers/video_controller.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
@@ -63,7 +63,7 @@ class BlurEditor extends StatefulWidget
 
   /// Constructs a `BlurEditor` widget with an image loaded from a file.
   factory BlurEditor.file(
-    File file, {
+    dynamic file, {
     Key? key,
     required BlurEditorInitConfigs initConfigs,
   }) {
@@ -107,7 +107,7 @@ class BlurEditor extends StatefulWidget
   factory BlurEditor.autoSource({
     Key? key,
     Uint8List? byteArray,
-    File? file,
+    dynamic file,
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
@@ -121,7 +121,7 @@ class BlurEditor extends StatefulWidget
           : editorImage ??
               EditorImage(
                 byteArray: byteArray,
-                file: file == null ? null : ensureFileInstance(file),
+                file: file,
                 networkUrl: networkUrl,
                 assetPath: assetPath,
               ),
@@ -168,6 +168,7 @@ class BlurEditorState extends State<BlurEditor>
 
   /// Represents the selected blur state.
   double get blurFactor => _blurFactor.value;
+
   set blurFactor(double value) {
     _blurFactor.value = value;
   }
@@ -296,9 +297,9 @@ class BlurEditorState extends State<BlurEditor>
                   LayerStack(
                     transformHelper: TransformHelper(
                       mainBodySize:
-                          getMinimumSize(mainBodySize, editorBodySize),
+                          getValidSizeOrDefault(mainBodySize, editorBodySize),
                       mainImageSize:
-                          getMinimumSize(mainImageSize, editorBodySize),
+                          getValidSizeOrDefault(mainImageSize, editorBodySize),
                       transformConfigs: initialTransformConfigs,
                       editorBodySize: editorBodySize,
                     ),
@@ -333,8 +334,10 @@ class BlurEditorState extends State<BlurEditor>
             stream: _uiBlurStream.stream,
             builder: (context, snapshot) {
               return FilteredWidget(
-                width: getMinimumSize(mainImageSize, editorBodySize).width,
-                height: getMinimumSize(mainImageSize, editorBodySize).height,
+                width:
+                    getValidSizeOrDefault(mainImageSize, editorBodySize).width,
+                height:
+                    getValidSizeOrDefault(mainImageSize, editorBodySize).height,
                 configs: configs,
                 image: editorImage,
                 videoPlayer: videoController?.videoPlayer,

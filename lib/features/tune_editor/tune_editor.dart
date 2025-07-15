@@ -1,16 +1,14 @@
 // Dart imports:
 import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/features/tune_editor/utils/heuristic_request.dart';
-
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
 import '/core/models/transform_helper.dart';
-import '/core/platform/io/io_helper.dart';
+import '/core/utils/size_utils.dart';
 import '/features/tune_editor/widgets/tune_editor_bottombar.dart';
 import '/pro_image_editor.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
@@ -18,7 +16,8 @@ import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/filtered_widget.dart';
-import 'models/tune_adjustment_matrix.dart';
+import 'models/tune_edit_batch.dart';
+// import 'utils/heuristic_request.dart';
 import 'utils/tune_presets.dart';
 import 'widgets/tune_editor_appbar.dart';
 
@@ -65,7 +64,7 @@ class TuneEditor extends StatefulWidget
 
   /// Constructs a `TuneEditor` widget with an image loaded from a file.
   factory TuneEditor.file(
-    File file, {
+    dynamic file, {
     Key? key,
     required TuneEditorInitConfigs initConfigs,
   }) {
@@ -110,7 +109,7 @@ class TuneEditor extends StatefulWidget
   factory TuneEditor.autoSource({
     Key? key,
     Uint8List? byteArray,
-    File? file,
+    dynamic file,
     String? assetPath,
     String? networkUrl,
     EditorImage? editorImage,
@@ -124,7 +123,7 @@ class TuneEditor extends StatefulWidget
           : editorImage ??
               EditorImage(
                 byteArray: byteArray,
-                file: file == null ? null : ensureFileInstance(file),
+                file: file,
                 networkUrl: networkUrl,
                 assetPath: assetPath,
               ),
@@ -189,19 +188,26 @@ class TuneEditorState extends State<TuneEditor>
   ///
   /// This index represents the adjustment item that is currently being modified
   /// by the user.
+  ///
+  /// -1 means no tile will be selected by default of you want any tile to be
+  /// selected by default then mention that index number here
   int selectedIndex = -1;
 
   /// A stack used to keep track of previous states for undo functionality.
   ///
   /// Each entry in the list is a snapshot of the `tuneAdjustmentMatrix` at a
-  /// certain point, allowing the user to revert to a previous state.
-  List<List<TuneAdjustmentMatrix>> _undoStack = [];
+  /// certain point, allowing the user to revert to a previous state.[];
+  ///
+  /// This holds list of [TuneAdjustmentMatrix]
+  List<TuneEditBatch> _undoStack = [];
 
   /// A stack used to keep track of states for redo functionality.
   ///
   /// When the user undoes an action, the current state is moved to this stack,
   /// allowing them to redo the action and return to that state if desired.
-  List<List<TuneAdjustmentMatrix>> _redoStack = [];
+  ///
+  /// This holds list of [TuneAdjustmentMatrix]
+  List<TuneEditBatch> _redoStack = [];
 
   /// Determines whether undo can be performed on the current state.
   bool get canUndo => _undoStack.isNotEmpty;
@@ -209,14 +215,19 @@ class TuneEditorState extends State<TuneEditor>
   /// Determines whether redo can be performed on the current state.
   bool get canRedo => _redoStack.isNotEmpty;
 
-  Map<String, double>? _autoTuneValues;
+  // /// This variable holds the auto-tune values fetched after processing the
+  // /// image
+  // Map<String, double>? _autoTuneValues;
+
+  /// Show loader when auto tune is loading
+  bool showLoader = false;
 
   @override
   void initState() {
     super.initState();
     uiStream = StreamController.broadcast();
     uiStream.stream.listen((_) => rebuildController.add(null));
-    _prepareAutoTuneHeuristics(context);
+    // _prepareAutoTuneHeuristics(context);
     var items = tuneEditorConfigs.tuneAdjustmentOptions ??
         tunePresets(
           icons: tuneEditorConfigs.icons,
@@ -291,12 +302,10 @@ class TuneEditorState extends State<TuneEditor>
   /// the adjustment matrix.
   void redo() {
     if (_redoStack.isNotEmpty) {
-      /// Save current state to undo stack
-      _undoStack.add(List.from(tuneAdjustmentMatrix.map((e) => e.copy())));
-
-      /// Restore the last state from redo stack
-      tuneAdjustmentMatrix = _redoStack.removeLast();
-
+      _undoStack.add(TuneEditBatch(
+        tuneAdjustmentMatrix.map((e) => e.copy()).toList(),
+      ));
+      tuneAdjustmentMatrix = _redoStack.removeLast().state;
       tuneEditorCallbacks?.handleRedo();
 
       setState(() {});
@@ -304,38 +313,45 @@ class TuneEditorState extends State<TuneEditor>
   }
 
   /// apply autoTune
-  void applyAutoTune(double autoTuneIntensity) {
-    debugPrint('applyAutoTune tapped');
-    debugPrint('applyAutoTune $_autoTuneValues');
-    if (_autoTuneValues != null) {
-      var brightness =
-          (_autoTuneValues!['brightness'] ?? 0) * autoTuneIntensity;
-      var contrast =
-          1 + ((_autoTuneValues!['contrast'] ?? 0) - 1) * autoTuneIntensity;
-      var saturation =
-          1 + ((_autoTuneValues!['saturation'] ?? 0) - 1) * autoTuneIntensity;
-      // var exposure = (_autoTuneValues!['exposure'] ?? 0) * autoTuneIntensity;
-      // var hue = (_autoTuneValues!['hue'] ?? 0) * autoTuneIntensity;
-      // var temperature =
-      //     (_autoTuneValues!['temperature'] ?? 0) * autoTuneIntensity;
-      // var sharpness = (_autoTuneValues!['sharpness'] ?? 0)
-      // * autoTuneIntensity;
-      // var fade = (_autoTuneValues!['fade'] ?? 0) * autoTuneIntensity;
-      // var luminance = (_autoTuneValues!['luminance'] ?? 0)
-      // * autoTuneIntensity;
-
-      _setAutoValue(brightness, 0);
-      _setAutoValue(contrast, 1);
-      _setAutoValue(saturation, 2);
-      // Optionally uncomment others:
-      // _setAutoValue(exposure, 3);
-      // _setAutoValue(hue, 4);
-      // _setAutoValue(temperature, 5);
-      // _setAutoValue(sharpness, 6);
-      // _setAutoValue(fade, 7);
-      // _setAutoValue(luminance, 8);
-    }
-  }
+  // void applyAutoTune() {
+  //   debugPrint('applyAutoTune tapped');
+  //   debugPrint('applyAutoTune $_autoTuneValues');
+  //   if (_autoTuneValues != null) {
+  //     onChangedStart(1.0, 'auto_tune');
+  //     var brightness = _autoTuneValues!['brightness'] ?? 0;
+  //     var contrast = _autoTuneValues!['contrast'] ?? 0;
+  //     var saturation = _autoTuneValues!['saturation'] ?? 0.0;
+  //     var exposure =
+  //         ((_autoTuneValues!['brightness']! < 0.0)
+  //             ? (_autoTuneValues!['exposure']! < 0.0)
+  //                 ? -(_autoTuneValues!['exposure']!)
+  //                 : (_autoTuneValues!['exposure'])
+  //             : (_autoTuneValues!['exposure']! > 0.0)
+  //                 ? -(_autoTuneValues!['exposure']!)
+  //                 : (_autoTuneValues!['exposure'])) ??
+  //         0.0;
+  //     var hue = _autoTuneValues!['hue']! * 0.1;
+  //     var temperature = _autoTuneValues!['temperature'] ?? 0.0;
+  //     var sharpness = _autoTuneValues!['sharpness'] ?? 0;
+  //     var fade = _autoTuneValues!['fade'] ?? 0;
+  //     var luminance = _autoTuneValues!['luminance'] ?? 0;
+  //
+  //     _setAutoValue(brightness, 1);
+  //     _setAutoValue(contrast, 2);
+  //     _setAutoValue(saturation, 3);
+  //     _setAutoValue(exposure, 4);
+  //     _setAutoValue(hue, 5);
+  //     _setAutoValue(temperature, 6);
+  //     _setAutoValue(sharpness, 7);
+  //     _setAutoValue(fade, 8);
+  //     _setAutoValue(luminance, 9);
+  //
+  //     showLoader = false;
+  //   } else {
+  //     Future.delayed(const Duration(milliseconds: 600), applyAutoTune);
+  //   }
+  //   onChangedEnd(0.0);
+  // }
 
   /// Undoes the last action.
   ///
@@ -343,14 +359,11 @@ class TuneEditorState extends State<TuneEditor>
   /// the previous adjustment matrix.
   void undo() {
     if (_undoStack.isNotEmpty) {
-      /// Save current state to redo stack
-      _redoStack.add(List.from(tuneAdjustmentMatrix.map((e) => e.copy())));
-
-      /// Restore the last state from undo stack
-      tuneAdjustmentMatrix = _undoStack.removeLast();
-
-      tuneEditorCallbacks?.handleUndo();
-
+      _redoStack.add(TuneEditBatch(
+        tuneAdjustmentMatrix.map((e) => e.copy()).toList(),
+      ));
+      tuneAdjustmentMatrix = _undoStack.removeLast().state;
+      tuneEditorCallbacks?.handleRedo();
       setState(() {});
     }
   }
@@ -368,31 +381,30 @@ class TuneEditorState extends State<TuneEditor>
         .toList();
   }
 
-  void _setAutoValue(double value, int selectedIndex) {
-    onChangedStart(value);
-    var selectedItem = tuneAdjustmentList[selectedIndex];
-
-    int index =
-        tuneAdjustmentMatrix.indexWhere((item) => item.id == selectedItem.id);
-
-    var item = TuneAdjustmentMatrix(
-      id: selectedItem.id,
-      value: value,
-      matrix: selectedItem.toMatrix(value),
-    );
-    if (index >= 0) {
-      tuneAdjustmentMatrix[index] = item;
-    } else {
-      tuneAdjustmentMatrix.add(item);
-    }
-
-    /// Important that the hash-code update
-    tuneAdjustmentMatrix = [...tuneAdjustmentMatrix];
-
-    uiStream.add(null);
-    tuneEditorCallbacks?.handleTuneFactorChange(tuneAdjustmentMatrix);
-    onChangedEnd(value);
-  }
+  // void _setAutoValue(double value, int selectedIndex) {
+  //   var selectedItem = tuneAdjustmentList[selectedIndex];
+  //
+  //   int index =
+  //       tuneAdjustmentMatrix.indexWhere((item) =>
+  //       item.id == selectedItem.id);
+  //
+  //   var item = TuneAdjustmentMatrix(
+  //     id: selectedItem.id,
+  //     value: value,
+  //     matrix: selectedItem.toMatrix(value),
+  //   );
+  //   if (index >= 0) {
+  //     tuneAdjustmentMatrix[index] = item;
+  //   } else {
+  //     tuneAdjustmentMatrix.add(item);
+  //   }
+  //
+  //   /// Important that the hash-code update
+  //   tuneAdjustmentMatrix = [...tuneAdjustmentMatrix];
+  //
+  //   uiStream.add(null);
+  //   tuneEditorCallbacks?.handleTuneFactorChange(tuneAdjustmentMatrix);
+  // }
 
   /// Handles changes in the tune factor value.
   void onChanged(double value) {
@@ -400,10 +412,6 @@ class TuneEditorState extends State<TuneEditor>
 
     int index =
         tuneAdjustmentMatrix.indexWhere((item) => item.id == selectedItem.id);
-
-    if (index == 0) {
-      applyAutoTune(value);
-    }
 
     var item = TuneAdjustmentMatrix(
       id: selectedItem.id,
@@ -424,10 +432,13 @@ class TuneEditorState extends State<TuneEditor>
   }
 
   /// Saves the current state to the undo stack before making changes.
-  void onChangedStart(double value) {
+  void onChangedStart(double value, [String? label]) {
     // Save current state to undo stack before making changes
     _undoStack.add(
-      tuneAdjustmentMatrix.map((e) => e.copy()).toList(),
+      TuneEditBatch(
+        tuneAdjustmentMatrix.map((e) => e.copy()).toList(),
+        label: label,
+      ),
     );
     // Clear redo stack because a new change is made
     _redoStack.clear();
@@ -461,7 +472,7 @@ class TuneEditorState extends State<TuneEditor>
               child: Scaffold(
                 backgroundColor: tuneEditorConfigs.style.background,
                 appBar: _buildAppBar(),
-                body: _buildBody(),
+                body: _loaderStack(),
                 bottomNavigationBar: _buildBottomNavBar(),
               ),
             ),
@@ -486,6 +497,20 @@ class TuneEditorState extends State<TuneEditor>
       onDone: done,
       onRedo: redo,
       onUndo: undo,
+    );
+  }
+
+  Widget _loaderStack() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        _buildBody(),
+        if (showLoader)
+          const SpinKitCircle(
+            color: primaryColor,
+            size: width50,
+          )
+      ],
     );
   }
 
@@ -535,8 +560,10 @@ class TuneEditorState extends State<TuneEditor>
             stream: uiStream.stream,
             builder: (context, snapshot) {
               return FilteredWidget(
-                width: getMinimumSize(mainImageSize, editorBodySize).width,
-                height: getMinimumSize(mainImageSize, editorBodySize).height,
+                width:
+                    getValidSizeOrDefault(mainImageSize, editorBodySize).width,
+                height:
+                    getValidSizeOrDefault(mainImageSize, editorBodySize).height,
                 configs: configs,
                 image: editorImage,
                 videoPlayer: videoController?.videoPlayer,
@@ -552,8 +579,8 @@ class TuneEditorState extends State<TuneEditor>
   Widget _buildLayers() {
     return LayerStack(
       transformHelper: TransformHelper(
-        mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
-        mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
+        mainBodySize: getValidSizeOrDefault(mainBodySize, editorBodySize),
+        mainImageSize: getValidSizeOrDefault(mainImageSize, editorBodySize),
         editorBodySize: editorBodySize,
         transformConfigs: initialTransformConfigs,
       ),
@@ -584,21 +611,20 @@ class TuneEditorState extends State<TuneEditor>
       onSelect: (index) {
         setState(() {
           selectedIndex = index;
-          if (selectedIndex == 0) {
-            Future.delayed(const Duration(seconds: 3), () {
-              applyAutoTune(0.8);
-            });
-          }
+          // if (selectedIndex == 0) {
+          //   showLoader = true;
+          //   Future.delayed(const Duration(milliseconds: 600), applyAutoTune);
+          // }
         });
       },
       selectedIndex: selectedIndex,
     );
   }
 
-  Future<void> _prepareAutoTuneHeuristics(BuildContext context) async {
-    var data = await widget.editorImage?.safeByteArray(context);
-    if (data != null) {
-      _autoTuneValues = await computeHeuristicAdjustmentsIsolate(data);
-    }
-  }
+  // Future<void> _prepareAutoTuneHeuristics(BuildContext context) async {
+  //   var data = await widget.editorImage?.safeByteArray(context);
+  //   if (data != null) {
+  //     _autoTuneValues = await computeHeuristicAdjustmentsIsolate(data);
+  //   }
+  // }
 }

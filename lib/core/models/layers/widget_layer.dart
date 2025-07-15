@@ -41,6 +41,7 @@ class WidgetLayer extends Layer {
     super.isDeleted,
     super.meta,
     super.boxConstraints,
+    super.key,
   });
 
   /// Factory constructor for creating a WidgetLayer instance from a
@@ -123,6 +124,7 @@ class WidgetLayer extends Layer {
       meta: layer.meta,
       widget: widget,
       exportConfigs: exportConfigs,
+      boxConstraints: layer.boxConstraints,
     );
   }
 
@@ -134,6 +136,9 @@ class WidgetLayer extends Layer {
   /// This class holds the necessary configurations required for a custom
   /// widget import-loader.
   WidgetLayerExportConfigs exportConfigs;
+
+  @override
+  bool get isWidgetLayer => true;
 
   /// Converts this transform object to a Map suitable for representing a
   /// widget.
@@ -174,6 +179,7 @@ class WidgetLayer extends Layer {
     bool? flipX,
     bool? flipY,
     LayerInteraction? interaction,
+    WidgetLayerExportConfigs? exportConfigs,
   }) {
     return WidgetLayer(
       widget: widget ?? this.widget,
@@ -184,6 +190,7 @@ class WidgetLayer extends Layer {
       flipX: flipX ?? this.flipX,
       flipY: flipY ?? this.flipY,
       interaction: interaction ?? this.interaction,
+      exportConfigs: exportConfigs ?? this.exportConfigs,
     );
   }
 }

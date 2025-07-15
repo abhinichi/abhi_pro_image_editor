@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '/core/models/editor_configs/utils/zoom_configs.dart';
 import '../utils/debounce.dart';
-import '../widgets/extended/extended_interactive_viewer.dart';
+import '../widgets/extended/interactive_viewer/extended_interactive_viewer.dart';
 
 /// A mixin that provides zoom-related behavior for image or content editors.
 ///
@@ -84,7 +84,9 @@ mixin EditorZoomMixin<T extends StatefulWidget> on State<T> {
     PointerDownEvent details,
     ZoomConfigs configs,
   ) {
-    if (configs.enableDoubleTapZoom && _lastTapDownOffset != null) {
+    if (configs.enableZoom &&
+        configs.enableDoubleTapZoom &&
+        _lastTapDownOffset != null) {
       final renderBox = context.findRenderObject() as RenderBox;
       final localTap = renderBox.globalToLocal(_lastTapDownOffset!);
       interactiveViewer.currentState?.quickZoomTo(

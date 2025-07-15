@@ -55,11 +55,13 @@ class LayerInteractionHelperWidget extends StatefulWidget
     required this.configs,
     this.onEditLayer,
     this.onRemoveLayer,
+    this.onDuplicate,
     this.onScaleRotateDown,
     this.onScaleRotateUp,
     this.selected = false,
     this.isInteractive = false,
     this.callbacks = const ProImageEditorCallbacks(),
+    this.forceIgnoreGestures = false,
   });
 
   /// The configuration settings for the image editor.
@@ -87,6 +89,9 @@ class LayerInteractionHelperWidget extends StatefulWidget
   /// This callback is triggered when the user selects the edit option for a
   /// layer, allowing for modifications to the layer's content.
   final Function()? onEditLayer;
+
+  /// Callback triggered when a layer should be copied.
+  final Function()? onDuplicate;
 
   /// Callback for handling the remove layer action.
   ///
@@ -120,6 +125,13 @@ class LayerInteractionHelperWidget extends StatefulWidget
   /// tooltips.
   final bool isInteractive;
 
+  /// Determines whether gesture interactions should be forcibly ignored.
+  ///
+  /// When set to `true`, all gesture interactions with the associated widget
+  /// will be ignored, regardless of other conditions. This can be useful in
+  /// scenarios where you want to temporarily disable user interaction.
+  final bool forceIgnoreGestures;
+
   /// Indicates whether the layer is selected.
   ///
   /// If true, the layer is highlighted, and interaction buttons are displayed.
@@ -139,10 +151,28 @@ class _LayerInteractionHelperWidgetState
     extends State<LayerInteractionHelperWidget>
     with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
   final _rebuildStream = StreamController.broadcast();
+  final _overlayCtrl = OverlayPortalController();
+  final _isOverlayVisibleNotifier = ValueNotifier(false);
+
+  @override
+  void didUpdateWidget(covariant LayerInteractionHelperWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _isOverlayVisibleNotifier.value = widget.selected;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.selected) {
+        if (!_overlayCtrl.isShowing) _overlayCtrl.show();
+      } else {
+        if (_overlayCtrl.isShowing) _overlayCtrl.hide();
+      }
+    });
+  }
 
   @override
   void dispose() {
+    if (_overlayCtrl.isShowing) _overlayCtrl.hide();
     _rebuildStream.close();
+    _isOverlayVisibleNotifier.dispose();
     super.dispose();
   }
 
@@ -152,8 +182,30 @@ class _LayerInteractionHelperWidgetState
     super.setState(fn);
   }
 
+  double get _rotation {
+    if (widget.layerData.flipX) {
+      return widget.layerData.rotation;
+    }
+    return -widget.layerData.rotation;
+  }
+
+  LayerItemInteractions get _layerInteractions {
+    return LayerItemInteractions(
+      duplicated: widget.onDuplicate ?? () {},
+      edit: widget.onEditLayer ?? () {},
+      remove: widget.onRemoveLayer ?? () {},
+      scaleRotateDown: _handleScaleRotateDown,
+      scaleRotateUp: _handleScaleRotateUp,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.forceIgnoreGestures) {
+      return IgnorePointer(
+          ignoring: widget.forceIgnoreGestures, child: widget.child);
+    }
+
     String layerId = widget.layerData.id;
     var deferManager = DeferManager.maybeOf(context);
 
@@ -161,66 +213,111 @@ class _LayerInteractionHelperWidgetState
         (!widget.selected && deferManager?.selectedLayerId != '')) {
       // Return the child widget directly if the layer is not interactive.
       return widget.child;
-    } else if (!widget.selected) {
-      // Use a defer pointer if the layer is not selected, preventing
-      // interaction.
-      return DeferPointer(
-        key: ValueKey('Defer-${deferManager?.id ?? ''}-$layerId'),
-        child: widget.child,
-      );
     }
 
+    return OverlayPortal.overlayChildLayoutBuilder(
+      controller: _overlayCtrl,
+      overlayChildBuilder: (context, info) {
+        if (layerInteraction.widgets.overlayChildBuilder != null) {
+          return ValueListenableBuilder(
+              valueListenable: _isOverlayVisibleNotifier,
+              builder: (_, isVisible, __) {
+                if (!isVisible) return const SizedBox.shrink();
+                return layerInteraction.widgets.overlayChildBuilder!(
+                  _rebuildStream.stream,
+                  info,
+                  widget.layerData,
+                  _layerInteractions,
+                );
+              });
+        }
+
+        final Matrix4 transform = info.childPaintTransform.clone();
+
+        // The child size
+        final childWidth = info.childSize.width;
+        final childHeight = info.childSize.height;
+
+        // The new padded size
+        final paddedWidth = childWidth;
+        final paddedHeight = childHeight;
+
+        return Positioned(
+          width: paddedWidth,
+          height: paddedHeight,
+          child: ValueListenableBuilder(
+              valueListenable: _isOverlayVisibleNotifier,
+              builder: (_, isVisible, __) {
+                if (!isVisible) return const SizedBox.shrink();
+
+                return Transform(
+                  transform: transform,
+                  alignment: Alignment.topLeft,
+                  child: Transform.flip(
+                    flipX: widget.layerData.flipX,
+                    flipY: widget.layerData.flipY,
+                    child: _buildSelectionOverlay(),
+                  ),
+                );
+              }),
+        );
+      },
+      child: DeferPointer(
+        key: ValueKey('Defer-${deferManager?.id ?? ''}-$layerId'),
+        child: widget.child,
+      ),
+    );
+  }
+
+  void _handleScaleRotateDown(PointerDownEvent event) {
+    widget.onScaleRotateDown?.call(event);
+  }
+
+  void _handleScaleRotateUp(PointerUpEvent event) {
+    widget.onScaleRotateUp?.call(event);
+  }
+
+  Widget _buildSelectionOverlay() {
     List<LayerInteractionItem> children =
         layerInteraction.widgets.children ?? _buildDefaultInteractions();
 
     return TooltipVisibility(
       visible: layerInteraction.style.showTooltips,
-      child: DeferPointer(
-        child: Stack(
-          fit: StackFit.passthrough,
-          alignment: Alignment.center,
-          children: [
-            layerInteraction.widgets.border
-                    ?.call(widget.child, widget.layerData) ??
-                Container(
-                  margin: EdgeInsets.all(
-                    layerInteraction.style.buttonRadius +
-                        layerInteraction.style.strokeWidth * 2,
-                  ),
-                  child: CustomPaint(
-                    foregroundPainter: LayerInteractionBorderPainter(
-                      style: layerInteraction.style,
-                    ),
-                    child: widget.child,
-                  ),
+      child: Stack(
+        fit: StackFit.passthrough,
+        alignment: Alignment.center,
+        children: [
+          layerInteraction.widgets.border
+                  ?.call(widget.child, widget.layerData) ??
+              Padding(
+                padding: EdgeInsets.all(
+                  layerInteraction.style.buttonRadius +
+                      layerInteraction.style.strokeWidth,
                 ),
-            ...children.map(
-              (item) => item.call(
-                _rebuildStream.stream,
-                widget.layerData,
-                LayerItemInteractions(
-                  edit: widget.onEditLayer ?? () {},
-                  remove: widget.onRemoveLayer ?? () {},
-                  scaleRotateDown: (event) {
-                    widget.onScaleRotateDown?.call(event);
-                  },
-                  scaleRotateUp: (event) {
-                    widget.onScaleRotateUp?.call(event);
-                  },
+                child: CustomPaint(
+                  foregroundPainter: LayerInteractionBorderPainter(
+                    style: layerInteraction.style,
+                  ),
                 ),
               ),
+          ...children.map(
+            (item) => item.call(
+              _rebuildStream.stream,
+              widget.layerData,
+              _layerInteractions,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   List<LayerInteractionItem> _buildDefaultInteractions() {
     bool isLayerEditable = widget.layerData.interaction.enableEdit &&
-            widget.layerData.runtimeType == TextLayer ||
-        (widget.layerData.runtimeType == WidgetLayer &&
-            widget.callbacks.stickerEditorCallbacks?.onTapEditSticker != null);
+        (widget.layerData.runtimeType == TextLayer ||
+            (widget.layerData.runtimeType == WidgetLayer &&
+                widget.callbacks.stickerEditorCallbacks?.onTapEditSticker !=
+                    null));
 
     return [
       if (isLayerEditable)
@@ -234,23 +331,23 @@ class _LayerInteractionHelperWidgetState
           ),
       (rebuildStream, layer, interactions) => ReactiveWidget(
             stream: rebuildStream,
-            builder: (_) => _buildRotateScaleIcon(interactions),
+            builder: (_) => _buildRotateScaleButton(interactions),
           ),
     ];
   }
 
-  Widget _buildRotateScaleIcon(LayerItemInteractions interactions) {
+  Widget _buildRotateScaleButton(LayerItemInteractions interactions) {
     return layerInteraction.widgets.rotateScaleButton?.call(
           _rebuildStream.stream,
-          (value) => widget.onScaleRotateDown?.call(value),
-          (value) => widget.onScaleRotateUp?.call(value),
-          -widget.layerData.rotation,
+          _handleScaleRotateDown,
+          _handleScaleRotateUp,
+          _rotation,
         ) ??
         Positioned(
           bottom: 0,
           right: 0,
           child: LayerInteractionButton(
-            rotation: -widget.layerData.rotation,
+            rotation: _rotation,
             onScaleRotateDown: interactions.scaleRotateDown,
             onScaleRotateUp: interactions.scaleRotateUp,
             buttonRadius: layerInteraction.style.buttonRadius,
@@ -267,13 +364,13 @@ class _LayerInteractionHelperWidgetState
     return layerInteraction.widgets.editButton?.call(
           _rebuildStream.stream,
           () => widget.onEditLayer?.call(),
-          -widget.layerData.rotation,
+          _rotation,
         ) ??
         Positioned(
           top: 0,
           right: 0,
           child: LayerInteractionButton(
-            rotation: -widget.layerData.rotation,
+            rotation: _rotation,
             onTap: interactions.edit,
             buttonRadius: layerInteraction.style.buttonRadius,
             cursor: layerInteraction.style.editCursor,
@@ -289,13 +386,13 @@ class _LayerInteractionHelperWidgetState
     return layerInteraction.widgets.removeButton?.call(
           _rebuildStream.stream,
           () => widget.onRemoveLayer?.call(),
-          -widget.layerData.rotation,
+          _rotation,
         ) ??
         Positioned(
           top: 0,
           left: 0,
           child: LayerInteractionButton(
-            rotation: -widget.layerData.rotation,
+            rotation: _rotation,
             onTap: interactions.remove,
             buttonRadius: layerInteraction.style.buttonRadius,
             cursor: layerInteraction.style.removeCursor,

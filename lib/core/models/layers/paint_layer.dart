@@ -41,6 +41,7 @@ class PaintLayer extends Layer {
     super.isDeleted,
     super.meta,
     super.boxConstraints,
+    super.key,
   });
 
   /// Factory constructor for creating a PaintLayer instance from a
@@ -73,6 +74,7 @@ class PaintLayer extends Layer {
         map[keyConverter('item')] ?? {},
         keyConverter: minifier?.convertPaintKey,
       ),
+      boxConstraints: layer.boxConstraints,
     );
   }
 
@@ -87,6 +89,9 @@ class PaintLayer extends Layer {
 
   /// Returns the size of the layer after applying the scaling factor.
   Size get size => Size(rawSize.width * scale, rawSize.height * scale);
+
+  @override
+  bool get isPaintLayer => true;
 
   @override
   Map<String, dynamic> toMap() {

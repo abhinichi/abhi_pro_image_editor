@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '/core/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/layers/layer.dart';
+import '/core/utils/size_utils.dart';
 import '/features/main_editor/controllers/main_editor_controllers.dart';
 import '/features/main_editor/services/layer_interaction_manager.dart';
 import '/features/main_editor/services/sizes_manager.dart';
@@ -52,6 +53,7 @@ class MainEditorLayers extends StatefulWidget {
     required this.state,
     required this.setTempLayer,
     required this.onContextMenuToggled,
+    required this.onDuplicateLayer,
   });
 
   /// Represents the current state of the editor.
@@ -93,6 +95,9 @@ class MainEditorLayers extends StatefulWidget {
   /// Callback to temporarily set a layer for interaction.
   final Function(Layer layer) setTempLayer;
 
+  /// Callback triggered when a layer should be copied.
+  final Function(Layer layer) onDuplicateLayer;
+
   /// Callback triggered when the context menu is toggled.
   final Function(bool isOpen)? onContextMenuToggled;
 
@@ -103,8 +108,13 @@ class MainEditorLayers extends StatefulWidget {
 class _MainEditorLayersState extends State<MainEditorLayers> {
   final _deferId = ValueNotifier(generateUniqueId());
 
+  /// Represents the dimensions of the body.
+  Size editorBodySize = Size.infinite;
+
   /// Key for managing mouse cursor regions.
   final _mouseCursorsKey = GlobalKey<ExtendedRebuildMouseRegionState>();
+
+  bool _isScaleInteractionActive = false;
 
   // Helper methods for handling layer interactions
   void _handleEditTap(int index, Layer layer) {
@@ -130,6 +140,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   }
 
   void _handleTapUp(Layer layer) {
+    if (_isScaleInteractionActive) return;
     if (widget.layerInteractionManager.hoverRemoveBtn) {
       widget.state.removeLayer(layer);
     }
@@ -137,6 +148,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     widget.callbacks.mainEditorCallbacks?.handleUpdateUI();
     widget.state.selectedLayerIndex = -1;
     widget.checkInteractiveViewer();
+    widget.callbacks.mainEditorCallbacks?.onLayerTapUp?.call(layer);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -145,12 +157,15 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   }
 
   void _handleTapDown(int index, Layer layer) {
+    if (_isScaleInteractionActive) return;
     widget.state.selectedLayerIndex = index;
     widget.setTempLayer(layer);
     widget.checkInteractiveViewer();
+    widget.callbacks.mainEditorCallbacks?.onLayerTapDown?.call(layer);
   }
 
   void _handleScaleRotateDown(int index, Size layerOriginalSize, Layer layer) {
+    _isScaleInteractionActive = true;
     widget.state.selectedLayerIndex = index;
     widget.layerInteractionManager
       ..rotateScaleLayerSizeHelper = layerOriginalSize
@@ -159,6 +174,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   }
 
   void _handleScaleRotateUp() {
+    _isScaleInteractionActive = false;
     widget.layerInteractionManager
       ..rotateScaleLayerSizeHelper = null
       ..rotateScaleLayerScaleHelper = null;
@@ -198,7 +214,10 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
           // Render an empty container when resetting layers
           if (resetLayerSnapshot.data!) return const SizedBox.shrink();
 
-          return _buildLayerRepaintBoundary();
+          return LayoutBuilder(builder: (context, constraints) {
+            editorBodySize = constraints.biggest;
+            return _buildLayerRepaintBoundary();
+          });
         },
       ),
     );
@@ -236,15 +255,17 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
 
   /// Builds a single layer widget
   Widget _buildLayerWidget(MapEntry<int, Layer> entry) {
+    var bodySize =
+        getValidSizeOrDefault(widget.sizesManager.bodySize, editorBodySize);
+
     int index = entry.key;
     Layer layer = entry.value;
     return LayerWidget(
       key: layer.key,
       configs: widget.configs,
       callbacks: widget.callbacks,
-      editorCenterX: widget.sizesManager.editorSize.width / 2,
-      editorCenterY:
-          widget.sizesManager.editorCenterY(widget.selectedLayerIndex),
+      editorCenterX: bodySize.width / 2,
+      editorCenterY: bodySize.height / 2,
       layerData: layer,
       enableHitDetection: widget.layerInteractionManager.enabledHitDetection,
       selected: widget.layerInteractionManager.selectedLayerId == layer.id,
@@ -257,6 +278,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
       onTapDown: () => _handleTapDown(index, layer),
       onScaleRotateDown: (details, layerOriginalSize) =>
           _handleScaleRotateDown(index, layerOriginalSize, layer),
+      onDuplicate: () => widget.onDuplicateLayer(layer),
       onContextMenuToggled: widget.onContextMenuToggled,
       onScaleRotateUp: (details) => _handleScaleRotateUp(),
       onRemoveTap: () => _handleRemoveLayer(layer),

@@ -211,6 +211,19 @@ typedef LayerInteractionItem = ReactiveWidget Function(
   LayerItemInteractions interactions,
 );
 
+/// Signature for building a reactive overlay widget for a given layer.
+///
+/// [rebuildStream] triggers rebuilds when events are emitted.
+/// [info] contains layout details of the overlay child.
+/// [layer] is the current layer to render.
+/// [interactions] provides callbacks for interacting with the layer.
+typedef LayerOverlayBuilder = ReactiveWidget Function(
+  Stream<void> rebuildStream,
+  OverlayChildLayoutInfo info,
+  Layer layer,
+  LayerItemInteractions interactions,
+);
+
 /// A typedef for a function that builds a widget for the layer border.
 ///
 /// This function receives the layer widget and the layer data as
