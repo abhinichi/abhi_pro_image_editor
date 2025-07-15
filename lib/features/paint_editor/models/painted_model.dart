@@ -169,13 +169,15 @@ class PaintedModel {
         strokeWidth,
         opacity,
         fill,
-        offsets,
         hit,
         id,
+        Object.hashAll(offsets),
       );
 
   @override
   bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
     bool areOffsetsEqual(List<Offset?> list1, List<Offset?> list2) {
       if (list1.length != list2.length) return false;
 

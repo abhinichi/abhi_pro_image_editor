@@ -201,13 +201,12 @@ class _PaintEditorLayerEditorState extends State<PaintEditorLayerEditor> {
       return _customWidgets.editActionButtons!(_layer);
     }
     return Padding(
-      padding: const EdgeInsetsGeometry.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        spacing: 24,
         children: [
           TextButton(
-            onPressed: Navigator.of(context).pop,
+            onPressed: () => Navigator.of(context).pop(),
             child: Text(_configs.i18n.paintEditor.cancel),
           ),
           FilledButton(
