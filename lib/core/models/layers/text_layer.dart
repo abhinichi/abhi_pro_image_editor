@@ -215,7 +215,7 @@ class TextLayer extends Layer {
       'align': align.name,
       'fontScale': fontScale,
       'type': 'text',
-      'maxTextWidth': maxTextWidth,
+      if (maxTextWidth != null) 'maxTextWidth': maxTextWidth,
       if (customSecondaryColor) 'customSecondaryColor': customSecondaryColor,
       if (textStyle?.fontFamily != null) 'fontFamily': textStyle?.fontFamily,
       if (textStyle?.fontStyle != null) 'fontStyle': textStyle?.fontStyle!.name,

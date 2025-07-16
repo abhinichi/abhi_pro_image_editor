@@ -1,5 +1,8 @@
 # Changelog
 
+## 10.5.1
+- **FIX**(import-export): Resolve issue where importing from text layers throws an error and fails.
+
 ## 10.5.0
 - **FEAT**(text-editor): Add `enableAutoOverflow` property to `TextEditorConfigs` to automatically wrap text when it exceeds the editor's visible area.
 

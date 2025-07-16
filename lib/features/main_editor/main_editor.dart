@@ -2212,7 +2212,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (_imageInfos == null) throw ArgumentError('Failed to decode the image');
     if (!mounted) throw ArgumentError('Context unmounted');
 
-    return await _stateHistoryService.exportStateHistory(
+    return _stateHistoryService.exportStateHistory(
       imageInfos: _imageInfos!,
       configs: configs,
       context: context,
