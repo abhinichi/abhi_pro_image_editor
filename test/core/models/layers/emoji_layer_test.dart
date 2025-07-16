@@ -27,7 +27,9 @@ void main() {
       expect(emojiLayer.isEmojiLayer, true);
     });
 
-    test('should convert EmojiLayer to map correctly', () {
+    test(
+        'should convert EmojiLayer to map with meta and interaction properties',
+        () {
       final meta = {'test': 'value'};
       final interaction = LayerInteraction(
         enableEdit: true,
