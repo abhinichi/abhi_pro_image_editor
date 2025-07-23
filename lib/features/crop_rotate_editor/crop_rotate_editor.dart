@@ -2113,26 +2113,23 @@ class CropRotateEditorState extends State<CropRotateEditor>
           _updateAllStates();
         },
         child: LayoutBuilder(builder: (context, constraints) {
-          return AnnotatedRegion<SystemUiOverlayStyle>(
-            value: cropRotateEditorConfigs.style.uiOverlayStyle,
-            child: Theme(
-              data: theme.copyWith(
-                  tooltipTheme:
-                      theme.tooltipTheme.copyWith(preferBelow: true)),
-              child: Scaffold(
-                resizeToAvoidBottomInset: false,
-                backgroundColor: cropRotateEditorConfigs.style.background,
-                appBar: _buildAppBar(constraints),
-                body: Center(
-                  child: SizedBox(
-                    width: constraints.maxWidth *
-                        (cropRotateEditorConfigs.maxWidthFactor ??
-                            (!kIsWeb && Platform.isAndroid ? 0.9 : 1)),
-                    child: _buildBody(),
-                  ),
+          return Theme(
+            data: theme.copyWith(
+                tooltipTheme:
+                    theme.tooltipTheme.copyWith(preferBelow: true)),
+            child: Scaffold(
+              resizeToAvoidBottomInset: false,
+              backgroundColor: cropRotateEditorConfigs.style.background,
+              appBar: _buildAppBar(constraints),
+              body: Center(
+                child: SizedBox(
+                  width: constraints.maxWidth *
+                      (cropRotateEditorConfigs.maxWidthFactor ??
+                          (!kIsWeb && Platform.isAndroid ? 0.9 : 1)),
+                  child: _buildBody(),
                 ),
-                bottomNavigationBar: _buildBottomAppBar(),
               ),
+              bottomNavigationBar: _buildBottomAppBar(),
             ),
           );
         }),
