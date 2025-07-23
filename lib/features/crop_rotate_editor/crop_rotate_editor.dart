@@ -2140,6 +2140,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// Builds the app bar for the editor, including buttons for actions such as
   /// back, rotate, aspect ratio, and done.
   PreferredSizeWidget? _buildAppBar(BoxConstraints constraints) {
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ));
+
     if (cropRotateEditorConfigs.widgets.appBar != null) {
       var customToolbar = cropRotateEditorConfigs.widgets.appBar!
           .call(this, rebuildController.stream);
