@@ -310,7 +310,7 @@ class TextEditorState extends State<TextEditor>
   /// Handles the "Done" action, either by applying changes or closing the
   /// editor.
   void done() {
-    if (textCtrl.text.trim().isNotEmpty) {
+    if (textCtrl.text.trim().isNotEmpty || widget.layer != null) {
       TextLayer layer = TextLayer(
         text: textCtrl.text.trim(),
         background: _backgroundColor,
