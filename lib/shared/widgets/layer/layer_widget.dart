@@ -166,6 +166,7 @@ class _LayerWidgetState extends State<LayerWidget>
 
   Offset? _downPosition;
   Offset? _lastLayerOffset;
+  int? _temporaryLayerHash;
 
   DateTime _tapDownTimestamp = DateTime.now();
   Timer? _longPressTimer;
@@ -224,6 +225,7 @@ class _LayerWidgetState extends State<LayerWidget>
 
     _downPosition = event.position;
     _lastLayerOffset = _layer.offset;
+    _temporaryLayerHash = _layer.hashCode;
     _tapDownTimestamp = DateTime.now();
 
     if (_isOutsideHitBox()) return;
@@ -234,7 +236,11 @@ class _LayerWidgetState extends State<LayerWidget>
     // Start long press detection
     _longPressTimer?.cancel();
     _longPressTimer = Timer(_longPressThreshold, () {
-      if (_downPosition == null || _lastLayerOffset == null) return;
+      if (_downPosition == null ||
+          _lastLayerOffset == null ||
+          _temporaryLayerHash != _layer.hashCode) {
+        return;
+      }
 
       final offsetDistance = (_layer.offset - _lastLayerOffset!).distance;
 
