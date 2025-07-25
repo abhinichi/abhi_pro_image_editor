@@ -248,6 +248,13 @@ class LayerInteractionManager {
   /// scaling operations.
   Size? rotateScaleLayerSizeHelper;
 
+  /// Represents the layer being interacted with during a
+  /// scale or rotate gesture.
+  ///
+  /// This is set when the user drags the scale/rotate button from the
+  /// selection overlay.
+  Layer? activeInteractionLayer;
+
   /// Last recorded X-axis position for layers.
   LayerLastPosition lastPositionX = LayerLastPosition.center;
 
@@ -351,6 +358,8 @@ class LayerInteractionManager {
     }
 
     for (Layer layer in selectedLayers) {
+      if (activeInteractionLayer?.id != layer.id) continue;
+
       Offset layerOffset = layer.offset;
 
       Offset realTouchPosition =

@@ -261,6 +261,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     _isScaleInteractionActive = true;
 
     _layerInteraction
+      ..activeInteractionLayer = layer
       ..rotateScaleLayerSizeHelper = layerOriginalSize
       ..rotateScaleLayerScaleHelper = layer.scale;
     widget.checkInteractiveViewer();
