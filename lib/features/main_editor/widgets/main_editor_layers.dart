@@ -146,47 +146,28 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     }
   }
 
-  void _handleLayerTap(Layer layer, {bool enforceMultiSelect = false}) {
+  void _handleLayerTap(Layer layer) {
     // Only handle selection if selectable
     if (layer.interaction.enableSelection) {
       final selectedIds = _layerInteraction.selectedLayerIds;
       final isAlreadySelected =
           selectedIds.contains(layer.id) && !_helperIsPointerDownSelected;
 
-      // Check if this layer belongs to a group
-      if (layer.groupId != null) {
-        // If layer is part of a group, handle group selection
-        Set<String> groupIds = widget.activeLayers
-            .where((l) => l.groupId == layer.groupId)
-            .map((l) => l.id)
-            .toSet();
-
-        if (!_enableMultiSelect && !enforceMultiSelect) {
-          // Clear current selection and select the entire group
-          _layerInteraction
-            ..clearSelectedLayers()
-            ..addMultipleSelectedLayers(groupIds);
-        } else {
-          // Multi-select mode: toggle group selection
-          if (groupIds.every(_layerInteraction.selectedLayerIds.contains)) {
-            _layerInteraction.removeMultipleSelectedLayers(groupIds);
-          } else {
-            _layerInteraction.addMultipleSelectedLayers(groupIds);
-          }
+      // Handle individual layer selection (no group)
+      if (!_enableMultiSelect) {
+        _layerInteraction.clearSelectedLayers();
+        _deselectGroup(layer);
+        if (!isAlreadySelected) {
+          _layerInteraction.addSelectedLayer(layer.id);
+          _selectGroup(layer);
         }
       } else {
-        // Handle individual layer selection (no group)
-        if (!_enableMultiSelect && !enforceMultiSelect) {
-          _layerInteraction.clearSelectedLayers();
-          if (!isAlreadySelected) {
-            _layerInteraction.addSelectedLayer(layer.id);
-          }
+        if (isAlreadySelected) {
+          _layerInteraction.removeSelectedLayer(layer.id);
+          _deselectGroup(layer);
         } else {
-          if (isAlreadySelected) {
-            _layerInteraction.removeSelectedLayer(layer.id);
-          } else {
-            _layerInteraction.addSelectedLayer(layer.id);
-          }
+          _layerInteraction.addSelectedLayer(layer.id);
+          _selectGroup(layer);
         }
       }
 
@@ -208,6 +189,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
 
     if (!_layerInteraction.layersAreSelectable(widget.configs)) {
       _layerInteraction.clearSelectedLayers();
+      _deselectGroup(layer);
     }
     if (_isScaleInteractionActive || widget.isLayerBeingTransformed) return;
     if (_layerInteraction.hoverRemoveBtn) {
@@ -248,10 +230,39 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
           ..clearSelectedLayers()
           ..addSelectedLayer(layer.id);
       }
+      _selectGroup(layer);
     }
 
     widget.checkInteractiveViewer();
     widget.callbacks.mainEditorCallbacks?.onLayerTapDown?.call(layer);
+  }
+
+  void _selectGroup(Layer layer) {
+    // If layer is part of a group, handle group selection
+    Set<String> groupIds = widget.activeLayers
+        .where((l) => l.groupId == layer.groupId)
+        .map((l) => l.id)
+        .toSet();
+
+    if (_enableMultiSelect) {
+      _layerInteraction.addMultipleSelectedLayers(groupIds);
+    } else {
+      _layerInteraction.setSelectedLayers(groupIds);
+    }
+  }
+
+  void _deselectGroup(Layer layer) {
+    // If layer is part of a group, handle group selection
+    Set<String> groupIds = widget.activeLayers
+        .where((l) => l.groupId == layer.groupId)
+        .map((l) => l.id)
+        .toSet();
+
+    if (_enableMultiSelect) {
+      _layerInteraction.removeMultipleSelectedLayers(groupIds);
+    } else {
+      _layerInteraction.clearSelectedLayers();
+    }
   }
 
   void _validateClearLayer() {
