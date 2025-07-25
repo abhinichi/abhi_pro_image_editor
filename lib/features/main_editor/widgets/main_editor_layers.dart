@@ -238,6 +238,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   }
 
   void _selectGroup(Layer layer) {
+    if (layer.groupId == null) return;
     // If layer is part of a group, handle group selection
     Set<String> groupIds = widget.activeLayers
         .where((l) => l.groupId == layer.groupId)
@@ -252,6 +253,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   }
 
   void _deselectGroup(Layer layer) {
+    if (layer.groupId == null) return;
     // If layer is part of a group, handle group selection
     Set<String> groupIds = widget.activeLayers
         .where((l) => l.groupId == layer.groupId)
