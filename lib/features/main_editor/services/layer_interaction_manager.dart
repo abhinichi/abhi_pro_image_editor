@@ -534,6 +534,8 @@ class LayerInteractionManager {
     }
 
     for (Layer layer in selectedLayers) {
+      /// Optionally, this could be extended to allow multiple layers to be
+      /// transformed using a single layer interaction button.
       if (activeInteractionLayer?.id != layer.id) continue;
 
       Offset layerOffset = layer.offset;

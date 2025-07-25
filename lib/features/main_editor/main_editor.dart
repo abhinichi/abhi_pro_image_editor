@@ -481,7 +481,12 @@ class ProImageEditorState extends State<ProImageEditor>
   /// If set to `true`, multi-select mode will be active without requiring
   /// the user to hold down CTRL/ SHIFT keys or long-press. This allows
   /// for easier selection of multiple items.
-  bool enableMultiSelectMode = false;
+  bool get enableMultiSelectMode => _enableMultiSelectMode;
+  bool _enableMultiSelectMode = false;
+  set enableMultiSelectMode(bool value) {
+    _enableMultiSelectMode = value;
+    setState(() {});
+  }
 
   /// Get the current background image.
   late EditorImage? editorImage = widget.editorImage;
@@ -2303,6 +2308,20 @@ class ProImageEditorState extends State<ProImageEditor>
     return layer;
   }
 
+  /// Selects all available layers.
+  void selectAllLayers() {
+    layerInteractionManager.setSelectedLayers(
+      activeLayers.map((layer) => layer.id),
+    );
+    _controllers.uiLayerCtrl.add(null);
+  }
+
+  /// Deselects all currently selected layers.
+  void unselectAllLayers() {
+    layerInteractionManager.clearSelectedLayers();
+    _controllers.uiLayerCtrl.add(null);
+  }
+
   @override
   Widget build(BuildContext context) {
     _theme = configs.theme ??
@@ -2433,7 +2452,7 @@ class ProImageEditorState extends State<ProImageEditor>
                         // scroll for layer scaling - let it go to editor zoom
                         final hasMultiSelection = selectedLayers.length > 1;
 
-                        if (hasMultiSelection) {
+                        if (hasMultiSelection && mainEditorConfigs.enableZoom) {
                           return;
                         }
 
