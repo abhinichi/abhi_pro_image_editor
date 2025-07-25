@@ -28,6 +28,7 @@ class LayerInteractionManager {
     required this.helperLinesCallbacks,
     required this.configs,
     this.onSelectedLayerChanged,
+    required this.onSelectedLayersChanged,
   });
 
   /// An optional instance of [HelperLinesCallbacks] that defines callback
@@ -42,6 +43,9 @@ class LayerInteractionManager {
 
   /// Callback function to be called when the selected layer changes.
   final ValueChanged<String>? onSelectedLayerChanged;
+
+  /// Callback function to be called when the selected layer changes.
+  final ValueChanged<Set<String>>? onSelectedLayersChanged;
 
   /// Debounce for scaling actions in the editor.
   late Debounce scaleDebounce;
@@ -135,34 +139,40 @@ class LayerInteractionManager {
   /// The set of currently selected layer IDs (for multi-select support).
   final Set<String> selectedLayerIds = <String>{};
 
-  /// Deprecated: The ID of the currently selected layer (for legacy code).
-  String get selectedLayerId => selectedLayerIds.isNotEmpty ? selectedLayerIds.last : '';
+  /// Returns the currently selected layer ID.
+  ///
+  /// If multiple layers are selected, this returns the **last one inserted**.
+  /// Returns an empty string if no layer is selected.
+  String get selectedLayerId =>
+      selectedLayerIds.isNotEmpty ? selectedLayerIds.first : '';
+
+  /// Sets the [selectedLayerIds] to a single [id], replacing any existing
+  /// selection.
+  ///
+  /// This is useful when only single selection is needed.
   set selectedLayerId(String id) {
     selectedLayerIds
       ..clear()
       ..add(id);
-    onSelectedLayerChanged?.call(selectedLayerId);
+    _notifySelectionChanged();
   }
 
   /// Add a layer to the selection set.
   void addSelectedLayer(String id) {
     selectedLayerIds.add(id);
-    debugPrint('[LayerInteractionManager] addSelectedLayer: $id, selectedLayerIds: $selectedLayerIds\n${StackTrace.current}');
-    onSelectedLayerChanged?.call(selectedLayerId);
+    _notifySelectionChanged();
   }
 
   /// Remove a layer from the selection set.
   void removeSelectedLayer(String id) {
     selectedLayerIds.remove(id);
-    debugPrint('[LayerInteractionManager] removeSelectedLayer: $id, selectedLayerIds: $selectedLayerIds\n${StackTrace.current}');
-    onSelectedLayerChanged?.call(selectedLayerId);
+    _notifySelectionChanged();
   }
 
   /// Clear all selected layers.
   void clearSelectedLayers() {
     selectedLayerIds.clear();
-    debugPrint('[LayerInteractionManager] clearSelectedLayers, selectedLayerIds: $selectedLayerIds\n${StackTrace.current}');
-    onSelectedLayerChanged?.call('');
+    _notifySelectionChanged();
   }
 
   /// Set selected layers to a specific set.
@@ -170,8 +180,13 @@ class LayerInteractionManager {
     selectedLayerIds
       ..clear()
       ..addAll(ids);
-    debugPrint('[LayerInteractionManager] setSelectedLayers: $ids, selectedLayerIds: $selectedLayerIds\n${StackTrace.current}');
+    _notifySelectionChanged();
+  }
+
+  /// Notifies selection change callbacks, both single and multi-select.
+  void _notifySelectionChanged() {
     onSelectedLayerChanged?.call(selectedLayerId);
+    onSelectedLayersChanged?.call(selectedLayerIds);
   }
 
   /// Helper variable for scaling during rotation of a layer.
