@@ -43,6 +43,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     this.enableHitDetection = false,
     this.selected = false,
     this.isInteractive = false,
+    this.enableVisibleOverlay = false,
     this.callbacks = const ProImageEditorCallbacks(),
   });
   @override
@@ -130,6 +131,9 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
 
   /// Indicates whether the layer is interactive.
   final bool isInteractive;
+
+  /// A flag to enable or disable the visibility of the overlay.
+  final bool enableVisibleOverlay;
 
   @override
   createState() => _LayerWidgetState();
@@ -346,6 +350,7 @@ class _LayerWidgetState extends State<LayerWidget>
       forceIgnoreGestures:
           !(interaction.enableSelection || interaction.enableEdit),
       isInteractive: widget.isInteractive,
+      enableVisibleOverlay: widget.enableVisibleOverlay,
       onScaleRotateDown: (details) {
         widget.onScaleRotateDown?.call(details, context.size ?? Size.zero);
       },

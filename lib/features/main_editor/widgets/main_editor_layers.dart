@@ -141,8 +141,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
 
   void _handleLayerTap(Layer layer) {
     // Only handle selection if selectable
-    if (_layerInteraction.layersAreSelectable(widget.configs) &&
-        layer.interaction.enableSelection) {
+    if (layer.interaction.enableSelection) {
       final selectedIds = _layerInteraction.selectedLayerIds;
       final isAlreadySelected =
           selectedIds.contains(layer.id) && !_helperIsPointerDownSelected;
@@ -218,8 +217,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
 
     /// If a user directly drags a layer, we first need to ensure the layer is
     /// selected when the pointer goes down.
-    if (_layerInteraction.layersAreSelectable(widget.configs) &&
-        layer.interaction.enableSelection) {
+    if (layer.interaction.enableSelection) {
       final selectedIds = _layerInteraction.selectedLayerIds;
       bool isAlreadySelected = selectedIds.contains(layer.id);
 
@@ -346,6 +344,8 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
       selected: selected,
       isInteractive: !widget.isSubEditorOpen,
       highPerformanceMode: _layerInteraction.freeStyleHighPerformance,
+      enableVisibleOverlay:
+          _layerInteraction.layersAreSelectable(widget.configs),
       onEditTap: () => _handleEditTap(layer),
       onTap: _handleLayerTap,
       onTapUp: () => _handleTapUp(layer),

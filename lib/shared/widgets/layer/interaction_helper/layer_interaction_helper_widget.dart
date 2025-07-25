@@ -62,6 +62,7 @@ class LayerInteractionHelperWidget extends StatefulWidget
     this.isInteractive = false,
     this.callbacks = const ProImageEditorCallbacks(),
     this.forceIgnoreGestures = false,
+    this.enableVisibleOverlay = false,
   });
 
   /// The configuration settings for the image editor.
@@ -136,6 +137,9 @@ class LayerInteractionHelperWidget extends StatefulWidget
   ///
   /// If true, the layer is highlighted, and interaction buttons are displayed.
   final bool selected;
+
+  /// A flag to enable or disable the visibility of the overlay.
+  final bool enableVisibleOverlay;
 
   @override
   State<LayerInteractionHelperWidget> createState() =>
@@ -214,6 +218,15 @@ class _LayerInteractionHelperWidgetState
       return widget.child;
     }
 
+    Widget child = DeferPointer(
+      key: ValueKey('Defer-${deferManager?.id ?? ''}-$layerId'),
+      child: widget.child,
+    );
+
+    if (!widget.enableVisibleOverlay) {
+      return child;
+    }
+
     return OverlayPortal.overlayChildLayoutBuilder(
       controller: _overlayCtrl,
       overlayChildBuilder: (context, info) {
@@ -263,7 +276,7 @@ class _LayerInteractionHelperWidgetState
       },
       child: DeferPointer(
         key: ValueKey('Defer-${deferManager?.id ?? ''}-$layerId'),
-        child: widget.child,
+        child: child,
       ),
     );
   }
