@@ -208,14 +208,16 @@ class ImportStateHistory {
       for (final matrix in filtersData) {
         final opacity = matrix[18];
 
+        final originalMatrix = List<double>.from(matrix);
         if (opacity != 1) {
-          var updatedMatrix = lerpColorMatrix(identityMatrix, matrix, opacity);
+          var updatedMatrix =
+              lerpColorMatrix(identityMatrix, originalMatrix, opacity);
 
           /// Set opacity to 1 as the other values are updated with lerp.
           updatedMatrix[18] = 1.0;
           result.add(updatedMatrix);
         } else {
-          result.add(List<double>.from(matrix));
+          result.add(originalMatrix);
         }
       }
 
