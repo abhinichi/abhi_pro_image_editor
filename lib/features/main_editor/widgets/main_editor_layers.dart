@@ -212,6 +212,8 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   void _handleTapDown(Layer layer) {
     if (_isScaleInteractionActive || widget.isLayerBeingTransformed) return;
 
+    _layerInteraction.activeInteractionLayer = layer;
+
     final selectedIds = _layerInteraction.selectedLayerIds;
     _temporarySelectedIds = {...selectedIds};
     _helperIsPointerDownSelected = false;

@@ -1036,6 +1036,10 @@ class ProImageEditorState extends State<ProImageEditor>
       _calcAppBarHeight();
     }
 
+    if (layerInteractionManager.activeInteractionLayer == null) {
+      layerInteractionManager.clearSelectedLayers();
+    }
+
     if (!hasSelectedLayers) {
       _layerDragSelectionService.startDragging(details.localFocalPoint);
       interactiveViewer.currentState?.onScaleStart(details);
@@ -1179,6 +1183,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void _onScaleEnd(ScaleEndDetails details) async {
     mainEditorCallbacks?.handleScaleEnd(details);
     _layerDragSelectionService.endDragging();
+    layerInteractionManager.activeInteractionLayer = null;
 
     /// Check if layers should be removed.
     if (layerInteractionManager.hoverRemoveBtn) {
