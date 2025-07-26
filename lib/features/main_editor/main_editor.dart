@@ -10,6 +10,7 @@ import '/core/mixins/editor_callbacks_mixin.dart';
 import '/core/mixins/editor_configs_mixin.dart';
 import '/core/models/styles/draggable_sheet_style.dart';
 import '/core/services/gesture_manager.dart';
+import '/core/services/mouse_service.dart';
 import '/features/main_editor/widgets/main_editor_appbar.dart';
 import '/features/main_editor/widgets/main_editor_background_image.dart';
 import '/features/main_editor/widgets/main_editor_background_video.dart';
@@ -374,6 +375,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Manager class to copy layers.
   final LayerCopyManager _layerCopyManager = LayerCopyManager();
+
+  final _mouseService = MouseService();
 
   /// Helper class for managing interactions with layers in the editor.
   late final LayerInteractionManager layerInteractionManager =
@@ -1073,10 +1076,14 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (!hasSelectedLayers &&
         mainEditorConfigs.enableZoom &&
-        !enableMultiSelectMode) {
+        _mouseService.isRightMousePressed) {
       interactiveViewer.currentState?.onScaleUpdate(details);
       return;
-    } else if (_layerDragSelectionService.isActive) {
+    }
+
+    if (_layerDragSelectionService.isActive &&
+        (_mouseService.isLeftMousePressed ||
+            _mouseService.isMiddleMousePressed)) {
       _layerDragSelectionService.updateSize(details.localFocalPoint);
       return;
     }
@@ -2455,6 +2462,7 @@ class ProImageEditorState extends State<ProImageEditor>
           : Listener(
               behavior: HitTestBehavior.translucent,
               onPointerDown: (details) {
+                _mouseService.onPointerDown(details);
                 if (layerInteractionManager.selectedLayerId.isNotEmpty ||
                     GestureManager.instance.isBlocked) {
                   return;
@@ -2465,7 +2473,10 @@ class ProImageEditorState extends State<ProImageEditor>
                 handleDoubleTap(context, details, mainEditorConfigs);
                 mainEditorCallbacks?.onDoubleTap?.call();
               },
-              onPointerUp: onPointerUp,
+              onPointerUp: (event) {
+                _mouseService.onPointerUp(event);
+                onPointerUp(event);
+              },
               onPointerSignal: isDesktop && hasSelectedLayers
                   ? (event) {
                       final hasMultiSelection = selectedLayers.length > 1;
