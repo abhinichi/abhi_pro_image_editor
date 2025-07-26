@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -125,6 +126,7 @@ class LayerDragSelectionService {
       updatedRect.size.height,
     );
 
+    final selectionPath = Path()..addRect(selectionRect);
     final textOffset = configs.textEditor.layerFractionalOffset;
     final paintOffset = configs.paintEditor.layerFractionalOffset;
     final emojiOffset = configs.emojiEditor.layerFractionalOffset;
@@ -137,7 +139,7 @@ class LayerDragSelectionService {
 
       if (size == null || size.isEmpty) continue;
 
-      final fractionalOffset = layer.isTextLayer
+      Offset fractionalOffset = layer.isTextLayer
           ? textOffset
           : layer.isPaintLayer
               ? paintOffset
@@ -146,26 +148,65 @@ class LayerDragSelectionService {
                   : layer.isWidgetLayer
                       ? widgetOffset
                       : const Offset(-0.5, -0.5);
+      fractionalOffset += const Offset(0.5, 0.5);
 
-      final topLeft = layer.offset +
+      final center = layer.offset +
           Offset(
             size.width * fractionalOffset.dx,
             size.height * fractionalOffset.dy,
           );
 
-      final layerRect = Rect.fromLTWH(
-        topLeft.dx,
-        topLeft.dy,
-        size.width,
-        size.height,
+      final rotatedCorners = _getRotatedCorners(center, size, layer.rotation);
+
+      final layerPath = Path()
+        ..moveTo(rotatedCorners[0].dx, rotatedCorners[0].dy)
+        ..lineTo(rotatedCorners[1].dx, rotatedCorners[1].dy)
+        ..lineTo(rotatedCorners[2].dx, rotatedCorners[2].dy)
+        ..lineTo(rotatedCorners[3].dx, rotatedCorners[3].dy)
+        ..close();
+
+      // First check bounds for fast rejection
+      if (!selectionRect.overlaps(layerPath.getBounds())) continue;
+
+      // Then do precise intersection check
+      final intersected = Path.combine(
+        PathOperation.intersect,
+        selectionPath,
+        layerPath,
       );
-      if (selectionRect.overlaps(layerRect)) {
+
+      if (intersected.computeMetrics().isNotEmpty) {
         selectedLayerIds.add(layer.id);
       }
     }
 
     layerInteractionManager.setSelectedLayers(selectedLayerIds);
     onUpdateLayers();
+  }
+
+  /// Returns the four corners of a rectangle [size] centered at [center],
+  /// rotated by [rotation] radians.
+  List<Offset> _getRotatedCorners(Offset center, Size size, double rotation) {
+    final hw = size.width / 2;
+    final hh = size.height / 2;
+
+    final corners = [
+      Offset(-hw, -hh),
+      Offset(hw, -hh),
+      Offset(hw, hh),
+      Offset(-hw, hh),
+    ];
+
+    final cosR = cos(rotation);
+    final sinR = sin(rotation);
+
+    return corners.map((offset) {
+      final rotated = Offset(
+        offset.dx * cosR - offset.dy * sinR,
+        offset.dx * sinR + offset.dy * cosR,
+      );
+      return center + rotated;
+    }).toList();
   }
 }
 
