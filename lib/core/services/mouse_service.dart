@@ -7,6 +7,19 @@ import '../models/editor_configs/pro_image_editor_configs.dart';
 /// This service can be used in conjunction with a [Listener] widget to monitor
 /// mouse button press and release events.
 class MouseService {
+  /// A service responsible for handling mouse-related configurations and
+  /// actions.
+  ///
+  /// The [MouseService] class is initialized with the required [configs]
+  /// parameter, which contains the necessary settings for mouse operations.
+  ///
+  /// - [configs]: The configuration object that defines mouse behavior and
+  /// settings.
+  MouseService({required this.configs});
+
+  /// Configuration options for the Image Editor.
+  ProImageEditorConfigs configs;
+
   bool _isPrimaryMousePressed = false;
 
   /// Whether the primary (left) mouse button is currently pressed.
@@ -21,6 +34,16 @@ class MouseService {
 
   /// Whether the middle mouse button is currently pressed.
   bool get isMiddleMousePressed => _isMiddleMousePressed;
+
+  LayerInteractionConfigs get _layerInteractionConfigs =>
+      configs.layerInteraction;
+
+  MouseButtonAction get _mouseButtonPrimaryAction =>
+      _layerInteractionConfigs.mouseButtonPrimaryAction;
+  MouseButtonAction get _mouseButtonSecondaryAction =>
+      _layerInteractionConfigs.mouseButtonSecondaryAction;
+  MouseButtonAction get _mouseButtonMiddleAction =>
+      _layerInteractionConfigs.mouseButtonMiddleAction;
 
   /// Handles a [PointerDownEvent] to update mouse button press states.
   ///
@@ -52,60 +75,47 @@ class MouseService {
     }
   }
 
-  /// Returns `true` if panning is currently allowed based on the provided
-  /// [configs] and the current mouse button states.
-  ///
-  /// Panning is only enabled when zooming is allowed (`enableZoom == true`)
-  /// and the pressed mouse button is configured for a `pan` action.
-  ///
-  /// Checks all three mouse buttons (primary, secondary, and middle) against
-  /// their assigned actions in [ProImageEditorConfigs.layerInteraction].
-  ///
-  /// Returns:
-  /// - `true` if any of the currently pressed buttons is mapped to `pan`.
-  /// - `false` otherwise.
-  bool validatePanAction(ProImageEditorConfigs configs) {
-    if (!configs.mainEditor.enableZoom) return false;
-
-    final layerInteraction = configs.layerInteraction;
-
-    final isPrimaryPan =
-        layerInteraction.mouseButtonPrimaryAction == MouseButtonAction.pan &&
-            isPrimaryMousePressed;
-    final isSecondaryPan =
-        layerInteraction.mouseButtonSecondaryAction == MouseButtonAction.pan &&
-            isSecondaryMousePressed;
-    final isMiddlePan =
-        layerInteraction.mouseButtonMiddleAction == MouseButtonAction.pan &&
-            isMiddleMousePressed;
-
-    return isPrimaryPan || isSecondaryPan || isMiddlePan;
+  bool _validateAction(MouseButtonAction action) {
+    return (_mouseButtonPrimaryAction == action && isPrimaryMousePressed) ||
+        (_mouseButtonSecondaryAction == action && isSecondaryMousePressed) ||
+        (_mouseButtonMiddleAction == action && isMiddleMousePressed);
   }
 
-  /// Returns `true` if drag selection is currently allowed based on the
-  /// [configs] and the current mouse button states.
+  /// Validates whether the pan action can be performed based on the current
+  /// configuration.
   ///
-  /// This checks whether any of the mouse buttons
-  /// (primary, secondary, or middle)
-  /// is currently pressed and is assigned the `dragSelect` action in
-  /// [ProImageEditorConfigs.layerInteraction].
+  /// This method checks if zoom functionality is enabled in the main editor
+  /// configuration.
+  /// If zoom is disabled, the pan action is not allowed and the method
+  /// returns `false`.
+  /// Otherwise, it delegates the validation to `_validateAction` with the
+  /// `MouseButtonAction.pan`.
   ///
-  /// Returns:
-  /// - `true` if any button is mapped to `dragSelect` and currently pressed.
-  /// - `false` otherwise.
-  bool validateDragAction(ProImageEditorConfigs configs) {
-    final layerInteraction = configs.layerInteraction;
+  /// Returns `true` if the pan action is valid, otherwise `false`.
+  bool validatePanAction() {
+    if (!configs.mainEditor.enableZoom) return false;
 
-    final isPrimaryPan = layerInteraction.mouseButtonPrimaryAction ==
-            MouseButtonAction.dragSelect &&
-        isPrimaryMousePressed;
-    final isSecondaryPan = layerInteraction.mouseButtonSecondaryAction ==
-            MouseButtonAction.dragSelect &&
-        isSecondaryMousePressed;
-    final isMiddlePan = layerInteraction.mouseButtonMiddleAction ==
-            MouseButtonAction.dragSelect &&
-        isMiddleMousePressed;
+    return _validateAction(MouseButtonAction.pan);
+  }
 
-    return isPrimaryPan || isSecondaryPan || isMiddlePan;
+  /// Validates whether the drag action is allowed based on the current mouse
+  /// button action.
+  ///
+  /// This method checks if the `MouseButtonAction.dragSelect` action is valid
+  /// by delegating the validation logic to the `_validateAction` method.
+  ///
+  /// Returns `true` if the drag action is valid, otherwise `false`.
+  bool validateDragAction() {
+    return _validateAction(MouseButtonAction.dragSelect);
+  }
+
+  /// Validates whether the multi-select action is allowed.
+  ///
+  /// This method checks if the `MouseButtonAction.multiSelect` action
+  /// is valid based on the current state or configuration.
+  ///
+  /// Returns `true` if the multi-select action is valid, otherwise `false`.
+  bool validateMultiSelectAction() {
+    return _validateAction(MouseButtonAction.multiSelect);
   }
 }

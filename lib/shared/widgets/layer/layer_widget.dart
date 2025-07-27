@@ -78,7 +78,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   final Function(bool isOpen)? onContextMenuToggled;
 
   /// Callback when a tap down event occurs.
-  final Function()? onTapDown;
+  final Function(PointerDownEvent event)? onTapDown;
 
   /// Callback when a tap up event occurs.
   final Function()? onTapUp;
@@ -250,7 +250,7 @@ class _LayerWidgetState extends State<LayerWidget>
 
     if (_isOutsideHitBox()) return;
     if (!isDesktop || event.buttons != kSecondaryMouseButton) {
-      widget.onTapDown?.call();
+      widget.onTapDown?.call(event);
     }
 
     // Start long press detection

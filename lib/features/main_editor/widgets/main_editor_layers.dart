@@ -137,13 +137,17 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   bool _isScaleInteractionActive = false;
   bool _helperIsPointerDownSelected = false;
   bool _helperEnforceMultiSelect = false;
+  bool _helperMouseDownMultiSelect = false;
   Set<String> _temporarySelectedIds = {};
 
   late final _layerInteraction = widget.layerInteractionManager;
   late final _layerInteractionConfigs = widget.configs.layerInteraction;
+  late final _dragSelectionService = widget.dragSelectionService;
+  late final _mouseService = widget.mouseService;
 
   bool get _enableMultiSelect =>
       widget.enableMultiSelectMode ||
+      _mouseService.validateMultiSelectAction() ||
       ((_keyboard.isCtrlPressed || _keyboard.isShiftPressed) &&
           _layerInteractionConfigs.enableKeyboardMultiSelection);
 
@@ -160,7 +164,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   }
 
   void _handleLayerTap(Layer layer) {
-    if (widget.mouseService.validatePanAction(widget.configs)) return;
+    if (_mouseService.validatePanAction()) return;
 
     // Only handle selection if selectable
     if (layer.interaction.enableSelection) {
@@ -169,7 +173,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
           selectedIds.contains(layer.id) && !_helperIsPointerDownSelected;
 
       // Handle individual layer selection (no group)
-      if (!_enableMultiSelect) {
+      if (!_enableMultiSelect && !_helperMouseDownMultiSelect) {
         _layerInteraction.clearSelectedLayers();
         _deselectGroup(layer);
         if (!isAlreadySelected) {
@@ -194,6 +198,8 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
         widget.onEditPaintLayer(layer as PaintLayer);
       }
     }
+
+    _helperMouseDownMultiSelect = false;
   }
 
   void _handleTapUp(Layer layer) {
@@ -224,17 +230,19 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
     });
   }
 
-  void _handleTapDown(Layer layer) {
+  void _handleTapDown(Layer layer, PointerDownEvent event) {
     if (_isScaleInteractionActive ||
         widget.isLayerBeingTransformed ||
-        widget.mouseService.validatePanAction(widget.configs)) {
+        _mouseService.validatePanAction()) {
       return;
     }
+    _mouseService.onPointerDown(event);
     _layerInteraction.activeInteractionLayer = layer;
 
     final selectedIds = _layerInteraction.selectedLayerIds;
     _temporarySelectedIds = {...selectedIds};
     _helperIsPointerDownSelected = false;
+    _helperMouseDownMultiSelect = _mouseService.validateMultiSelectAction();
 
     /// If a user directly drags a layer, we first need to ensure the layer is
     /// selected when the pointer goes down.
@@ -439,17 +447,17 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
       isInteractive: !widget.isSubEditorOpen,
       highPerformanceMode: _layerInteraction.freeStyleHighPerformance,
       enableVisibleOverlay: areLayersSelectable,
-      enableMouseCursor: !widget.dragSelectionService.isActive,
+      enableMouseCursor: !_dragSelectionService.isActive,
       onEditTap: () => _handleEditTap(layer),
       onTap: _handleLayerTap,
       onTapUp: () => _handleTapUp(layer),
-      onTapDown: () => _handleTapDown(layer),
+      onTapDown: (event) => _handleTapDown(layer, event),
       onScaleRotateDown: (details, layerOriginalSize) =>
           _handleScaleRotateDown(layerOriginalSize, layer),
       onLongPress: () {
         if (!areLayersSelectable ||
             !_layerInteractionConfigs.enableLongPressMultiSelection ||
-            widget.mouseService.validatePanAction(widget.configs)) {
+            _mouseService.validatePanAction()) {
           return;
         }
 

@@ -376,7 +376,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Manager class to copy layers.
   final LayerCopyManager _layerCopyManager = LayerCopyManager();
 
-  final _mouseService = MouseService();
+  late final _mouseService = MouseService(configs: configs);
 
   /// Helper class for managing interactions with layers in the editor.
   late final LayerInteractionManager layerInteractionManager =
@@ -1039,10 +1039,10 @@ class ProImageEditorState extends State<ProImageEditor>
       _calcAppBarHeight();
     }
 
-    if (_mouseService.validatePanAction(configs)) {
+    if (_mouseService.validatePanAction()) {
       interactiveViewer.currentState?.onScaleStart(details);
       return;
-    } else if (_mouseService.validateDragAction(configs) &&
+    } else if (_mouseService.validateDragAction() &&
         layerInteractionManager.activeInteractionLayer == null) {
       layerInteractionManager.clearSelectedLayers();
       _layerDragSelectionService.startDragging(details.localFocalPoint);
@@ -1074,13 +1074,13 @@ class ProImageEditorState extends State<ProImageEditor>
     mainEditorCallbacks?.handleScaleUpdate(details);
     if (blockOnScaleUpdateFunction) return;
 
-    if (_mouseService.validatePanAction(configs)) {
+    if (_mouseService.validatePanAction()) {
       interactiveViewer.currentState?.onScaleUpdate(details);
       return;
     }
 
     if (_layerDragSelectionService.isActive &&
-        _mouseService.validateDragAction(configs)) {
+        _mouseService.validateDragAction()) {
       _layerDragSelectionService.updateSize(details.localFocalPoint);
       return;
     }

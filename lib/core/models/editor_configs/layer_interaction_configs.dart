@@ -31,7 +31,7 @@ class LayerInteractionConfigs {
     this.enableKeyboardMultiSelection = true,
     this.enableLongPressMultiSelection = true,
     this.enableLayerDragSelection = true,
-    this.mouseButtonPrimaryAction = MouseButtonAction.dragSelect,
+    this.mouseButtonPrimaryAction = MouseButtonAction.multiSelect,
     this.mouseButtonSecondaryAction = MouseButtonAction.pan,
     this.mouseButtonMiddleAction = MouseButtonAction.pan,
     this.videoControlsSwitchDuration = const Duration(milliseconds: 220),
@@ -177,7 +177,7 @@ enum MouseButtonAction {
 
   /// Enables direct multi-selection of layers when clicked, without requiring
   /// keyboard modifiers like Ctrl/Shift or long-press gestures.
-  multiSelect, // TODO:
+  multiSelect,
 
   /// No specific action is assigned to the mouse button.
   none,
