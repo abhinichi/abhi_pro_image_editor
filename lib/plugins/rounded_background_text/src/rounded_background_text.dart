@@ -164,6 +164,8 @@ class RoundedBackgroundText extends StatelessWidget {
   Widget build(BuildContext context) {
     final defaultTextStyle = DefaultTextStyle.of(context);
     final style = text.style ?? defaultTextStyle.style;
+    final align = textAlign ?? defaultTextStyle.textAlign ?? TextAlign.start;
+
     final painter = TextPainter(
       text: TextSpan(
         children: [text],
@@ -175,7 +177,7 @@ class RoundedBackgroundText extends StatelessWidget {
       textDirection:
           textDirection ?? Directionality.maybeOf(context) ?? TextDirection.ltr,
       maxLines: maxLines ?? defaultTextStyle.maxLines,
-      textAlign: textAlign ?? defaultTextStyle.textAlign ?? TextAlign.start,
+      textAlign: align,
       textWidthBasis: textWidthBasis ?? defaultTextStyle.textWidthBasis,
       textScaler: textScaler,
       strutStyle: strutStyle,
@@ -207,6 +209,7 @@ class RoundedBackgroundText extends StatelessWidget {
           outerRadius: outerRadius,
           onHitTestResult: onHitTestResult,
           horizontalPadding: horizontalSpace,
+          textAlign: align,
         ),
         child: SizedBox(
           width: painter.width.clamp(0, constraints.maxWidth) +
@@ -226,12 +229,14 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     required this.outerRadius,
     required this.onHitTestResult,
     required this.horizontalPadding,
+    required this.textAlign,
   });
 
   final Function(bool hasHit)? onHitTestResult;
 
   final Color backgroundColor;
   final TextPainter text;
+  final TextAlign textAlign;
 
   final double horizontalPadding;
   final double innerRadius;
@@ -247,11 +252,14 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   /// painter.layout();
   /// final lines = RoundedBackgroundTextPainter.computeLines(painter);
   /// ```
-  static List<List<LineMetricsHelper>> computeLines(TextPainter painter) {
+  static List<List<LineMetricsHelper>> computeLines(
+    TextPainter painter,
+    TextAlign textAlign,
+  ) {
     final metrics = painter.computeLineMetrics();
 
     final helpers = metrics.map((lineMetric) {
-      return LineMetricsHelper(lineMetric, metrics.length);
+      return LineMetricsHelper(lineMetric, metrics.length, textAlign);
     });
 
     final List<List<LineMetricsHelper>> lineInfos = [[]];
@@ -269,13 +277,13 @@ class RoundedBackgroundTextPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final lineInfos = computeLines(text);
+    final lineInfos = computeLines(text, textAlign);
 
     for (final lineInfo in lineInfos) {
       paintBackground(canvas, lineInfo);
     }
 
-    text.paint(canvas, Offset(horizontalPadding, 2.0));
+    text.paint(canvas, Offset(horizontalPadding, 0.0));
   }
 
   RRect _getRRect(LineMetricsHelper info) {
@@ -579,7 +587,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   @override
   bool? hitTest(Offset position) {
     // Retrieve the line information
-    final lineInfos = computeLines(text);
+    final lineInfos = computeLines(text, textAlign);
 
     // Check each line
     for (final lineInfo in lineInfos) {
@@ -605,7 +613,9 @@ class RoundedBackgroundTextPainter extends CustomPainter {
 /// This is used to calculate the position of the line in the paragraph.
 class LineMetricsHelper {
   /// Creates a new line metrics helper
-  LineMetricsHelper(this.metrics, this.length);
+  LineMetricsHelper(this.metrics, this.length, this.textAlign);
+
+  final TextAlign textAlign;
 
   /// The original line metrics, which stores the measurements and statistics of
   /// a single line in the paragraph.
@@ -674,7 +684,14 @@ class LineMetricsHelper {
   /// The x position of the line
   double get x {
     if (_overridenX != null) return _overridenX!;
-    final result = metrics.left;
+    double alignHelper = 0.0;
+    if (textAlign == TextAlign.center) {
+      alignHelper = 1.5;
+    } else if (textAlign == TextAlign.right) {
+      alignHelper = 3.0;
+    }
+
+    double result = metrics.left - alignHelper;
 
     if (isFirst) {
       return (result - _firstLinePadding.left).roundToDouble();
