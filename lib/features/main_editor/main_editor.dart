@@ -2577,19 +2577,16 @@ class ProImageEditorState extends State<ProImageEditor>
   Widget _buildLayers() {
     return MainEditorLayers(
       controllers: _controllers,
-      layerInteraction: layerInteraction,
       layerInteractionManager: layerInteractionManager,
       configs: configs,
       callbacks: callbacks,
       sizesManager: sizesManager,
       activeLayers: activeLayers,
       isSubEditorOpen: isSubEditorOpen,
-      isLayerBeingTransformed: isLayerBeingTransformed,
-      checkInteractiveViewer: _checkInteractiveViewer,
+      onCheckInteractiveViewer: _checkInteractiveViewer,
       onTextLayerTap: _onTextLayerTap,
       onEditPaintLayer: _editPaintLayer,
       state: this,
-      enableMultiSelectMode: enableMultiSelectMode,
       dragSelectionService: _layerDragSelectionService,
       mouseService: _mouseService,
       onContextMenuToggled: (isOpen) {
