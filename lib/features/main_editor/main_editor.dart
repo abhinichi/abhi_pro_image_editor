@@ -1038,10 +1038,34 @@ class ProImageEditorState extends State<ProImageEditor>
     if (sizesManager.bodySize != sizesManager.editorSize) {
       _calcAppBarHeight();
     }
+
+    /// On mobile, multi-finger gestures should always trigger zoom/pan
+    if (!isDesktop && 
+        details.pointerCount >= 2 && 
+        mainEditorConfigs.enableZoom) {
+      interactiveViewer.currentState?.onScaleStart(details);
+      return;
+    }
+
+    /// Handle drag selection for mobile single-finger gestures
+    if (!isDesktop && 
+        details.pointerCount == 1 && 
+        !hasSelectedLayers &&
+        _mouseService.validateDragAction() &&
+        layerInteractionManager.activeInteractionLayer == null) {
+      layerInteractionManager.clearSelectedLayers();
+      _layerDragSelectionService.startDragging(details.localFocalPoint);
+      return;
+    }
+
+    /// Handle pan action
     if (_mouseService.validatePanAction()) {
       interactiveViewer.currentState?.onScaleStart(details);
       return;
-    } else if (_mouseService.validateDragAction() &&
+    }
+
+    /// Handle drag selection for desktop or fallback
+    if (_mouseService.validateDragAction() &&
         layerInteractionManager.activeInteractionLayer == null) {
       layerInteractionManager.clearSelectedLayers();
       _layerDragSelectionService.startDragging(details.localFocalPoint);
@@ -1072,11 +1096,29 @@ class ProImageEditorState extends State<ProImageEditor>
     mainEditorCallbacks?.handleScaleUpdate(details);
     if (blockOnScaleUpdateFunction) return;
 
+    /// On mobile, multi-finger gestures should always trigger zoom/pan
+    if (!isDesktop && 
+        details.pointerCount >= 2 && 
+        mainEditorConfigs.enableZoom) {
+      interactiveViewer.currentState?.onScaleUpdate(details);
+      return;
+    }
+
+    /// Handle active drag selection on mobile
+    if (!isDesktop && 
+        details.pointerCount == 1 && 
+        _layerDragSelectionService.isActive) {
+      _layerDragSelectionService.updateSize(details.localFocalPoint);
+      return;
+    }
+
+    /// Handle pan action
     if (_mouseService.validatePanAction()) {
       interactiveViewer.currentState?.onScaleUpdate(details);
       return;
     }
 
+    /// Handle drag selection updates
     if (_layerDragSelectionService.isActive &&
         _mouseService.validateDragAction()) {
       _layerDragSelectionService.updateSize(details.localFocalPoint);
