@@ -2438,77 +2438,74 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   Widget _buildBody() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        sizesManager.bodySize = constraints.biggest;
-        return !_isVideoPlayerReady
-            ? _buildSetupSpinner()
-            : Listener(
-                behavior: HitTestBehavior.translucent,
-                onPointerDown: (details) {
-                  _mouseService.onPointerDown(details);
-                  if (layerInteractionManager.selectedLayerId.isNotEmpty ||
-                      GestureManager.instance.isBlocked) {
-                    return;
-                  }
-                  bool isDoubleTap = detectDoubleTap(details);
-                  if (!isDoubleTap) return;
+    return LayoutBuilder(builder: (context, constraints) {
+      sizesManager.bodySize = constraints.biggest;
+      return !_isVideoPlayerReady
+          ? _buildSetupSpinner()
+          : Listener(
+              behavior: HitTestBehavior.translucent,
+              onPointerDown: (details) {
+                _mouseService.onPointerDown(details);
+                if (layerInteractionManager.selectedLayerId.isNotEmpty ||
+                    GestureManager.instance.isBlocked) {
+                  return;
+                }
+                bool isDoubleTap = detectDoubleTap(details);
+                if (!isDoubleTap) return;
 
-                  handleDoubleTap(context, details, mainEditorConfigs);
-                  mainEditorCallbacks?.onDoubleTap?.call();
-                },
-                onPointerUp: (event) {
-                  _mouseService.onPointerUp(event);
-                  onPointerUp(event);
-                },
-                onPointerSignal: isDesktop && hasSelectedLayers
-                    ? (event) {
-                        final hasMultiSelection = selectedLayers.length > 1;
+                handleDoubleTap(context, details, mainEditorConfigs);
+                mainEditorCallbacks?.onDoubleTap?.call();
+              },
+              onPointerUp: (event) {
+                _mouseService.onPointerUp(event);
+                onPointerUp(event);
+              },
+              onPointerSignal: isDesktop && hasSelectedLayers
+                  ? (event) {
+                      final hasMultiSelection = selectedLayers.length > 1;
 
-                        final zoomEnabled = mainEditorConfigs.enableZoom;
-                        final zoomGestureActive = interactiveViewer
-                                .currentState?.isInteractionEnabled ==
-                            true;
+                      final zoomEnabled = mainEditorConfigs.enableZoom;
+                      final zoomGestureActive = interactiveViewer
+                              .currentState?.isInteractionEnabled ==
+                          true;
 
-                        if ((hasMultiSelection && zoomEnabled) ||
-                            (zoomEnabled && zoomGestureActive)) {
-                          return;
-                        }
-
-                        /// Otherwise, handle scroll as a layer scaling
-                        /// interaction.
-                        _desktopInteractionManager.mouseScroll(
-                          event,
-                          selectedLayers: selectedLayers,
-                        );
+                      if ((hasMultiSelection && zoomEnabled) ||
+                          (zoomEnabled && zoomGestureActive)) {
+                        return;
                       }
-                    : null,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: () {
-                    /// Only clear selection if the tap is not on any layer
-                    /// (e.g., background/canvas tap)
-                    /// This block should be triggered only for true
-                    /// background taps.
-                    if (!configs.videoEditor.enablePlayButton) {
-                      widget.videoController?.togglePlayState();
+
+                      /// Otherwise, handle scroll as a layer scaling
+                      /// interaction.
+                      _desktopInteractionManager.mouseScroll(event,
+                          selectedLayers: selectedLayers,
+                          interactiveViewer: interactiveViewer.currentState);
                     }
-                    mainEditorCallbacks?.onTap?.call();
-                  },
-                  onLongPress: mainEditorCallbacks?.onLongPress,
-                  onScaleStart: _onScaleStart,
-                  onScaleUpdate: _onScaleUpdate,
-                  onScaleEnd: _onScaleEnd,
-                  child: mainEditorConfigs.widgets.wrapBody?.call(
-                        this,
-                        _rebuildController.stream,
-                        _buildInteractiveContent(),
-                      ) ??
+                  : null,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  /// Only clear selection if the tap is not on any layer
+                  /// (e.g., background/canvas tap)
+                  /// This block should be triggered only for true
+                  /// background taps.
+                  if (!configs.videoEditor.enablePlayButton) {
+                    widget.videoController?.togglePlayState();
+                  }
+                  mainEditorCallbacks?.onTap?.call();
+                },
+                onLongPress: mainEditorCallbacks?.onLongPress,
+                onScaleStart: _onScaleStart,
+                onScaleUpdate: _onScaleUpdate,
+                onScaleEnd: _onScaleEnd,
+                child: mainEditorConfigs.widgets.wrapBody?.call(
+                      this,
+                      _rebuildController.stream,
                       _buildInteractiveContent(),
-                ),
-              );
-      },
-    );
+                    ) ??
+                    _buildInteractiveContent(),
+              ),
+            );
+    });
   }
 
   Widget _buildInteractiveContent() {
