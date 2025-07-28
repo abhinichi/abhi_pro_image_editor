@@ -1187,7 +1187,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     /// Check if layers should be removed.
     if (layerInteractionManager.hoverRemoveBtn) {
-      for (Layer layer in selectedLayers) {
+      for (Layer layer in layerInteractionManager.selectedLayersScaleStart) {
         activeLayers.remove(layer);
         mainEditorCallbacks?.handleRemoveLayer(layer);
       }
