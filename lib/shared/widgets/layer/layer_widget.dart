@@ -320,7 +320,7 @@ class _LayerWidgetState extends State<LayerWidget>
   Widget _buildInteractionHandlers() {
     var interaction = _layer.interaction;
     return LayerInteractionHelperWidget(
-      layerData: _layer,
+      layer: _layer,
       configs: configs,
       callbacks: callbacks,
       selected: _isSelected,
