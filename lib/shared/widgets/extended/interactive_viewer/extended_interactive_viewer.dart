@@ -260,9 +260,12 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer>
     return Offset(vector3.x, vector3.y);
   }
 
+  bool _helperScaledStarted = false;
+
   /// Handles the start of a scaling gesture by forwarding the [details]
   /// to the underlying raw viewer's `onScaleStart` method.
   void onScaleStart(ScaleStartDetails details) {
+    _helperScaledStarted = true;
     if (!widget.zoomConfigs.enableZoom) return;
     _rawViewerKey.currentState!.onScaleStart(details);
   }
@@ -289,7 +292,8 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer>
   /// [details] contains information about the velocity and focal point of the
   /// gesture.
   void onScaleEnd(ScaleEndDetails details) {
-    if (!widget.zoomConfigs.enableZoom) return;
+    if (!_helperScaledStarted || !widget.zoomConfigs.enableZoom) return;
+    _helperScaledStarted = false;
     _rawViewerKey.currentState!.onScaleEnd(details);
   }
 

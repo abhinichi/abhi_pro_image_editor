@@ -187,7 +187,7 @@ class MainEditorLayersService {
   void handleTapDown(Layer layer, PointerDownEvent event) {
     if (_isScaleInteractionActive ||
         state.isLayerBeingTransformed ||
-        mouseService.validatePanAction(event: event)) {
+        (mouseService.validatePanAction(event: event) && isDesktop)) {
       return;
     }
     mouseService.onPointerDown(event);

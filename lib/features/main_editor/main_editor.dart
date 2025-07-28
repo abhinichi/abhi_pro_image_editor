@@ -97,8 +97,10 @@ class ProImageEditor extends StatefulWidget
     this.editorImage,
     this.videoController,
     this.configs = const ProImageEditorConfigs(),
-  }) : assert(editorImage != null || videoController != null,
-            'Either editorImage or videoController must be provided.');
+  }) : assert(
+          editorImage != null || videoController != null,
+          'Either editorImage or videoController must be provided.',
+        );
 
   /// This constructor creates a `ProImageEditor` widget configured to edit an
   /// image loaded from the specified `byteArray`.
@@ -376,8 +378,6 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Manager class to copy layers.
   final LayerCopyManager _layerCopyManager = LayerCopyManager();
 
-  late final _mouseService = MouseService(configs: configs);
-
   /// Helper class for managing interactions with layers in the editor.
   late final LayerInteractionManager layerInteractionManager =
       LayerInteractionManager(
@@ -385,6 +385,10 @@ class ProImageEditorState extends State<ProImageEditor>
     onSelectedLayersChanged: mainEditorCallbacks?.onSelectedLayersChanged,
     helperLinesCallbacks: mainEditorCallbacks?.helperLines,
     configs: configs,
+  );
+  late final _mouseService = MouseService(
+    configs: configs,
+    interactionManager: layerInteractionManager,
   );
 
   /// Manager class for managing the state of the editor.
@@ -464,14 +468,17 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Returns the most recently selected layer, or `null` if no layer is
   /// selected.
   Layer? get selectedLayer => hasSelectedLayers
-      ? activeLayers.lastWhere((layer) =>
-          layerInteractionManager.selectedLayerIds.contains(layer.id))
+      ? activeLayers.lastWhere(
+          (layer) =>
+              layerInteractionManager.selectedLayerIds.contains(layer.id),
+        )
       : null;
 
   /// Returns a list of all currently selected layers.
   List<Layer> get selectedLayers => activeLayers
-      .where((layer) =>
-          layerInteractionManager.selectedLayerIds.contains(layer.id))
+      .where(
+        (layer) => layerInteractionManager.selectedLayerIds.contains(layer.id),
+      )
       .toList();
 
   /// Get the list of layers from the current image editor changes.
@@ -531,8 +538,9 @@ class ProImageEditorState extends State<ProImageEditor>
       setState: setState,
     );
     sizesManager = SizesManager(configs: configs, context: context);
-    layerInteractionManager.scaleDebounce =
-        Debounce(const Duration(milliseconds: 100));
+    layerInteractionManager.scaleDebounce = Debounce(
+      const Duration(milliseconds: 100),
+    );
 
     /// For the case the user add transformConfigs we initialize the editor with
     /// this configurations and not the empty history
@@ -567,9 +575,11 @@ class ProImageEditorState extends State<ProImageEditor>
     _rebuildController.close();
     _controllers.dispose();
     layerInteractionManager.scaleDebounce.dispose();
-    SystemChrome.setSystemUIOverlayStyle(_theme.brightness == Brightness.dark
-        ? SystemUiOverlayStyle.light
-        : SystemUiOverlayStyle.dark);
+    SystemChrome.setSystemUIOverlayStyle(
+      _theme.brightness == Brightness.dark
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
+    );
     SystemChrome.restoreSystemUIOverlays();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     if (kIsWeb && _browserContextMenuBeforeEnabled) {
@@ -586,9 +596,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   void _checkInteractiveViewer() {
     if (mainEditorConfigs.canZoomWhenLayerSelected) return;
-    interactiveViewer.currentState?.setEnableInteraction(
-      !hasSelectedLayers,
-    );
+    interactiveViewer.currentState?.setEnableInteraction(!hasSelectedLayers);
   }
 
   /// Handle keyboard events
@@ -686,8 +694,9 @@ class ProImageEditorState extends State<ProImageEditor>
         stateManager.heroScreenshotRequired = true;
       }
     } else {
-      _controllers.screenshot
-          .addEmptyScreenshot(screenshots: stateManager.screenshots);
+      _controllers.screenshot.addEmptyScreenshot(
+        screenshots: stateManager.screenshots,
+      );
     }
     setState(() {});
   }
@@ -715,10 +724,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// ```dart
   /// replaceLayer(index: 2, layer: newLayer);
   /// ```
-  void replaceLayer({
-    required int index,
-    required Layer layer,
-  }) {
+  void replaceLayer({required int index, required Layer layer}) {
     layerInteractionManager.clearSelectedLayers();
     addHistory(
       layers: [...activeLayers]
@@ -814,10 +820,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Remove a layer from the editor.
   ///
   /// This method removes a layer from the editor and updates the editing state.
-  void removeLayer(
-    Layer layer, {
-    bool blockCaptureScreenshot = false,
-  }) {
+  void removeLayer(Layer layer, {bool blockCaptureScreenshot = false}) {
     int layerPos = activeLayers.indexOf(layer);
     if (layerPos < 0) return;
 
@@ -826,10 +829,7 @@ class ProImageEditorState extends State<ProImageEditor>
     var layers = _layerCopyManager.copyLayerList(activeLayers)
       ..removeAt(layerPos);
 
-    addHistory(
-      layers: layers,
-      blockCaptureScreenshot: blockCaptureScreenshot,
-    );
+    addHistory(layers: layers, blockCaptureScreenshot: blockCaptureScreenshot);
     setState(() {});
   }
 
@@ -847,7 +847,9 @@ class ProImageEditorState extends State<ProImageEditor>
 
     _isVideoPlayerReady = false;
     Future<Uint8List> createTransparentImage(
-        double width, double height) async {
+      double width,
+      double height,
+    ) async {
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, width, height));
       final paint = Paint()..color = const ui.Color.fromARGB(0, 0, 0, 0);
@@ -898,10 +900,7 @@ class ProImageEditorState extends State<ProImageEditor>
     /// Set the decoded image infos for the case they are not empty
     if (transformSetup.imageInfos != null) {
       _imageInfos = transformSetup.imageInfos!;
-      decodeImage(
-        transformSetup.transformConfigs,
-        transformSetup.imageInfos,
-      );
+      decodeImage(transformSetup.transformConfigs, transformSetup.imageInfos);
     }
   }
 
@@ -1039,7 +1038,6 @@ class ProImageEditorState extends State<ProImageEditor>
     if (sizesManager.bodySize != sizesManager.editorSize) {
       _calcAppBarHeight();
     }
-
     if (_mouseService.validatePanAction()) {
       interactiveViewer.currentState?.onScaleStart(details);
       return;
@@ -1055,7 +1053,6 @@ class ProImageEditorState extends State<ProImageEditor>
     /// Important: No screenshot is taken at this point; it will be captured
     /// after the layer interaction is completed.
     addHistory(blockCaptureScreenshot: true);
-
     _checkInteractiveViewer();
     isLayerBeingTransformed = hasSelectedLayers;
     layerInteractionManager.onScaleStart(
@@ -1159,7 +1156,6 @@ class ProImageEditorState extends State<ProImageEditor>
         interactiveViewer.currentState?.onScaleUpdate(details);
         return;
       }
-
       // Layer scaling (original logic)
       layerInteractionManager
         ..freeStyleHighPerformanceScaling =
@@ -1277,10 +1273,8 @@ class ProImageEditorState extends State<ProImageEditor>
           paintEditorConfigs.widgets.editBottomSheet?.call(layer) ??
           SafeArea(
             child: PaintEditorLayerEditor(
-              layer: _layerCopyManager.duplicateLayer(
-                layer,
-                offset: Offset.zero,
-              ) as PaintLayer,
+              layer: _layerCopyManager.duplicateLayer(layer,
+                  offset: Offset.zero) as PaintLayer,
               configs: configs,
             ),
           ),
@@ -1362,10 +1356,7 @@ class ProImageEditorState extends State<ProImageEditor>
         transitionsBuilder:
             mainEditorConfigs.style.subEditorPage.transitionsBuilder ??
                 (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  );
+                  return FadeTransition(opacity: animation, child: child);
                 },
         pageBuilder: (context, animation, secondaryAnimation) {
           void animationStatusListener(AnimationStatus status) {
@@ -1470,8 +1461,9 @@ class ProImageEditorState extends State<ProImageEditor>
         videoController: widget.videoController,
         initConfigs: PaintEditorInitConfigs(
           configs: configs,
-          callbacks:
-              callbacks.copyWith(paintEditorCallbacks: overridenPaintCallbacks),
+          callbacks: callbacks.copyWith(
+            paintEditorCallbacks: overridenPaintCallbacks,
+          ),
           layers: _layerCopyManager.duplicateLayerList(
             activeLayers,
             offset: Offset.zero,
@@ -1620,9 +1612,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// If tune adjustments are made, they are added to the editor's history
   /// and the UI is updated accordingly. If the operation is canceled or no
   /// adjustments are made, the current state remains unchanged.
-  void openTuneEditor({
-    bool enableHero = true,
-  }) async {
+  void openTuneEditor({bool enableHero = true}) async {
     if (!mounted) return;
     List<TuneAdjustmentMatrix>? tuneAdjustments = await openPage(
       HeroMode(
@@ -1650,10 +1640,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (tuneAdjustments == null) return;
 
-    addHistory(
-      tuneAdjustments: tuneAdjustments,
-      heroScreenshotRequired: true,
-    );
+    addHistory(tuneAdjustments: tuneAdjustments, heroScreenshotRequired: true);
 
     setState(() {});
     mainEditorCallbacks?.handleUpdateUI();
@@ -1694,10 +1681,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (filters == null) return;
 
-    addHistory(
-      filters: filters,
-      heroScreenshotRequired: true,
-    );
+    addHistory(filters: filters, heroScreenshotRequired: true);
 
     setState(() {});
     mainEditorCallbacks?.handleUpdateUI();
@@ -1729,10 +1713,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (blur == null) return;
 
-    addHistory(
-      blur: blur,
-      heroScreenshotRequired: true,
-    );
+    addHistory(blur: blur, heroScreenshotRequired: true);
 
     setState(() {});
     mainEditorCallbacks?.handleUpdateUI();
@@ -1761,37 +1742,39 @@ class ProImageEditorState extends State<ProImageEditor>
         emojiEditorConfigs.style.themeDraggableSheet;
     bool useDraggableSheet = sheetTheme.maxChildSize != sheetTheme.minChildSize;
     EmojiLayer? layer = await showModalBottomSheet(
-        context: context,
-        backgroundColor: emojiEditorConfigs.style.backgroundColor,
-        constraints: effectiveBoxConstraints,
-        showDragHandle: emojiEditorConfigs.style.showDragHandle,
-        isScrollControlled: true,
-        useSafeArea: true,
-        builder: (BuildContext context) => SafeArea(
-              child: !useDraggableSheet
-                  ? ConstrainedBox(
-                      constraints: effectiveBoxConstraints ??
-                          BoxConstraints(
-                              maxHeight: 300 +
-                                  MediaQuery.viewInsetsOf(context).bottom),
-                      child: EmojiEditor(configs: configs),
-                    )
-                  : DraggableScrollableSheet(
-                      expand: sheetTheme.expand,
-                      initialChildSize: sheetTheme.initialChildSize,
-                      maxChildSize: sheetTheme.maxChildSize,
-                      minChildSize: sheetTheme.minChildSize,
-                      shouldCloseOnMinExtent: sheetTheme.shouldCloseOnMinExtent,
-                      snap: sheetTheme.snap,
-                      snapAnimationDuration: sheetTheme.snapAnimationDuration,
-                      snapSizes: sheetTheme.snapSizes,
-                      builder: (_, controller) {
-                        return EmojiEditor(
-                          configs: configs,
-                          scrollController: controller,
-                        );
-                      }),
-            ));
+      context: context,
+      backgroundColor: emojiEditorConfigs.style.backgroundColor,
+      constraints: effectiveBoxConstraints,
+      showDragHandle: emojiEditorConfigs.style.showDragHandle,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (BuildContext context) => SafeArea(
+        child: !useDraggableSheet
+            ? ConstrainedBox(
+                constraints: effectiveBoxConstraints ??
+                    BoxConstraints(
+                      maxHeight: 300 + MediaQuery.viewInsetsOf(context).bottom,
+                    ),
+                child: EmojiEditor(configs: configs),
+              )
+            : DraggableScrollableSheet(
+                expand: sheetTheme.expand,
+                initialChildSize: sheetTheme.initialChildSize,
+                maxChildSize: sheetTheme.maxChildSize,
+                minChildSize: sheetTheme.minChildSize,
+                shouldCloseOnMinExtent: sheetTheme.shouldCloseOnMinExtent,
+                snap: sheetTheme.snap,
+                snapAnimationDuration: sheetTheme.snapAnimationDuration,
+                snapSizes: sheetTheme.snapSizes,
+                builder: (_, controller) {
+                  return EmojiEditor(
+                    configs: configs,
+                    scrollController: controller,
+                  );
+                },
+              ),
+      ),
+    );
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
     if (layer == null || !mounted) return;
     layer.scale = emojiEditorConfigs.initScale;
@@ -1812,30 +1795,31 @@ class ProImageEditorState extends State<ProImageEditor>
         ?.call(context, configs);
     var sheetTheme = stickerEditorConfigs.style.draggableSheetStyle;
     WidgetLayer? layer = await showModalBottomSheet(
-        context: context,
-        backgroundColor: stickerEditorConfigs.style.bottomSheetBackgroundColor,
-        constraints: effectiveBoxConstraints,
-        showDragHandle: stickerEditorConfigs.style.showDragHandle,
-        isScrollControlled: true,
-        useSafeArea: true,
-        builder: (_) => SafeArea(
-              child: DraggableScrollableSheet(
-                expand: sheetTheme.expand,
-                initialChildSize: sheetTheme.initialChildSize,
-                maxChildSize: sheetTheme.maxChildSize,
-                minChildSize: sheetTheme.minChildSize,
-                shouldCloseOnMinExtent: sheetTheme.shouldCloseOnMinExtent,
-                snap: sheetTheme.snap,
-                snapAnimationDuration: sheetTheme.snapAnimationDuration,
-                snapSizes: sheetTheme.snapSizes,
-                builder: (_, controller) {
-                  return StickerEditor(
-                    configs: configs,
-                    scrollController: controller,
-                  );
-                },
-              ),
-            ));
+      context: context,
+      backgroundColor: stickerEditorConfigs.style.bottomSheetBackgroundColor,
+      constraints: effectiveBoxConstraints,
+      showDragHandle: stickerEditorConfigs.style.showDragHandle,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => SafeArea(
+        child: DraggableScrollableSheet(
+          expand: sheetTheme.expand,
+          initialChildSize: sheetTheme.initialChildSize,
+          maxChildSize: sheetTheme.maxChildSize,
+          minChildSize: sheetTheme.minChildSize,
+          shouldCloseOnMinExtent: sheetTheme.shouldCloseOnMinExtent,
+          snap: sheetTheme.snap,
+          snapAnimationDuration: sheetTheme.snapAnimationDuration,
+          snapSizes: sheetTheme.snapSizes,
+          builder: (_, controller) {
+            return StickerEditor(
+              configs: configs,
+              scrollController: controller,
+            );
+          },
+        ),
+      ),
+    );
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
     if (layer == null || !mounted) return;
 
@@ -1849,10 +1833,7 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// - `oldIndex` is the current index of the layer.
   /// - `newIndex` is the desired index to move the layer to.
-  void moveLayerListPosition({
-    required int oldIndex,
-    required int newIndex,
-  }) {
+  void moveLayerListPosition({required int oldIndex, required int newIndex}) {
     if (oldIndex == newIndex || oldIndex < 0 || newIndex < 0) return;
 
     final layers = _layerCopyManager.copyLayerList(activeLayers);
@@ -2028,7 +2009,9 @@ class ProImageEditorState extends State<ProImageEditor>
         final results = await Future.wait([
           captureEditorImage(),
           _controllers.screenshot.getRawRenderedImage(
-              imageInfos: _imageInfos!, useThumbnailSize: false),
+            imageInfos: _imageInfos!,
+            useThumbnailSize: false,
+          ),
         ]);
 
         await callbacks.onThumbnailGenerated!(
@@ -2263,9 +2246,7 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// See also:
   /// - [unlockAllLayers] to unlock all layers.
-  void lockAllLayers({
-    bool onlyCurrentHistory = false,
-  }) {
+  void lockAllLayers({bool onlyCurrentHistory = false}) {
     stateManager.updateLayerInteraction(
       enableInteraction: false,
       onlyCurrentHistory: onlyCurrentHistory,
@@ -2284,9 +2265,7 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// See also:
   /// - [lockAllLayers] to lock all layers.
-  void unlockAllLayers({
-    bool onlyCurrentHistory = false,
-  }) {
+  void unlockAllLayers({bool onlyCurrentHistory = false}) {
     stateManager.updateLayerInteraction(
       enableInteraction: true,
       onlyCurrentHistory: onlyCurrentHistory,
@@ -2414,16 +2393,18 @@ class ProImageEditorState extends State<ProImageEditor>
                   bottom: mainEditorConfigs.safeArea.bottom,
                   left: mainEditorConfigs.safeArea.left,
                   right: mainEditorConfigs.safeArea.right,
-                  child: LayoutBuilder(builder: (context, constraints) {
-                    sizesManager.editorSize = constraints.biggest;
-                    return Scaffold(
-                      backgroundColor: mainEditorConfigs.style.background,
-                      resizeToAvoidBottomInset: false,
-                      appBar: _buildAppBar(),
-                      body: _buildBody(),
-                      bottomNavigationBar: _buildBottomNavBar(),
-                    );
-                  }),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      sizesManager.editorSize = constraints.biggest;
+                      return Scaffold(
+                        backgroundColor: mainEditorConfigs.style.background,
+                        resizeToAvoidBottomInset: false,
+                        appBar: _buildAppBar(),
+                        body: _buildBody(),
+                        bottomNavigationBar: _buildBottomNavBar(),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -2435,8 +2416,10 @@ class ProImageEditorState extends State<ProImageEditor>
 
   PreferredSizeWidget? _buildAppBar() {
     if (mainEditorConfigs.widgets.appBar != null) {
-      return mainEditorConfigs.widgets.appBar!
-          .call(this, _rebuildController.stream);
+      return mainEditorConfigs.widgets.appBar!.call(
+        this,
+        _rebuildController.stream,
+      );
     }
 
     return hasSelectedLayers &&
@@ -2455,75 +2438,77 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   Widget _buildBody() {
-    return LayoutBuilder(builder: (context, constraints) {
-      sizesManager.bodySize = constraints.biggest;
-      return !_isVideoPlayerReady
-          ? _buildSetupSpinner()
-          : Listener(
-              behavior: HitTestBehavior.translucent,
-              onPointerDown: (details) {
-                _mouseService.onPointerDown(details);
-                if (layerInteractionManager.selectedLayerId.isNotEmpty ||
-                    GestureManager.instance.isBlocked) {
-                  return;
-                }
-                bool isDoubleTap = detectDoubleTap(details);
-                if (!isDoubleTap) return;
-
-                handleDoubleTap(context, details, mainEditorConfigs);
-                mainEditorCallbacks?.onDoubleTap?.call();
-              },
-              onPointerUp: (event) {
-                _mouseService.onPointerUp(event);
-                onPointerUp(event);
-              },
-              onPointerSignal: isDesktop && hasSelectedLayers
-                  ? (event) {
-                      final hasMultiSelection = selectedLayers.length > 1;
-
-                      final zoomEnabled = mainEditorConfigs.enableZoom;
-                      final zoomGestureActive = interactiveViewer
-                              .currentState?.isInteractionEnabled ==
-                          true;
-
-                      if ((hasMultiSelection && zoomEnabled) ||
-                          (zoomEnabled && zoomGestureActive)) {
-                        return;
-                      }
-
-                      /// Otherwise, handle scroll as a layer scaling
-                      /// interaction.
-                      _desktopInteractionManager.mouseScroll(
-                        event,
-                        selectedLayers: selectedLayers,
-                      );
-                    }
-                  : null,
-              child: GestureDetector(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        sizesManager.bodySize = constraints.biggest;
+        return !_isVideoPlayerReady
+            ? _buildSetupSpinner()
+            : Listener(
                 behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  /// Only clear selection if the tap is not on any layer
-                  /// (e.g., background/canvas tap)
-                  /// This block should be triggered only for true
-                  /// background taps.
-                  if (!configs.videoEditor.enablePlayButton) {
-                    widget.videoController?.togglePlayState();
+                onPointerDown: (details) {
+                  _mouseService.onPointerDown(details);
+                  if (layerInteractionManager.selectedLayerId.isNotEmpty ||
+                      GestureManager.instance.isBlocked) {
+                    return;
                   }
-                  mainEditorCallbacks?.onTap?.call();
+                  bool isDoubleTap = detectDoubleTap(details);
+                  if (!isDoubleTap) return;
+
+                  handleDoubleTap(context, details, mainEditorConfigs);
+                  mainEditorCallbacks?.onDoubleTap?.call();
                 },
-                onLongPress: mainEditorCallbacks?.onLongPress,
-                onScaleStart: _onScaleStart,
-                onScaleUpdate: _onScaleUpdate,
-                onScaleEnd: _onScaleEnd,
-                child: mainEditorConfigs.widgets.wrapBody?.call(
-                      this,
-                      _rebuildController.stream,
+                onPointerUp: (event) {
+                  _mouseService.onPointerUp(event);
+                  onPointerUp(event);
+                },
+                onPointerSignal: isDesktop && hasSelectedLayers
+                    ? (event) {
+                        final hasMultiSelection = selectedLayers.length > 1;
+
+                        final zoomEnabled = mainEditorConfigs.enableZoom;
+                        final zoomGestureActive = interactiveViewer
+                                .currentState?.isInteractionEnabled ==
+                            true;
+
+                        if ((hasMultiSelection && zoomEnabled) ||
+                            (zoomEnabled && zoomGestureActive)) {
+                          return;
+                        }
+
+                        /// Otherwise, handle scroll as a layer scaling
+                        /// interaction.
+                        _desktopInteractionManager.mouseScroll(
+                          event,
+                          selectedLayers: selectedLayers,
+                        );
+                      }
+                    : null,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    /// Only clear selection if the tap is not on any layer
+                    /// (e.g., background/canvas tap)
+                    /// This block should be triggered only for true
+                    /// background taps.
+                    if (!configs.videoEditor.enablePlayButton) {
+                      widget.videoController?.togglePlayState();
+                    }
+                    mainEditorCallbacks?.onTap?.call();
+                  },
+                  onLongPress: mainEditorCallbacks?.onLongPress,
+                  onScaleStart: _onScaleStart,
+                  onScaleUpdate: _onScaleUpdate,
+                  onScaleEnd: _onScaleEnd,
+                  child: mainEditorConfigs.widgets.wrapBody?.call(
+                        this,
+                        _rebuildController.stream,
+                        _buildInteractiveContent(),
+                      ) ??
                       _buildInteractiveContent(),
-                    ) ??
-                    _buildInteractiveContent(),
-              ),
-            );
-    });
+                ),
+              );
+      },
+    );
   }
 
   Widget _buildInteractiveContent() {
@@ -2551,8 +2536,11 @@ class ProImageEditorState extends State<ProImageEditor>
 
   Widget? _buildBottomNavBar() {
     if (mainEditorConfigs.widgets.bottomBar != null) {
-      return mainEditorConfigs.widgets.bottomBar!
-          .call(this, _rebuildController.stream, _bottomBarKey);
+      return mainEditorConfigs.widgets.bottomBar!.call(
+        this,
+        _rebuildController.stream,
+        _bottomBarKey,
+      );
     }
 
     return hasSelectedLayers &&

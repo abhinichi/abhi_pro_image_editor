@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 
+import '/features/main_editor/services/layer_interaction_manager.dart';
 import '../models/editor_configs/pro_image_editor_configs.dart';
 
 /// A service that tracks the state of mouse buttons (left, right, and middle).
@@ -16,25 +17,16 @@ class MouseService {
   ///
   /// - [configs]: The configuration object that defines mouse behavior and
   /// settings.
-  MouseService({required this.configs});
+  MouseService({
+    required this.configs,
+    required this.interactionManager,
+  });
 
   /// Configuration options for the Image Editor.
-  ProImageEditorConfigs configs;
+  final ProImageEditorConfigs configs;
 
-  bool _isPrimaryMousePressed = false;
-
-  /// Whether the primary (left) mouse button is currently pressed.
-  bool get isPrimaryMousePressed => _isPrimaryMousePressed;
-
-  bool _isSecondaryMousePressed = false;
-
-  /// Whether the secondary (right) mouse button is currently pressed.
-  bool get isSecondaryMousePressed => _isSecondaryMousePressed;
-
-  bool _isMiddleMousePressed = false;
-
-  /// Whether the middle mouse button is currently pressed.
-  bool get isMiddleMousePressed => _isMiddleMousePressed;
+  /// A helper class responsible for managing layer interactions in the editor.
+  final LayerInteractionManager interactionManager;
 
   LayerInteractionConfigs get _layerInteractionConfigs =>
       configs.layerInteraction;
@@ -45,6 +37,18 @@ class MouseService {
       _layerInteractionConfigs.mouseButtonSecondaryAction;
   MouseButtonAction get _mouseButtonMiddleAction =>
       _layerInteractionConfigs.mouseButtonMiddleAction;
+
+  /// Whether the primary (left) mouse button is currently pressed.
+  bool get isPrimaryMousePressed => _isPrimaryMousePressed;
+  bool _isPrimaryMousePressed = false;
+
+  /// Whether the secondary (right) mouse button is currently pressed.
+  bool get isSecondaryMousePressed => _isSecondaryMousePressed;
+  bool _isSecondaryMousePressed = false;
+
+  /// Whether the middle mouse button is currently pressed.
+  bool get isMiddleMousePressed => _isMiddleMousePressed;
+  bool _isMiddleMousePressed = false;
 
   bool get _isSpacePressed =>
       HardwareKeyboard.instance.isLogicalKeyPressed(LogicalKeyboardKey.space);
@@ -109,6 +113,7 @@ class MouseService {
   ///
   /// Returns `true` if the pan action is valid, otherwise `false`.
   bool validatePanAction({PointerEvent? event}) {
+    if (!isDesktop) return !interactionManager.hasSelectedLayers;
     if (!configs.mainEditor.enableZoom) return false;
 
     return _validateAction(MouseButtonAction.pan, event: event) ||
@@ -124,6 +129,8 @@ class MouseService {
   ///
   /// Returns `true` if the drag action is valid, otherwise `false`.
   bool validateDragAction({PointerEvent? event}) {
+    if (!isDesktop) return false;
+
     return _validateAction(MouseButtonAction.dragSelect) ||
         (!_isSpacePressed &&
             _validateAction(MouseButtonAction.selectOrSpaceMove, event: event));
@@ -136,6 +143,8 @@ class MouseService {
   ///
   /// Returns `true` if the multi-select action is valid, otherwise `false`.
   bool validateMultiSelectAction({PointerEvent? event}) {
+    if (!isDesktop) return false;
+
     return _validateAction(MouseButtonAction.multiSelect, event: event);
   }
 }
