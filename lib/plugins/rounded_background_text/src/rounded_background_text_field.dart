@@ -575,97 +575,95 @@ class _RoundedBackgroundTextFieldState
               ),
             ),
           ),
-        Positioned(
-          child: Padding(
-            padding: padding,
-            child: Listener(
-              behavior: HitTestBehavior.translucent,
-              onPointerDown: textController.text.isEmpty
-                  ? (_) {
-                      if (View.of(context).viewInsets.bottom <= 0) {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                        _effectiveFocusNode.requestFocus();
-                      }
+        Padding(
+          padding: padding,
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: textController.text.isEmpty
+                ? (_) {
+                    if (View.of(context).viewInsets.bottom <= 0) {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      _effectiveFocusNode.requestFocus();
                     }
-                  : null,
-              child: EditableText(
-                key: fieldKey,
-                autofocus: widget.autofocus,
-                controller: textController,
-                focusNode: _effectiveFocusNode,
-                scrollPhysics: widget.scrollPhysics,
-                scrollBehavior: widget.scrollBehavior,
-                scrollController: scrollController,
-                scrollPadding: widget.scrollPadding,
-                style: (widget.style ?? const TextStyle()).copyWith(
-                  fontSize: fontSize,
-                  leadingDistribution: TextLeadingDistribution.proportional,
-                ),
-                textAlign: widget.textAlign,
-                maxLines: widget.maxLines,
-                keyboardType: widget.keyboardType,
-                backgroundCursorColor: CupertinoColors.inactiveGray,
-                cursorColor: widget.cursorColor ??
-                    selectionTheme.cursorColor ??
-                    widget.style?.color ??
-                    foregroundColor(widget.backgroundColor) ??
-                    Colors.black,
-                cursorWidth: widget.cursorWidth,
-                cursorHeight: widget.cursorHeight,
-                cursorRadius: widget.cursorRadius,
-                paintCursorAboveText: paintCursorAboveText,
-                cursorOpacityAnimates: cursorOpacityAnimates,
-                cursorOffset: cursorOffset,
-                autocorrectionTextRectColor: autocorrectionTextRectColor,
-                textCapitalization: widget.textCapitalization,
-                keyboardAppearance: widget.keyboardAppearance,
-                textScaler: widget.textScaler,
-                enableInteractiveSelection: widget.enableInteractiveSelection,
-                selectionColor: selectionColor,
-                selectionControls:
-                    widget.selectionEnabled ? textSelectionControls : null,
-                textDirection: widget.textDirection,
-                showSelectionHandles: widget.showSelectionHandles,
-                showCursor: widget.showCursor,
-                textWidthBasis: widget.textWidthBasis,
-                textHeightBehavior: widget.textHeightBehavior,
-                autocorrect: widget.autocorrect,
-                forceLine: widget.forceLine,
-                readOnly: widget.readOnly,
-                smartDashesType: widget.smartDashesType,
-                smartQuotesType: widget.smartQuotesType,
-                enableSuggestions: widget.enableSuggestions,
-                autofillHints: widget.autofillHints,
-                autofillClient: widget.autofillClient,
-                clipBehavior: widget.clipBehavior,
-                restorationId: widget.restorationId,
-                enableIMEPersonalizedLearning:
-                    widget.enableIMEPersonalizedLearning,
-                inputFormatters: widget.inputFormatters,
-                mouseCursor: widget.mouseCursor,
-                rendererIgnoresPointer: widget.rendererIgnoresPointer,
-                obscureText: widget.obscureText,
-                obscuringCharacter: widget.obscuringCharacter,
-                textInputAction: widget.textInputAction,
-                onSelectionChanged: widget.onSelectionChanged,
-                dragStartBehavior: widget.dragStartBehavior,
-                contentInsertionConfiguration:
-                    widget.contentInsertionConfiguration,
-                contextMenuBuilder: widget.contextMenuBuilder,
-                spellCheckConfiguration: widget.spellCheckConfiguration,
-                magnifierConfiguration: widget.magnifierConfiguration,
-                undoController: widget.undoController,
-                selectionHeightStyle: widget.selectionHeightStyle,
-                selectionWidthStyle: widget.selectionWidthStyle,
-                locale: widget.locale,
-                onChanged: widget.onChanged,
-                onEditingComplete: widget.onEditingComplete,
-                onSubmitted: widget.onSubmitted,
-                onAppPrivateCommand: widget.onAppPrivateCommand,
-                onSelectionHandleTapped: widget.onSelectionHandleTapped,
-                onTapOutside: widget.onTapOutside,
-                strutStyle: widget.strutStyle,
+                  }
+                : null,
+            child: EditableText(
+              key: fieldKey,
+              autofocus: widget.autofocus,
+              controller: textController,
+              focusNode: _effectiveFocusNode,
+              scrollPhysics: widget.scrollPhysics,
+              scrollBehavior: widget.scrollBehavior,
+              scrollController: scrollController,
+              scrollPadding: widget.scrollPadding,
+              style: (widget.style ?? const TextStyle()).copyWith(
+                fontSize: fontSize,
+                leadingDistribution: TextLeadingDistribution.proportional,
               ),
+              textAlign: widget.textAlign,
+              maxLines: widget.maxLines,
+              keyboardType: widget.keyboardType,
+              backgroundCursorColor: CupertinoColors.inactiveGray,
+              cursorColor: widget.cursorColor ??
+                  selectionTheme.cursorColor ??
+                  widget.style?.color ??
+                  foregroundColor(widget.backgroundColor) ??
+                  Colors.black,
+              cursorWidth: widget.cursorWidth,
+              cursorHeight: widget.cursorHeight,
+              cursorRadius: widget.cursorRadius,
+              paintCursorAboveText: paintCursorAboveText,
+              cursorOpacityAnimates: cursorOpacityAnimates,
+              cursorOffset: cursorOffset,
+              autocorrectionTextRectColor: autocorrectionTextRectColor,
+              textCapitalization: widget.textCapitalization,
+              keyboardAppearance: widget.keyboardAppearance,
+              textScaler: widget.textScaler,
+              enableInteractiveSelection: widget.enableInteractiveSelection,
+              selectionColor: selectionColor,
+              selectionControls:
+                  widget.selectionEnabled ? textSelectionControls : null,
+              textDirection: widget.textDirection,
+              showSelectionHandles: widget.showSelectionHandles,
+              showCursor: widget.showCursor,
+              textWidthBasis: widget.textWidthBasis,
+              textHeightBehavior: widget.textHeightBehavior,
+              autocorrect: widget.autocorrect,
+              forceLine: widget.forceLine,
+              readOnly: widget.readOnly,
+              smartDashesType: widget.smartDashesType,
+              smartQuotesType: widget.smartQuotesType,
+              enableSuggestions: widget.enableSuggestions,
+              autofillHints: widget.autofillHints,
+              autofillClient: widget.autofillClient,
+              clipBehavior: widget.clipBehavior,
+              restorationId: widget.restorationId,
+              enableIMEPersonalizedLearning:
+                  widget.enableIMEPersonalizedLearning,
+              inputFormatters: widget.inputFormatters,
+              mouseCursor: widget.mouseCursor,
+              rendererIgnoresPointer: widget.rendererIgnoresPointer,
+              obscureText: widget.obscureText,
+              obscuringCharacter: widget.obscuringCharacter,
+              textInputAction: widget.textInputAction,
+              onSelectionChanged: widget.onSelectionChanged,
+              dragStartBehavior: widget.dragStartBehavior,
+              contentInsertionConfiguration:
+                  widget.contentInsertionConfiguration,
+              contextMenuBuilder: widget.contextMenuBuilder,
+              spellCheckConfiguration: widget.spellCheckConfiguration,
+              magnifierConfiguration: widget.magnifierConfiguration,
+              undoController: widget.undoController,
+              selectionHeightStyle: widget.selectionHeightStyle,
+              selectionWidthStyle: widget.selectionWidthStyle,
+              locale: widget.locale,
+              onChanged: widget.onChanged,
+              onEditingComplete: widget.onEditingComplete,
+              onSubmitted: widget.onSubmitted,
+              onAppPrivateCommand: widget.onAppPrivateCommand,
+              onSelectionHandleTapped: widget.onSelectionHandleTapped,
+              onTapOutside: widget.onTapOutside,
+              strutStyle: widget.strutStyle,
             ),
           ),
         ),

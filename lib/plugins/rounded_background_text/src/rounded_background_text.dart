@@ -383,13 +383,44 @@ class RoundedBackgroundTextPainter extends CustomPainter {
       }
 
       void generateLeftOutlineFills() {
-        /*    cornerPath
-          ..moveTo(x + width, y + height)
-          ..lineTo(x + width + radius, y + height)
-          ..lineTo(x + width + radius, y + height + radius)
-          ..lineTo(x + width, y + height + radius)
-          ..lineTo(x + width, y + height)
-          ..close(); */
+        final lineBefore = helpers[index - 1];
+        if (lineBefore.isEmpty) return;
+
+        final beforeStartX = lineBefore.startX - paddingHorizontal;
+        final beforeY = lineBefore.endY + paddingVertical;
+        final startX = info.startX - paddingHorizontal;
+        final r = min(radius, (info.rawWidth - lineBefore.rawWidth).abs());
+
+        if (info.rawWidth > lineBefore.rawWidth) {
+          final offset = Offset(beforeStartX, startY - r);
+          final lineToX = beforeStartX - r;
+
+          cornerPath
+            ..moveTo(beforeStartX, startY)
+            ..lineTo(lineToX, startY)
+            ..arcToPoint(offset, radius: Radius.circular(r), clockwise: false)
+            ..moveTo(beforeStartX, startY)
+            ..lineTo(lineToX, startY)
+            ..arcToPoint(
+              offset,
+              radius: Radius.circular(r),
+              largeArc: true,
+              clockwise: false,
+            )
+            ..close();
+        } else {
+          final offset = Offset(startX, beforeY + radius);
+          final lineToX = startX - radius;
+
+          cornerPath
+            ..moveTo(startX, beforeY)
+            ..lineTo(lineToX, beforeY)
+            ..arcToPoint(offset, radius: Radius.circular(r))
+            ..moveTo(startX, beforeY)
+            ..lineTo(lineToX, beforeY)
+            ..arcToPoint(offset, radius: Radius.circular(r), largeArc: true)
+            ..close();
+        }
       }
 
       void generateRightOutlineFills() {
@@ -402,22 +433,32 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         final r = min(radius, (info.rawWidth - lineBefore.rawWidth).abs());
 
         if (info.rawWidth > lineBefore.rawWidth) {
+          final offset = Offset(beforeEndX, startY - r);
+          final lineToX = beforeEndX + r;
+
           cornerPath
             ..moveTo(beforeEndX, startY)
-            ..lineTo(beforeEndX + r, startY)
-            ..arcToPoint(
-              Offset(beforeEndX, startY - r),
-              radius: Radius.circular(r),
-            )
+            ..lineTo(lineToX, startY)
+            ..arcToPoint(offset, radius: Radius.circular(r))
+            ..moveTo(beforeEndX, startY)
+            ..lineTo(lineToX, startY)
+            ..arcToPoint(offset, radius: Radius.circular(r), largeArc: true)
             ..close();
         } else {
+          final offset = Offset(endX, beforeY + radius);
+          final lineToX = endX + radius;
+
           cornerPath
             ..moveTo(endX, beforeY)
-            ..lineTo(endX + radius, beforeY)
+            ..lineTo(lineToX, beforeY)
+            ..arcToPoint(offset, radius: Radius.circular(r), clockwise: false)
+            ..moveTo(endX, beforeY)
+            ..lineTo(lineToX, beforeY)
             ..arcToPoint(
-              Offset(endX, beforeY + radius),
+              offset,
               radius: Radius.circular(r),
               clockwise: false,
+              largeArc: true,
             )
             ..close();
         }
@@ -480,7 +521,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   @override
   bool? hitTest(Offset position) {
     // Retrieve the line information
-    /*  final lineInfos = computeLines(text, textAlign);
+    /* FIXME: final lineInfos = computeLines(text, textAlign);
 
     // Check each line
   for (final lineInfo in lineInfos) {
@@ -521,20 +562,6 @@ class LineMetricsHelper {
   ///  * [isLast], which uses this property to check the amount of lines
   final int length;
 
-  /// The override width of the line
-  ///
-  /// This allows another line to affect the width of this line based on the
-  /// difference between the two. If the difference is minimal, the width may
-  /// be the same
-  double? _overridenWidth;
-
-  /// The overriden x of the line
-  ///
-  /// This allows another line to affect the x of this line based on the
-  /// difference between the two. If the difference is minimal, the x may
-  /// be the same
-  double? _overridenX;
-
   /// Whether this line has no content
   bool get isEmpty => rawWidth == 0.0;
 
@@ -545,14 +572,10 @@ class LineMetricsHelper {
   bool get isLast => metrics.lineNumber == length - 1;
 
   /// Dynamically calculate the outer factor based on the provided [outerRadius]
-  double outerRadius(double outerRadius) {
-    return (rawHeight * outerRadius) / 35;
-  }
+  double outerRadius(double outerRadius) => (rawHeight * outerRadius) / 35;
 
   /// Dynamically calculate the inner factor based on the provided [innerRadius]
-  double innerRadius(double innerRadius) {
-    return (rawHeight * innerRadius) / 35;
-  }
+  double innerRadius(double innerRadius) => (rawHeight * innerRadius) / 35;
 
   double get startX => x;
   double get endX => x + rawWidth;
@@ -562,7 +585,6 @@ class LineMetricsHelper {
 
   /// The x position of the line
   double get x {
-    if (_overridenX != null) return _overridenX!;
     double alignHelper = 0.0;
     if (textAlign == TextAlign.center) {
       alignHelper = 1.5;
@@ -576,9 +598,7 @@ class LineMetricsHelper {
   }
 
   /// The y position of the line
-  double get y {
-    return metrics.baseline - metrics.ascent;
-  }
+  double get y => metrics.baseline - metrics.ascent;
 
   /// The raw height of the line, without any additional padding
   double get rawHeight => metrics.ascent + metrics.descent;
@@ -587,10 +607,7 @@ class LineMetricsHelper {
   double get rawWidth => metrics.width;
 
   /// The entire width of the line, including the padding and its [x]
-  double get fullWidth {
-    if (_overridenWidth != null) return _overridenWidth!;
-    return x + rawWidth;
-  }
+  double get fullWidth => x + rawWidth;
 
   @override
   bool operator ==(Object other) {
@@ -598,16 +615,11 @@ class LineMetricsHelper {
 
     return other is LineMetricsHelper &&
         other.metrics == metrics &&
-        other.length == length &&
-        other._overridenWidth == _overridenWidth &&
-        other._overridenX == _overridenX;
+        other.length == length;
   }
 
   @override
   int get hashCode {
-    return metrics.hashCode ^
-        length.hashCode ^
-        _overridenWidth.hashCode ^
-        _overridenX.hashCode;
+    return metrics.hashCode ^ length.hashCode;
   }
 }
