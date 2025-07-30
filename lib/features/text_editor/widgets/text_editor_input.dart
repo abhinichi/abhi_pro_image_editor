@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '/core/models/editor_callbacks/text_editor_callbacks.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/layers/layer.dart';
-import '/plugins/rounded_background_text/src/rounded_background_text_field.dart';
+import 'rounded_background_text/rounded_background_text_field.dart';
 
 /// A widget for managing the text input in the text editor, providing a
 /// customizable input area with styling and configuration options.
@@ -165,18 +165,12 @@ class _TextEditorInputState extends State<TextEditorInput> {
           },
           onEditingComplete: widget.callbacks?.handleEditingComplete,
           onSubmitted: widget.callbacks?.handleSubmitted,
-          autocorrect: widget.configs.enableAutocorrect,
-          enableSuggestions: widget.configs.enableSuggestions,
-          keyboardType: TextInputType.multiline,
-          textInputAction: TextInputAction.newline,
-          textCapitalization: TextCapitalization.sentences,
+          onSelectionChanged: _handleSelectionChanged,
           textAlign:
               widget.textCtrl.text.isEmpty ? TextAlign.center : widget.align,
-          maxLines: null,
-          cursorColor: widget.configs.style.inputCursorColor,
+          configs: widget.configs,
           cursorHeight: widget.textFontSize,
-          scrollPhysics: const NeverScrollableScrollPhysics(),
-          hint: widget.textCtrl.text.isEmpty ? widget.i18n.inputHintText : '',
+          hint: widget.i18n.inputHintText,
           hintStyle: widget.selectedTextStyle.copyWith(
             color: widget.configs.style.inputHintColor,
             fontSize: widget.textFontSize,
@@ -193,7 +187,6 @@ class _TextEditorInputState extends State<TextEditorInput> {
             shadows: [],
           ),
           showSelectionHandles: _isTextSelected,
-          onSelectionChanged: _handleSelectionChanged,
 
           /// If we edit an layer we focus to the textfield after the
           /// hero animation is done

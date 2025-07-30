@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/text_editor_configs.dart';
 import '/core/models/layers/text_layer.dart';
-import '/plugins/rounded_background_text/src/rounded_background_text.dart';
+import '../../../../features/text_editor/widgets/rounded_background_text/rounded_background_text.dart';
 
 /// A widget representing a text layer in the sticker editor.
 class LayerWidgetTextItem extends StatelessWidget {
