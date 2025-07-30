@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../models/line_metrics_model.dart';
 
@@ -22,6 +23,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     required this.onHitTestResult,
     required this.textAlign,
     required this.textDirection,
+    required this.hitBoxCorrectionOffset,
     this.cursorWidth = 0.0,
   });
 
@@ -50,6 +52,8 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   /// The radius used for rounding the corners of the outer background shape.
   final double outerRadius;
 
+  final Offset hitBoxCorrectionOffset;
+
   Path _buildBackgroundPath() {
     final metrics = painter.computeLineMetrics();
     if (metrics.isEmpty) return Path();
@@ -75,72 +79,28 @@ class RoundedBackgroundTextPainter extends CustomPainter {
 
     double? firstMaximalWidth;
 
+    final firstLine = helpers.first;
+    final double paddingHorizontal = firstLine.rawHeight * 0.3;
+    final double paddingVertical = firstLine.rawHeight * 0.1;
+    final double radius = firstLine.innerRadius(innerRadius);
+
     for (int index = 0; index < helpers.length; index++) {
       final info = helpers[index];
       if (info.isEmpty) continue;
-
-      final double paddingHorizontal = info.rawHeight * 0.3;
-      final double paddingVertical = info.rawHeight * 0.1;
-      final double radius = info.innerRadius(innerRadius);
 
       final bool hasNoLineBefore = index == 0 || helpers[index - 1].isEmpty;
       final bool hasNoLineAfter =
           index == helpers.length - 1 || helpers[index + 1].isEmpty;
 
-      void connectSimilarLineWidth() {
-        final maxLineDifference = radius * (isCenterAlign ? 4 : 2);
-
-        bool shouldConnect(int index) {
-          if (index >= helpers.length - 1) return false;
-
-          final currentLine = helpers[index];
-          final nextLine = helpers[index + 1];
-
-          /// Check first if it's necessary to calculate the minimum width
-          double lineDifference = currentLine.rawWidth - nextLine.rawWidth;
-          bool shouldConnect = lineDifference.abs() < maxLineDifference;
-          return shouldConnect;
-        }
-
-        if (!shouldConnect(index)) return;
-
-        double minimumWidth = info.rawWidth;
-        double minimumX = info.x;
-        int endIndex = index;
-
-        /// Find the minimum required width
-        for (var i = index; i < helpers.length; i++) {
-          final helper = helpers[i];
-          if (helper.rawWidth > minimumWidth) {
-            minimumWidth = helper.rawWidth;
-            minimumX = helper.x;
-          }
-          if (!shouldConnect(i)) {
-            endIndex = i;
-            break;
-          }
-        }
-
-        /// Apply changes
-        for (var i = index; i <= endIndex; i++) {
-          helpers[i]
-            ..overrideX = minimumX
-            ..overrideWidth = minimumWidth;
-
-          if (i == index) {
-            helpers[i]
-              ..roundBottomLeft = false
-              ..roundBottomRight = false;
-          }
-          if (i == endIndex) {
-            helpers[i]
-              ..roundTopLeft = false
-              ..roundTopRight = false;
-          }
-        }
+      if (!hasNoLineAfter && !info.isOverriden) {
+        _connectSimilarLineWidth(
+          isCenterAlign: isCenterAlign,
+          info: info,
+          radius: radius,
+          index: index,
+          helpers: helpers,
+        );
       }
-
-      if (!hasNoLineAfter && !info.isOverriden) connectSimilarLineWidth();
 
       bool roundTopRight =
           (!isRightAlign || hasNoLineBefore) && info.roundTopRight;
@@ -175,36 +135,94 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         roundBottomRight: roundBottomRight,
         roundBottomLeft: roundBottomLeft,
       );
+      if (hasNoLineBefore) continue;
 
-      if (!hasNoLineBefore) {
-        if (!isLeftAlign) {
-          _createInnerRoundingLeft(
-            path: cornerPath,
-            info: info,
-            paddingHorizontal: paddingHorizontal,
-            paddingVertical: paddingVertical,
-            startY: startY,
-            radius: radius,
-            index: index,
-            helpers: helpers,
-          );
-        }
-        if (!isRightAlign) {
-          _createInnerRoundingRight(
-            path: cornerPath,
-            info: info,
-            paddingHorizontal: paddingHorizontal,
-            paddingVertical: paddingVertical,
-            startY: startY,
-            radius: radius,
-            index: index,
-            helpers: helpers,
-          );
-        }
+      if (!isLeftAlign) {
+        _createInnerRoundingLeft(
+          path: cornerPath,
+          info: info,
+          paddingHorizontal: paddingHorizontal,
+          paddingVertical: paddingVertical,
+          startY: startY,
+          radius: radius,
+          index: index,
+          helpers: helpers,
+        );
+      }
+      if (!isRightAlign) {
+        _createInnerRoundingRight(
+          path: cornerPath,
+          info: info,
+          paddingHorizontal: paddingHorizontal,
+          paddingVertical: paddingVertical,
+          startY: startY,
+          radius: radius,
+          index: index,
+          helpers: helpers,
+        );
       }
     }
 
     return Path.combine(PathOperation.union, path, cornerPath);
+  }
+
+  void _connectSimilarLineWidth({
+    required bool isCenterAlign,
+    required LineMetricsModel info,
+    required double radius,
+    required int index,
+    required List<LineMetricsModel> helpers,
+  }) {
+    final maxLineDifference = radius * (isCenterAlign ? 4 : 2);
+
+    bool shouldConnect(int index) {
+      if (index >= helpers.length - 1) return false;
+
+      final currentLine = helpers[index];
+      final nextLine = helpers[index + 1];
+
+      /// Check first if it's necessary to calculate the minimum width
+      double lineDifference = currentLine.rawWidth - nextLine.rawWidth;
+      bool shouldConnect = lineDifference.abs() < maxLineDifference;
+      return shouldConnect;
+    }
+
+    if (!shouldConnect(index)) return;
+
+    double minimumWidth = info.rawWidth;
+    double minimumX = info.x;
+    int endIndex = index;
+
+    /// Find the minimum required width
+    for (var i = index; i < helpers.length; i++) {
+      final helper = helpers[i];
+      if (helper.rawWidth > minimumWidth) {
+        minimumWidth = helper.rawWidth;
+        minimumX = helper.x;
+      }
+      if (!shouldConnect(i)) {
+        endIndex = i;
+        break;
+      }
+    }
+
+    /// Apply changes
+    for (var i = index; i <= endIndex; i++) {
+      helpers[i]
+        ..overrideX = minimumX
+        ..overrideWidth = minimumWidth;
+
+      if (i == index) {
+        helpers[i]
+          ..roundBottomLeft = false
+          ..roundBottomRight = false;
+      }
+      if (i == endIndex) {
+        helpers[i]
+          ..roundTopLeft = false
+          ..roundTopRight = false;
+      }
+    }
   }
 
   double _calculateAdaptiveRadius({
@@ -401,9 +419,21 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final painter = Paint()..color = backgroundColor;
 
-    canvas.drawPath(_buildBackgroundPath(), painter);
+    canvas
+      ..translate(hitBoxCorrectionOffset.dx, hitBoxCorrectionOffset.dy)
+      ..drawPath(_buildBackgroundPath(), painter);
 
     this.painter.paint(canvas, Offset.zero);
+  }
+
+  @override
+  bool? hitTest(Offset position) {
+    final path = _buildBackgroundPath();
+
+    bool hasHit = path.contains(position - hitBoxCorrectionOffset);
+
+    onHitTestResult?.call(hasHit);
+    return hasHit;
   }
 
   @override
@@ -418,20 +448,11 @@ class RoundedBackgroundTextPainter extends CustomPainter {
             painter.preferredLineHeight ||
         oldDelegate.innerRadius != innerRadius ||
         oldDelegate.textAlign != textAlign ||
+        oldDelegate.hitBoxCorrectionOffset != hitBoxCorrectionOffset ||
         oldDelegate.textDirection != textDirection ||
         oldDelegate.outerRadius != outerRadius;
 
     return result;
-  }
-
-  @override
-  bool? hitTest(Offset position) {
-    final path = _buildBackgroundPath();
-
-    bool hasHit = path.contains(position);
-
-    onHitTestResult?.call(hasHit);
-    return hasHit;
   }
 
   @override
@@ -445,6 +466,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         other.textAlign == textAlign &&
         other.textDirection == textDirection &&
         other.cursorWidth == cursorWidth &&
+        other.hitBoxCorrectionOffset == hitBoxCorrectionOffset &&
         other.innerRadius == innerRadius &&
         other.outerRadius == outerRadius;
   }
@@ -457,6 +479,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         textAlign.hashCode ^
         textDirection.hashCode ^
         cursorWidth.hashCode ^
+        hitBoxCorrectionOffset.hashCode ^
         innerRadius.hashCode ^
         outerRadius.hashCode;
   }

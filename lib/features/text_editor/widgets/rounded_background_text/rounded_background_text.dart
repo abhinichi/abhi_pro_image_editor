@@ -24,6 +24,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.onHitTestResult,
     this.maxTextWidth,
     this.cursorWidth = 0,
+    this.enableHitBoxCorrection = false,
   }) : text = TextSpan(text: text, style: style);
 
   /// Creates a [RoundedBackgroundText] widget with rich text using
@@ -39,7 +40,10 @@ class RoundedBackgroundText extends StatelessWidget {
     this.onHitTestResult,
     this.maxTextWidth,
     this.cursorWidth = 0,
+    this.enableHitBoxCorrection = false,
   });
+
+  final bool enableHitBoxCorrection;
 
   /// The text content to be displayed, supporting rich formatting through
   /// [InlineSpan].
@@ -80,25 +84,28 @@ class RoundedBackgroundText extends StatelessWidget {
       textWidthBasis: defaultTextStyle.textWidthBasis,
       textHeightBehavior: defaultTextStyle.textHeightBehavior,
     );
+    double height = painter.preferredLineHeight;
+
+    double horizontalSpace = enableHitBoxCorrection ? height * 0.3 : 0;
+    double verticalSpace = enableHitBoxCorrection ? height * 0.1 : 0;
 
     return LayoutBuilder(builder: (context, constraints) {
-      painter.layout(
-        maxWidth: maxTextWidth != null ? maxTextWidth! : constraints.maxWidth,
-        minWidth: constraints.minWidth,
-      );
+      painter.layout();
+
       return CustomPaint(
         isComplex: true,
-        foregroundPainter: RoundedBackgroundTextPainter(
+        painter: RoundedBackgroundTextPainter(
           backgroundColor: backgroundColor ?? Colors.transparent,
           painter: painter,
           onHitTestResult: onHitTestResult,
           textAlign: align,
           cursorWidth: cursorWidth,
           textDirection: Directionality.of(context),
+          hitBoxCorrectionOffset: Offset(horizontalSpace, verticalSpace),
         ),
-        child: SizedBox(
-          width: painter.width.clamp(0, constraints.maxWidth),
-          height: painter.height.clamp(0, constraints.maxHeight),
+        size: Size(
+          painter.width.clamp(0, constraints.maxWidth) + horizontalSpace * 2,
+          painter.height.clamp(0, constraints.maxHeight) + verticalSpace * 2,
         ),
       );
     });
