@@ -751,21 +751,27 @@ class LayerInteractionManager {
     required EdgeInsets screenPaddingHelper,
   }) {
     _activeScale = true;
+    bool enableMobilePinchScale =
+        configs.layerInteraction.enableMobilePinchScale;
+    bool enableMobilePinchRotate =
+        configs.layerInteraction.enableMobilePinchRotate;
 
-    for (Layer layer in selectedLayers) {
-      if (layer.interaction.enableScale) {
-        layer.scale = _getLayerBaseScale(layer.id) * detail.scale;
-        _setMinMaxScaleFactor(configs, layer);
-      }
-      if (layer.interaction.enableRotate) {
-        layer.rotation = _getLayerBaseAngle(layer.id) + detail.rotation;
+    if (enableMobilePinchScale || enableMobilePinchRotate) {
+      for (Layer layer in selectedLayers) {
+        if (layer.interaction.enableScale && enableMobilePinchScale) {
+          layer.scale = _getLayerBaseScale(layer.id) * detail.scale;
+          _setMinMaxScaleFactor(configs, layer);
+        }
+        if (layer.interaction.enableRotate && enableMobilePinchRotate) {
+          layer.rotation = _getLayerBaseAngle(layer.id) + detail.rotation;
 
-        if (selectedLayers.length <= 1) {
-          checkRotationLine(
-            layer: layer,
-            editorSize: editorSize,
-            editorScaleFactor: editorScaleFactor,
-          );
+          if (selectedLayers.length <= 1) {
+            checkRotationLine(
+              layer: layer,
+              editorSize: editorSize,
+              editorScaleFactor: editorScaleFactor,
+            );
+          }
         }
       }
     }

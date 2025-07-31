@@ -69,7 +69,7 @@ class LayerDragSelectionService {
   /// config.
   bool get _canSelectLayers {
     if (layerInteractionConfigs.selectable == LayerInteractionSelectable.auto) {
-      return true;
+      return isDesktop;
     }
     return layerInteractionConfigs.selectable ==
         LayerInteractionSelectable.enabled;
