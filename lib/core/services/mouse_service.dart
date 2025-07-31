@@ -126,10 +126,13 @@ class MouseService {
   ///
   /// This method checks if the `MouseButtonAction.dragSelect` action is valid
   /// by delegating the validation logic to the `_validateAction` method.
+  /// On mobile platforms, drag selection is enabled when no layers are
+  /// currently selected.
   ///
   /// Returns `true` if the drag action is valid, otherwise `false`.
   bool validateDragAction({PointerEvent? event}) {
-    if (!isDesktop) return false;
+    /// On mobile, enable drag selection when no layers are selected
+    if (!isDesktop) return !interactionManager.hasSelectedLayers;
 
     return _validateAction(MouseButtonAction.dragSelect) ||
         (!_isSpacePressed &&

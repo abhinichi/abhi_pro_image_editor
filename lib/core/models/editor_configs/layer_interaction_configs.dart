@@ -14,14 +14,6 @@ class LayerInteractionConfigs {
   ///
   /// This constructor allows configuration of layer interaction behavior,
   /// including the selectable state and the initial selection state.
-  ///
-  /// Example:
-  /// ```
-  /// LayerInteractionConfigs(
-  ///   selectable: LayerInteractionSelectable.manual,
-  ///   initialSelected: true,
-  /// )
-  /// ```
   const LayerInteractionConfigs({
     this.selectable = LayerInteractionSelectable.auto,
     this.initialSelected = false,
@@ -31,6 +23,8 @@ class LayerInteractionConfigs {
     this.enableKeyboardMultiSelection = true,
     this.enableLongPressMultiSelection = true,
     this.enableLayerDragSelection = true,
+    this.enableMobilePinchScale = true,
+    this.enableMobilePinchRotate = true,
     this.mouseButtonPrimaryAction = MouseButtonAction.selectOrSpaceMove,
     this.mouseButtonSecondaryAction = MouseButtonAction.pan,
     this.mouseButtonMiddleAction = MouseButtonAction.pan,
@@ -53,6 +47,21 @@ class LayerInteractionConfigs {
   /// Determines whether the toolbars should be hidden when the user interacts
   /// with the editor.
   final bool hideToolbarOnInteraction;
+
+  /// Determines whether pinch-to-scale gestures are enabled for layers on
+  /// mobile devices.
+  ///
+  /// If set to `true`, users can scale the layer using a pinch gesture.
+  /// If `false`, pinch scaling is disabled.
+  final bool enableMobilePinchScale;
+
+  /// Determines whether pinch-to-rotate gestures are enabled for layers on
+  /// mobile devices.
+  ///
+  /// If set to `true`, users can rotate the layer using a pinch gesture
+  /// (two-finger rotation).
+  /// If `false`, pinch rotation is disabled.
+  final bool enableMobilePinchRotate;
 
   /// Determines whether the video controls should be hidden when the user
   /// interacts with the editor.
@@ -118,6 +127,8 @@ class LayerInteractionConfigs {
     LayerInteractionSelectable? selectable,
     bool? initialSelected,
     bool? hideToolbarOnInteraction,
+    bool? enableMobilePinchScale,
+    bool? enableMobilePinchRotate,
     bool? hideVideoControlsOnInteraction,
     bool? keepSelectionOnInteraction,
     bool? enableKeyboardMultiSelection,
@@ -136,6 +147,10 @@ class LayerInteractionConfigs {
       initialSelected: initialSelected ?? this.initialSelected,
       hideToolbarOnInteraction:
           hideToolbarOnInteraction ?? this.hideToolbarOnInteraction,
+      enableMobilePinchScale:
+          enableMobilePinchScale ?? this.enableMobilePinchScale,
+      enableMobilePinchRotate:
+          enableMobilePinchRotate ?? this.enableMobilePinchRotate,
       hideVideoControlsOnInteraction:
           hideVideoControlsOnInteraction ?? this.hideVideoControlsOnInteraction,
       keepSelectionOnInteraction:

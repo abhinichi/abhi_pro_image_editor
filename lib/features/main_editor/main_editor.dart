@@ -1035,13 +1035,42 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This method is called when a scaling operation begins and initializes the
   /// necessary variables.
   void _onScaleStart(ScaleStartDetails details) {
+    final int pointerCount = details.pointerCount;
     if (sizesManager.bodySize != sizesManager.editorSize) {
       _calcAppBarHeight();
     }
+
+    if (!isDesktop) {
+      if (pointerCount >= 2) {
+        /// On mobile devices, multi-finger gestures should trigger zoom or
+        /// pan when layer-pinch-interactions are disabled.
+        if (mainEditorConfigs.enableZoom &&
+            !layerInteraction.enableMobilePinchRotate &&
+            !layerInteraction.enableMobilePinchScale) {
+          interactiveViewer.currentState?.onScaleStart(details);
+          return;
+        }
+      } else {
+        /// Handle drag selection for mobile single-finger gestures.
+        if (_mouseService.validateDragAction() &&
+            mainEditorConfigs.mobilePanInteraction ==
+                MobilePanInteraction.dragSelect &&
+            layerInteractionManager.activeInteractionLayer == null) {
+          layerInteractionManager.clearSelectedLayers();
+          _layerDragSelectionService.startDragging(details.localFocalPoint);
+          return;
+        }
+      }
+    }
+
+    /// Handle pan action
     if (_mouseService.validatePanAction()) {
       interactiveViewer.currentState?.onScaleStart(details);
       return;
-    } else if (_mouseService.validateDragAction() &&
+    }
+
+    /// Handle drag selection for desktop or fallback
+    if (_mouseService.validateDragAction() &&
         layerInteractionManager.activeInteractionLayer == null) {
       layerInteractionManager.clearSelectedLayers();
       _layerDragSelectionService.startDragging(details.localFocalPoint);
@@ -1069,14 +1098,36 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This method is called during a scaling operation and updates the selected
   /// layer's position and properties.
   void _onScaleUpdate(ScaleUpdateDetails details) {
+    final int pointerCount = details.pointerCount;
+
     mainEditorCallbacks?.handleScaleUpdate(details);
     if (blockOnScaleUpdateFunction) return;
 
+    if (!isDesktop) {
+      if (pointerCount >= 2) {
+        /// On mobile, multi-finger gestures should always trigger zoom/pan
+        if (mainEditorConfigs.enableZoom &&
+            !layerInteraction.enableMobilePinchRotate &&
+            !layerInteraction.enableMobilePinchScale) {
+          interactiveViewer.currentState?.onScaleUpdate(details);
+          return;
+        }
+      } else {
+        /// Handle active drag selection on mobile
+        if (_layerDragSelectionService.isActive) {
+          _layerDragSelectionService.updateSize(details.localFocalPoint);
+          return;
+        }
+      }
+    }
+
+    /// Handle pan action
     if (_mouseService.validatePanAction()) {
       interactiveViewer.currentState?.onScaleUpdate(details);
       return;
     }
 
+    /// Handle drag selection updates
     if (_layerDragSelectionService.isActive &&
         _mouseService.validateDragAction()) {
       _layerDragSelectionService.updateSize(details.localFocalPoint);
@@ -1125,7 +1176,7 @@ class ProImageEditorState extends State<ProImageEditor>
         interactiveViewer.currentState?.scaleFactor ?? 1.0;
 
     layerInteractionManager.enabledHitDetection = false;
-    if (details.pointerCount == 1) {
+    if (pointerCount == 1) {
       layerInteractionManager.calculateMovement(
         editorScaleFactor: editorScaleFactor,
         removeAreaKey: _removeAreaKey,
@@ -1139,7 +1190,7 @@ class ProImageEditorState extends State<ProImageEditor>
         },
         helperLineCtrl: _controllers.helperLineCtrl,
       );
-    } else if (details.pointerCount == 2) {
+    } else if (pointerCount == 2) {
       /// If multi-selection is active and the editor is zoomable, treat
       /// two-finger gestures as zooming the editor instead of scaling a layer.
       final hasMultiSelection = selectedLayers.length > 1;
