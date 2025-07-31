@@ -1155,20 +1155,16 @@ class ProImageEditorState extends State<ProImageEditor>
     if (!hasSelectedLayers) return;
 
     if (layerInteractionManager.rotateScaleLayerSizeHelper != null) {
-      layerInteractionManager
-        ..freeStyleHighPerformanceScaling =
-            paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
-                !isDesktop
-        ..calculateInteractiveButtonScaleRotate(
-          configs: configs,
-          selectedLayers: selectedLayers,
-          details: details,
-          editorSize: sizesManager.bodySize,
-          layerTheme: layerInteraction.style,
-          editorScaleFactor: interactiveViewer.currentState?.scaleFactor ?? 1.0,
-          editorScaleOffset:
-              interactiveViewer.currentState?.offset ?? Offset.zero,
-        );
+      layerInteractionManager.calculateInteractiveButtonScaleRotate(
+        configs: configs,
+        selectedLayers: selectedLayers,
+        details: details,
+        editorSize: sizesManager.bodySize,
+        layerTheme: layerInteraction.style,
+        editorScaleFactor: interactiveViewer.currentState?.scaleFactor ?? 1.0,
+        editorScaleOffset:
+            interactiveViewer.currentState?.offset ?? Offset.zero,
+      );
       for (Layer layer in selectedLayers) {
         layer.key.currentState!.setState(() {});
       }
@@ -1181,23 +1177,19 @@ class ProImageEditorState extends State<ProImageEditor>
 
     layerInteractionManager.enabledHitDetection = false;
     if (pointerCount == 1) {
-      layerInteractionManager
-        ..freeStyleHighPerformanceMoving =
-            paintEditorConfigs.enableFreeStyleHighPerformanceMoving ??
-                isWebMobile
-        ..calculateMovement(
-          editorScaleFactor: editorScaleFactor,
-          removeAreaKey: _removeAreaKey,
-          selectedLayers: selectedLayers,
-          layerList: activeLayers,
-          context: context,
-          detail: details,
-          onHoveredRemoveChanged: (value) {
-            _controllers.removeBtnCtrl.add(null);
-            mainEditorCallbacks?.onHoverRemoveAreaChange?.call(value);
-          },
-          helperLineCtrl: _controllers.helperLineCtrl,
-        );
+      layerInteractionManager.calculateMovement(
+        editorScaleFactor: editorScaleFactor,
+        removeAreaKey: _removeAreaKey,
+        selectedLayers: selectedLayers,
+        layerList: activeLayers,
+        context: context,
+        detail: details,
+        onHoveredRemoveChanged: (value) {
+          _controllers.removeBtnCtrl.add(null);
+          mainEditorCallbacks?.onHoverRemoveAreaChange?.call(value);
+        },
+        helperLineCtrl: _controllers.helperLineCtrl,
+      );
     } else if (pointerCount == 2) {
       /// If multi-selection is active and the editor is zoomable, treat
       /// two-finger gestures as zooming the editor instead of scaling a layer.
@@ -1208,18 +1200,14 @@ class ProImageEditorState extends State<ProImageEditor>
         return;
       }
       // Layer scaling (original logic)
-      layerInteractionManager
-        ..freeStyleHighPerformanceScaling =
-            paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
-                !isDesktop
-        ..calculateScaleRotate(
-          configs: configs,
-          selectedLayers: selectedLayers,
-          detail: details,
-          editorSize: sizesManager.bodySize,
-          screenPaddingHelper: sizesManager.imageMargin,
-          editorScaleFactor: editorScaleFactor,
-        );
+      layerInteractionManager.calculateScaleRotate(
+        configs: configs,
+        selectedLayers: selectedLayers,
+        detail: details,
+        editorSize: sizesManager.bodySize,
+        screenPaddingHelper: sizesManager.imageMargin,
+        editorScaleFactor: editorScaleFactor,
+      );
     }
     for (Layer layer in selectedLayers) {
       mainEditorCallbacks?.handleUpdateLayer(layer);
@@ -1369,10 +1357,6 @@ class ProImageEditorState extends State<ProImageEditor>
     _checkInteractiveViewer();
     isSubEditorOpen = true;
 
-    if (paintEditorConfigs.enableFreeStyleHighPerformanceHero) {
-      layerInteractionManager.freeStyleHighPerformanceHero = true;
-    }
-
     setState(() {});
 
     SubEditor editorName = SubEditor.unknown;
@@ -1424,7 +1408,6 @@ class ProImageEditorState extends State<ProImageEditor>
                   if (!_pageOpenCompleter.isCompleted) {
                     _pageOpenCompleter.complete(true);
                   }
-                  layerInteractionManager.freeStyleHighPerformanceHero = false;
 
                   if (stateManager.heroScreenshotRequired) {
                     stateManager.heroScreenshotRequired = false;

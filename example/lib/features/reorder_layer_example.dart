@@ -217,7 +217,6 @@ class _ReorderLayerSheetState extends State<ReorderLayerSheet> {
                                         item: layer.item,
                                         scale: layer.scale,
                                         enabledHitDetection: false,
-                                        freeStyleHighPerformance: false,
                                       ),
                                     ),
                             ),

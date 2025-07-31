@@ -79,9 +79,6 @@ class PaintEditorConfigs extends ZoomConfigs implements BaseEditorLayerConfigs {
     this.divisionsOpacity = 100,
     this.minScale = double.negativeInfinity,
     this.maxScale = double.infinity,
-    this.enableFreeStyleHighPerformanceScaling,
-    this.enableFreeStyleHighPerformanceMoving,
-    this.enableFreeStyleHighPerformanceHero = false,
     this.initialPaintMode = PaintMode.freeStyle,
     this.censorConfigs = const CensorConfigs(),
     this.safeArea = const EditorSafeArea(),
@@ -166,32 +163,6 @@ class PaintEditorConfigs extends ZoomConfigs implements BaseEditorLayerConfigs {
   /// Shares the zoom matrix between the main and paint editor.
   final bool enableShareZoomMatrix;
 
-  /// Enables high-performance scaling for free-style drawing when set to
-  /// `true`.
-  ///
-  /// When this option is enabled, it optimizes scaling for improved
-  /// performance.
-  ///
-  /// By default, it's set to `true` on mobile devices and `false` on desktop
-  /// devices.
-  final bool? enableFreeStyleHighPerformanceScaling;
-
-  /// Enables high-performance moving for free-style drawing when set to `true`.
-  ///
-  /// When this option is enabled, it optimizes moving for improved performance.
-  ///
-  /// By default, it's set to `true` only on mobile-web devices.
-  final bool? enableFreeStyleHighPerformanceMoving;
-
-  /// Enables high-performance hero-animations for free-style drawing when set
-  /// to `true`.
-  ///
-  /// When this option is enabled, it optimizes hero-animations for improved
-  /// performance.
-  ///
-  /// By default, it's set to `false`.
-  final bool enableFreeStyleHighPerformanceHero;
-
   /// Indicates the initial paint mode.
   final PaintMode initialPaintMode;
 
@@ -268,9 +239,6 @@ class PaintEditorConfigs extends ZoomConfigs implements BaseEditorLayerConfigs {
     bool? isInitiallyFilled,
     bool? showLayers,
     bool? enableShareZoomMatrix,
-    bool? enableFreeStyleHighPerformanceScaling,
-    bool? enableFreeStyleHighPerformanceMoving,
-    bool? enableFreeStyleHighPerformanceHero,
     PaintMode? initialPaintMode,
     CensorConfigs? censorConfigs,
     double? minScale,
@@ -319,14 +287,6 @@ class PaintEditorConfigs extends ZoomConfigs implements BaseEditorLayerConfigs {
       showLayers: showLayers ?? this.showLayers,
       enableShareZoomMatrix:
           enableShareZoomMatrix ?? this.enableShareZoomMatrix,
-      enableFreeStyleHighPerformanceScaling:
-          enableFreeStyleHighPerformanceScaling ??
-              this.enableFreeStyleHighPerformanceScaling,
-      enableFreeStyleHighPerformanceMoving:
-          enableFreeStyleHighPerformanceMoving ??
-              this.enableFreeStyleHighPerformanceMoving,
-      enableFreeStyleHighPerformanceHero: enableFreeStyleHighPerformanceHero ??
-          this.enableFreeStyleHighPerformanceHero,
       initialPaintMode: initialPaintMode ?? this.initialPaintMode,
       censorConfigs: censorConfigs ?? this.censorConfigs,
       minScale: minScale ?? this.minScale,
