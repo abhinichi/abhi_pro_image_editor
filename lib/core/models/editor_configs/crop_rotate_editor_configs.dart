@@ -116,6 +116,7 @@ class CropRotateEditorConfigs {
   /// Enables double-tap zoom functionality when set to true.
   final bool enableDoubleTap;
 
+  /// Enables flip-animation when set to true.
   final bool enableFlipAnimation;
 
   /// Determines if the mouse scroll direction should be inverted.
@@ -239,10 +240,11 @@ class CropRotateEditorConfigs {
     bool? showLayers,
     bool? enableTransformLayers,
     bool? enableDoubleTap,
+    bool? enableFlipAnimation,
     bool? invertMouseScroll,
     bool? invertDragDirection,
-    bool? enableProvideImageInfos,
     CropMode? initialCropMode,
+    bool? enableProvideImageInfos,
     double? initAspectRatio,
     double? maxScale,
     double? mouseScaleFactor,
@@ -254,6 +256,7 @@ class CropRotateEditorConfigs {
     Duration? fadeInOutsideCropAreaAnimationDuration,
     Duration? opacityOutsideCropAreaDuration,
     Curve? rotateAnimationCurve,
+    Curve? flipAnimationCurve,
     Curve? scaleAnimationCurve,
     Curve? cropDragAnimationCurve,
     Curve? fadeInOutsideCropAreaAnimationCurve,
@@ -276,6 +279,7 @@ class CropRotateEditorConfigs {
       enableTransformLayers:
           enableTransformLayers ?? this.enableTransformLayers,
       enableDoubleTap: enableDoubleTap ?? this.enableDoubleTap,
+      enableFlipAnimation: enableFlipAnimation ?? this.enableFlipAnimation,
       invertMouseScroll: invertMouseScroll ?? this.invertMouseScroll,
       invertDragDirection: invertDragDirection ?? this.invertDragDirection,
       initialCropMode: initialCropMode ?? this.initialCropMode,
@@ -296,6 +300,7 @@ class CropRotateEditorConfigs {
       opacityOutsideCropAreaDuration:
           opacityOutsideCropAreaDuration ?? this.opacityOutsideCropAreaDuration,
       rotateAnimationCurve: rotateAnimationCurve ?? this.rotateAnimationCurve,
+      flipAnimationCurve: flipAnimationCurve ?? this.flipAnimationCurve,
       scaleAnimationCurve: scaleAnimationCurve ?? this.scaleAnimationCurve,
       cropDragAnimationCurve:
           cropDragAnimationCurve ?? this.cropDragAnimationCurve,

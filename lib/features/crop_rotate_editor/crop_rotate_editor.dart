@@ -1150,10 +1150,17 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// If [value] is [CropMode.rectangular], it disables the round cropper
   /// and updates the internal state accordingly.
   @override
-  set cropMode(CropMode value) {
+  set cropMode(CropMode value) => setCropMode(value);
+
+  @override
+  void setCropMode(
+    CropMode value, {
+    bool updateStates = true,
+    bool updateHistory = true,
+  }) {
     _cropMode = value;
-    _updateAllStates();
-    addHistory();
+    if (updateStates) _updateAllStates();
+    if (updateHistory) addHistory();
   }
 
   @override

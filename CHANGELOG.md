@@ -20,6 +20,7 @@
 <br/>
 
 - **FIX**(rounded_background_text): Resolved issue where two text lines with nearly identical widths would not render with correct rounding; now ensures both lines are treated as equally long.
+- **FIX**(crop-rotate-editor): Resolve broken undo/redo functionality in the `CropRotateEditor`.
 
 <br/>
 
