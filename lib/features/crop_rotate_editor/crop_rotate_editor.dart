@@ -1150,10 +1150,17 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// If [value] is [CropMode.rectangular], it disables the round cropper
   /// and updates the internal state accordingly.
   @override
-  set cropMode(CropMode value) {
+  set cropMode(CropMode value) => setCropMode(value);
+
+  @override
+  void setCropMode(
+    CropMode value, {
+    bool updateStates = true,
+    bool updateHistory = true,
+  }) {
     _cropMode = value;
-    _updateAllStates();
-    addHistory();
+    if (updateStates) _updateAllStates();
+    if (updateHistory) addHistory();
   }
 
   @override
@@ -2340,10 +2347,34 @@ class CropRotateEditorState extends State<CropRotateEditor>
     );
   }
 
-  Transform _buildFlipTransform({required Widget child}) {
-    return Transform.flip(
-      flipX: flipX,
-      flipY: flipY,
+  Widget _buildFlipTransform({required Widget child}) {
+    if (!cropRotateEditorConfigs.enableFlipAnimation) {
+      return Transform.flip(
+        flipX: flipX,
+        flipY: flipY,
+        child: child,
+      );
+    }
+
+    return TweenAnimationBuilder<double>(
+      duration: cropRotateEditorConfigs.animationDuration,
+      tween: Tween<double>(begin: 1.0, end: flipX ? -1.0 : 1.0),
+      curve: cropRotateEditorConfigs.flipAnimationCurve,
+      builder: (context, scaleX, child) {
+        return TweenAnimationBuilder<double>(
+          duration: cropRotateEditorConfigs.animationDuration,
+          tween: Tween<double>(begin: 1.0, end: flipY ? -1.0 : 1.0),
+          curve: cropRotateEditorConfigs.flipAnimationCurve,
+          builder: (context, scaleY, child) {
+            return Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.diagonal3Values(scaleX, scaleY, 1),
+              child: child,
+            );
+          },
+          child: child,
+        );
+      },
       child: child,
     );
   }

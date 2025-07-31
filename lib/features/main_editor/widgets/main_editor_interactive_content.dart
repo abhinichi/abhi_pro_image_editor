@@ -182,17 +182,12 @@ class MainEditorInteractiveContent extends StatelessWidget {
 
   Widget _buildInteractiveViewer() {
     var mainConfigs = configs.mainEditor;
-    var paintConfigs = configs.paintEditor;
     return ExtendedInteractiveViewer(
       key: interactiveViewerKey,
       enableExternalGestureDetector: true,
       zoomConfigs: mainConfigs,
       onInteractionStart: (details) {
         callbacks.mainEditorCallbacks?.onEditorZoomScaleStart?.call(details);
-        layerInteractionManager.freeStyleHighPerformanceEditorZoom =
-            (paintConfigs.enableFreeStyleHighPerformanceMoving ?? !isDesktop) ||
-                (paintConfigs.enableFreeStyleHighPerformanceScaling ??
-                    !isDesktop);
 
         controllers.uiLayerCtrl.add(null);
       },
@@ -202,7 +197,6 @@ class MainEditorInteractiveContent extends StatelessWidget {
       },
       onInteractionEnd: (details) {
         callbacks.mainEditorCallbacks?.onEditorZoomScaleEnd?.call(details);
-        layerInteractionManager.freeStyleHighPerformanceEditorZoom = false;
         controllers.uiLayerCtrl.add(null);
         controllers.cropLayerPainterCtrl.add(null);
       },

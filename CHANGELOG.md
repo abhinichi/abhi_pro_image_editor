@@ -9,6 +9,7 @@
 - **FEAT**(mouse-actions): Added support for different mouse button actions such as pan, multi-select, and drag-select.
 - **FEAT**(layer-configs): Added `enableKeyboardMultiSelection` and `enableLongPressMultiSelection` to `LayerInteractionConfigs` for dynamically enabling or disabling multi-selection via keyboard or long press.
 - **FEAT**(remove-area): Applied `AnimatedSwitcher` to the remove area for smooth fade-in/out transitions.
+- **FEAT**(crop-rotate-editor): Add `enableFlipAnimation` to `CropRotateEditorConfigs`, which enables flip animation by default.
 
 <br/>
 
@@ -19,6 +20,7 @@
 <br/>
 
 - **FIX**(rounded_background_text): Resolved issue where two text lines with nearly identical widths would not render with correct rounding; now ensures both lines are treated as equally long.
+- **FIX**(crop-rotate-editor): Resolve broken undo/redo functionality in the `CropRotateEditor`.
 
 <br/>
 
@@ -27,6 +29,7 @@
 - Removed `selectedLayerIndex` from `MainEditor`.
 - Remove `ColorFilterAddons.opacity`.
 - The way the editor handles multiple filters and tune adjustments has changed, so combinations might now appear slightly differently.
+- Removed `enableFreeStyleHighPerformanceScaling`, `enableFreeStyleHighPerformanceMoving` and `enableFreeStyleHighPerformanceHero` from `PaintEditorConfigs`.
 
 ## 10.5.4
 - **FEAT**(text-layers): Delete the edited 'TextLayers' if the new text is empty.
