@@ -416,8 +416,6 @@ class _LayerWidgetState extends State<LayerWidget>
           isSelected: _isSelected,
           enableHitDetection:
               _layerInteractionManager?.enabledHitDetection ?? false,
-          isHighPerformanceMode:
-              _layerInteractionManager?.freeStyleHighPerformance ?? false,
           onHitChanged: (state) {
             _lastHitState.value = state;
           },

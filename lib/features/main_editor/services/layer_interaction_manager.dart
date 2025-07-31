@@ -118,28 +118,6 @@ class LayerInteractionManager {
   /// When `true`, allows detecting user interactions with the painted layer.
   bool enabledHitDetection = true;
 
-  /// Controls high-performance scaling for free-style drawing.
-  /// When `true`, enables optimized scaling for improved performance.
-  bool freeStyleHighPerformanceScaling = false;
-
-  /// Controls high-performance for layers when editor zoom.
-  bool freeStyleHighPerformanceEditorZoom = false;
-
-  /// Controls high-performance moving for free-style drawing.
-  /// When `true`, enables optimized moving for improved performance.
-  bool freeStyleHighPerformanceMoving = false;
-
-  /// Controls high-performance hero animation for free-style drawing.
-  /// When `true`, enables optimized hero-animation for improved performance.
-  bool freeStyleHighPerformanceHero = false;
-
-  /// Determines if any high-performance mode is enabled for free style editing.
-  bool get freeStyleHighPerformance =>
-      freeStyleHighPerformanceEditorZoom ||
-      freeStyleHighPerformanceScaling ||
-      freeStyleHighPerformanceMoving ||
-      freeStyleHighPerformanceHero;
-
   /// Flag indicating if the scaling tool is active.
   bool _activeScale = false;
 
@@ -877,8 +855,6 @@ class LayerInteractionManager {
 
     selectedLayersScaleStart.clear();
     enabledHitDetection = true;
-    freeStyleHighPerformanceScaling = false;
-    freeStyleHighPerformanceMoving = false;
     showHorizontalHelperLine = false;
     showVerticalHelperLine = false;
     showRotationHelperLine = false;

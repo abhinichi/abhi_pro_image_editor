@@ -27,6 +27,7 @@
 - Removed `selectedLayerIndex` from `MainEditor`.
 - Remove `ColorFilterAddons.opacity`.
 - The way the editor handles multiple filters and tune adjustments has changed, so combinations might now appear slightly differently.
+- Removed `enableFreeStyleHighPerformanceScaling`, `enableFreeStyleHighPerformanceMoving` and `enableFreeStyleHighPerformanceHero` from `PaintEditorConfigs`.
 
 ## 10.5.4
 - **FEAT**(text-layers): Delete the edited 'TextLayers' if the new text is empty.

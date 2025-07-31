@@ -14,7 +14,6 @@ class LayerWidgetPaintItem extends StatelessWidget {
     this.scale = 1.0,
     this.isSelected = false,
     this.enableHitDetection = false,
-    this.isHighPerformanceMode = false,
     this.willChange = false,
     this.onHitChanged,
   });
@@ -36,9 +35,6 @@ class LayerWidgetPaintItem extends StatelessWidget {
   /// Whether hit detection is enabled for this layer.
   final bool enableHitDetection;
 
-  /// Whether high-performance mode is enabled for free-style drawing.
-  final bool isHighPerformanceMode;
-
   /// Callback function that is triggered when a hit status changes.
   ///
   /// The [onHitChanged] function takes a boolean parameter [hasHit] which
@@ -58,7 +54,6 @@ class LayerWidgetPaintItem extends StatelessWidget {
           scale: scale,
           selected: isSelected,
           enabledHitDetection: enableHitDetection,
-          freeStyleHighPerformance: isHighPerformanceMode,
           onHitChanged: onHitChanged,
         ),
       ),
