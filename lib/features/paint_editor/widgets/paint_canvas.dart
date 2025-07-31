@@ -190,6 +190,7 @@ class PaintCanvasState extends State<PaintCanvas> {
       }
     } else if (_paintCtrl.mode == PaintMode.polygon) {
       _checkPolygonIsComplete();
+      return;
     }
     _createPainting(offsets);
   }

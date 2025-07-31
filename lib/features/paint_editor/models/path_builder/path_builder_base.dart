@@ -80,6 +80,12 @@ abstract class PathBuilderBase {
   /// Performs hit testing.
   bool hitTest(Offset position) {
     build();
+    return hitTestWithStroke(position);
+  }
+
+  /// Performs hit testing for paths including the stroke-width.
+  @protected
+  bool hitTestWithStroke(Offset position) {
     // smaller values = more precise, but slower
     const resolution = 1.0;
     final halfStroke = painter.strokeWidth / 2;
@@ -101,11 +107,11 @@ abstract class PathBuilderBase {
   /// Performs hit testing for filled shapes or falls back to stroke hit test.
   @protected
   bool hitTestFillableObject(Offset position) {
-    if (item.fill) {
-      build();
-      return path.contains(position);
-    }
-    return hitTest(position);
+    build();
+
+    if (item.fill) return path.contains(position);
+
+    return hitTestWithStroke(position);
   }
 
   /// Performs hit testing for a single stroked line segment.

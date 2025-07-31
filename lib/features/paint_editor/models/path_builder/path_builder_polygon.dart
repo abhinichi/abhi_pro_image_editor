@@ -27,9 +27,9 @@ class PathBuilderPolygon extends PathBuilderBase {
       path.close();
     }
 
-    if (offsets.first == offsets.last && item.fill) {
-      painter.style = PaintingStyle.fill;
-    }
+    painter.style = offsets.first == offsets.last && item.fill
+        ? PaintingStyle.fill
+        : PaintingStyle.stroke;
 
     return path;
   }
