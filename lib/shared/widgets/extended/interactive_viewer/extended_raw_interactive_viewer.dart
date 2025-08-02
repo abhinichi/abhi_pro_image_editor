@@ -596,11 +596,6 @@ class ExtendedRawInteractiveViewerState
   double? _rotationStart = 0.0; // Rotation at start of rotation gesture.
   double _currentRotation = 0.0; // Rotation of _transformationController.value.
   _GestureType? _gestureType;
-  
-  // Trackpad gesture state tracking
-  bool _isTrackpadScaleGesture = false;
-  double? _trackpadScaleStart;
-
   final bool _rotateEnabled = false;
 
   // The _boundaryRect is calculated by adding the boundaryMargin to the size of
@@ -824,11 +819,6 @@ class ExtendedRawInteractiveViewerState
     _scaleStart = _transformer.value.getMaxScaleOnAxis();
     _referenceFocalPoint = _transformer.toScene(details.localFocalPoint);
     _rotationStart = _currentRotation;
-    
-    // Reset trackpad gesture state for non-trackpad gestures
-    if (!_isTrackpadScaleGesture) {
-      _trackpadScaleStart = null;
-    }
   }
 
   /// Handle an update to an ongoing gesture. All of pan, scale, and rotate are
@@ -932,10 +922,6 @@ class ExtendedRawInteractiveViewerState
     _scaleStart = null;
     _rotationStart = null;
     _referenceFocalPoint = null;
-    
-    // Reset trackpad gesture state
-    _isTrackpadScaleGesture = false;
-    _trackpadScaleStart = null;
 
     _animation?.removeListener(_handleInertiaAnimation);
     _scaleAnimation?.removeListener(_handleScaleAnimation);
@@ -1027,17 +1013,12 @@ class ExtendedRawInteractiveViewerState
           transform: event.transform,
         );
 
-        // Apply natural scrolling inversion if enabled
-        final Offset adjustedLocalDelta = widget.invertTrackpadDirection
-            ? -localDelta  // Natural scrolling: scroll left moves content left
-            : localDelta;  // Traditional scrolling: scroll left moves content right
-
         if (!_gestureIsSupported(_GestureType.pan)) {
           widget.onInteractionUpdate?.call(
             ScaleUpdateDetails(
               focalPoint: global - event.scrollDelta,
-              localFocalPoint: local - adjustedLocalDelta,
-              focalPointDelta: -adjustedLocalDelta,
+              localFocalPoint: local - event.scrollDelta,
+              focalPointDelta: -localDelta,
             ),
           );
           widget.onInteractionEnd?.call(ScaleEndDetails());
@@ -1046,7 +1027,7 @@ class ExtendedRawInteractiveViewerState
 
         final Offset focalPointScene = _transformer.toScene(local);
         final Offset newFocalPointScene =
-            _transformer.toScene(local - adjustedLocalDelta);
+            _transformer.toScene(local - localDelta);
 
         _transformer.value = _matrixTranslate(
           _transformer.value,
@@ -1056,8 +1037,8 @@ class ExtendedRawInteractiveViewerState
         widget.onInteractionUpdate?.call(
           ScaleUpdateDetails(
             focalPoint: global - event.scrollDelta,
-            localFocalPoint: local - adjustedLocalDelta,
-            focalPointDelta: -adjustedLocalDelta,
+            localFocalPoint: local - localDelta,
+            focalPointDelta: -localDelta,
           ),
         );
         widget.onInteractionEnd?.call(ScaleEndDetails());
@@ -1105,52 +1086,30 @@ class ExtendedRawInteractiveViewerState
 
   // Handle trackpad pan-zoom start events
   void _handlePointerPanZoomStart(PointerPanZoomStartEvent event) {
-    // Reset trackpad gesture state
-    _isTrackpadScaleGesture = false;
-    _trackpadScaleStart = null;
+    
+    // Create ScaleStartDetails from the pan-zoom event
+    final ScaleStartDetails details = ScaleStartDetails(
+      focalPoint: event.position,
+      localFocalPoint: event.localPosition,
+      pointerCount: 2, // Trackpad gestures are conceptually 2-finger
+    );
+    
+    onScaleStart(details);
   }
 
   // Handle trackpad pan-zoom update events
   void _handlePointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
-    // Handle scale gestures by forwarding them to the GestureDetector system
-    if (event.scale != 1.0) {
-      // Start scale gesture if not already started
-      if (!_isTrackpadScaleGesture) {
-        _isTrackpadScaleGesture = true;
-        _trackpadScaleStart = event.scale;
-        
-        onScaleStart(ScaleStartDetails(
-          focalPoint: event.position,
-          localFocalPoint: event.localPosition,
-          pointerCount: 2,
-        ));
-      }
-      
-      // Calculate the scale change relative to when the gesture started
-      final double relativeScale = event.scale / _trackpadScaleStart!;
-      
-      // Forward scale gesture to the built-in GestureDetector system
-      onScaleUpdate(ScaleUpdateDetails(
-        focalPoint: event.position,
-        localFocalPoint: event.localPosition,
-        pointerCount: 2,
-        scale: relativeScale,
-        horizontalScale: relativeScale,
-        verticalScale: relativeScale,
-        rotation: 0.0,
-      ));
-      return;
-    }
     
-    // Only handle pure pan gestures (no scaling)
+    // For trackpad pan gestures, we can apply translation directly
+    // The localPanDelta represents the movement we want to apply
     if (event.localPanDelta != Offset.zero && event.scale == 1.0) {
       // Apply natural scrolling inversion if enabled
-      final Offset adjustedDelta = widget.invertTrackpadDirection
-          ? -event.localPanDelta  // Natural scrolling: trackpad left moves content left
-          : event.localPanDelta;  // Traditional scrolling: trackpad left moves content right
+      final Offset adjustedPanDelta = widget.invertTrackpadDirection
+          ? -event.localPanDelta  // Natural scrolling: pan left moves content left
+          : event.localPanDelta; // Traditional scrolling: pan left moves content right
       
       // Direct translation for pan-only gestures
-      _transformer.value = _matrixTranslate(_transformer.value, adjustedDelta);
+      _transformer.value = _matrixTranslate(_transformer.value, adjustedPanDelta);
       
       // Create synthetic ScaleUpdateDetails for callbacks
       final ScaleUpdateDetails details = ScaleUpdateDetails(
@@ -1164,18 +1123,33 @@ class ExtendedRawInteractiveViewerState
       );
       
       widget.onInteractionUpdate?.call(details);
+      return;
     }
+    
+    // For scale gestures, use the normal flow
+    final ScaleUpdateDetails details = ScaleUpdateDetails(
+      focalPoint: event.position,
+      localFocalPoint: event.localPosition,
+      pointerCount: 2, // Trackpad gestures are conceptually 2-finger
+      scale: event.scale,
+      horizontalScale: event.scale,
+      verticalScale: event.scale,
+      rotation: event.rotation,
+    );
+    
+    onScaleUpdate(details);
   }
 
   // Handle trackpad pan-zoom end events  
   void _handlePointerPanZoomEnd(PointerPanZoomEndEvent event) {
-    // End scale gesture if it was active
-    if (_isTrackpadScaleGesture) {
-      _isTrackpadScaleGesture = false;
-      _trackpadScaleStart = null;
-      
-      onScaleEnd(ScaleEndDetails());
-    }
+    
+    // Create ScaleEndDetails from the pan-zoom event
+    final ScaleEndDetails details = ScaleEndDetails(
+      velocity: Velocity.zero, // PointerPanZoomEndEvent doesn't have velocity
+      pointerCount: 0, // Gesture has ended
+    );
+    
+    onScaleEnd(details);
   }
 
   void _handleInertiaAnimation() {
@@ -1305,32 +1279,25 @@ class ExtendedRawInteractiveViewerState
       return child;
     }
 
-    return widget.enableExternalGestureDetector
-        ? Listener(
-            key: _parentKey,
-            onPointerSignal: _receivedPointerSignal,
-            onPointerPanZoomStart: _handlePointerPanZoomStart,
-            onPointerPanZoomUpdate: _handlePointerPanZoomUpdate,
-            onPointerPanZoomEnd: _handlePointerPanZoomEnd,
-            child: child,
-          )
-        : GestureDetector(
-            behavior:
-                HitTestBehavior.opaque, // Necessary when panning off screen.
-            onScaleEnd: onScaleEnd,
-            onScaleStart: onScaleStart,
-            onScaleUpdate: onScaleUpdate,
-            trackpadScrollCausesScale: widget.trackpadScrollCausesScale,
-            trackpadScrollToScaleFactor: Offset(0, -1 / widget.scaleFactor),
-            child: Listener(
-              key: _parentKey,
-              onPointerSignal: _receivedPointerSignal,
-              onPointerPanZoomStart: _handlePointerPanZoomStart,
-              onPointerPanZoomUpdate: _handlePointerPanZoomUpdate,
-              onPointerPanZoomEnd: _handlePointerPanZoomEnd,
+    return Listener(
+      key: _parentKey,
+      onPointerSignal: _receivedPointerSignal,
+      onPointerPanZoomStart: _handlePointerPanZoomStart,
+      onPointerPanZoomUpdate: _handlePointerPanZoomUpdate,
+      onPointerPanZoomEnd: _handlePointerPanZoomEnd,
+      child: widget.enableExternalGestureDetector
+          ? child
+          : GestureDetector(
+              behavior:
+                  HitTestBehavior.opaque, // Necessary when panning off screen.
+              onScaleEnd: onScaleEnd,
+              onScaleStart: onScaleStart,
+              onScaleUpdate: onScaleUpdate,
+              trackpadScrollCausesScale: widget.trackpadScrollCausesScale,
+              trackpadScrollToScaleFactor: Offset(0, -1 / widget.scaleFactor),
               child: child,
             ),
-          );
+    );
   }
 }
 
