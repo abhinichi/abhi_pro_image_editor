@@ -849,10 +849,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
         await callbacks.onCompleteWithParameters?.call(
           CompleteParameters(
             blur: appliedBlurFactor,
-            colorFilters: [
-              ...appliedFilters,
-              ...appliedTuneAdjustments.map((item) => item.matrix),
-            ],
+            matrixFilterList: appliedFilters,
+            matrixTuneAdjustmentsList:
+                appliedTuneAdjustments.map((item) => item.matrix).toList(),
             cropWidth: isTransformed ? outputSize.width.round() : null,
             cropHeight: isTransformed ? outputSize.height.round() : null,
             cropX: isTransformed ? outputOffset.dx.round() : null,

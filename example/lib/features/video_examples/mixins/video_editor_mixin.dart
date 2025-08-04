@@ -1,8 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:example/core/constants/example_constants.dart';
 import 'package:example/features/preview/preview_video.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/core/platform/io/io_helper.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 
@@ -65,13 +65,21 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
 
   /// Loads and sets [videoMetadata] for the given [video].
   Future<void> setMetadata() async {
+    await video.safeFilePath();
     videoMetadata = await ProVideoEditor.instance.getMetadata(video);
   }
 
   /// Generates thumbnails for the given [video].
   void generateThumbnails() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
+      if (!mounted || (!kIsWeb && (Platform.isLinux || Platform.isWindows))) {
+        thumbnails = [];
+
+        if (proVideoController != null) {
+          proVideoController!.thumbnails = thumbnails;
+        }
+        return;
+      }
       var imageWidth = MediaQuery.sizeOf(context).width /
           thumbnailCount *
           MediaQuery.devicePixelRatioOf(context);
@@ -115,7 +123,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       video: video,
       imageBytes: parameters.layers.isNotEmpty ? parameters.image : null,
       blur: parameters.blur,
-      colorMatrixList: parameters.colorFilters,
+      colorMatrixList: [parameters.colorFiltersCombined],
       startTime: parameters.startTime,
       endTime: parameters.endTime,
       transform: parameters.isTransformed

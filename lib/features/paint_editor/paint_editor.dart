@@ -579,10 +579,9 @@ class PaintEditorState extends State<PaintEditor>
         ));
       },
       blur: appliedBlurFactor,
-      colorFilters: [
-        ...appliedFilters,
-        ...appliedTuneAdjustments.map((item) => item.matrix),
-      ],
+      matrixFilterList: appliedFilters,
+      matrixTuneAdjustmentsList:
+          appliedTuneAdjustments.map((item) => item.matrix).toList(),
       transform: initialTransformConfigs,
     );
     paintEditorCallbacks?.handleDone();
