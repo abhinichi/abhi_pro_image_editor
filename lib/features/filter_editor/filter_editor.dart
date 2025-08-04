@@ -214,10 +214,9 @@ class FilterEditorState extends State<FilterEditor>
       editorImage: widget.editorImage,
       returnValue: _getActiveFilters(),
       blur: appliedBlurFactor,
-      colorFilters: [
-        ..._getActiveFilters(),
-        ...appliedTuneAdjustments.map((item) => item.matrix),
-      ],
+      matrixFilterList: _getActiveFilters(),
+      matrixTuneAdjustmentsList:
+          appliedTuneAdjustments.map((item) => item.matrix).toList(),
       transform: initialTransformConfigs,
     );
     filterEditorCallbacks?.handleDone();

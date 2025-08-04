@@ -2066,10 +2066,10 @@ class ProImageEditorState extends State<ProImageEditor>
         await onCompleteWithParameters?.call(
           CompleteParameters(
             blur: stateManager.activeBlur,
-            colorFilters: [
-              ...stateManager.activeFilters,
-              ...stateManager.activeTuneAdjustments.map((item) => item.matrix),
-            ],
+            matrixFilterList: stateManager.activeFilters,
+            matrixTuneAdjustmentsList: stateManager.activeTuneAdjustments
+                .map((item) => item.matrix)
+                .toList(),
             startTime: widget.videoController?.startTime,
             endTime: widget.videoController?.endTime,
             cropWidth: isTransformed ? outputSize.width.round() : null,

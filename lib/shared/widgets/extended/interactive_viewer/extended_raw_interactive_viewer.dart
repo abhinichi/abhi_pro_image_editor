@@ -848,7 +848,8 @@ class ExtendedRawInteractiveViewerState
         // Handle case where trackpad gestures might skip onScaleStart
         if (_scaleStart == null) {
           _scaleStart = _transformer.value.getMaxScaleOnAxis();
-          _referenceFocalPoint ??= _transformer.toScene(details.localFocalPoint);
+          _referenceFocalPoint ??=
+              _transformer.toScene(details.localFocalPoint);
         }
         // details.scale gives us the amount to change the scale as of the
         // start of this gesture, so calculate the amount to scale as of the
@@ -907,7 +908,7 @@ class ExtendedRawInteractiveViewerState
         // focal point before and after the movement.
         final Offset translationChange =
             focalPointScene - _referenceFocalPoint!;
-        
+
         _transformer.value =
             _matrixTranslate(_transformer.value, translationChange);
         _referenceFocalPoint = _transformer.toScene(details.localFocalPoint);
@@ -1086,31 +1087,32 @@ class ExtendedRawInteractiveViewerState
 
   // Handle trackpad pan-zoom start events
   void _handlePointerPanZoomStart(PointerPanZoomStartEvent event) {
-    
     // Create ScaleStartDetails from the pan-zoom event
     final ScaleStartDetails details = ScaleStartDetails(
       focalPoint: event.position,
       localFocalPoint: event.localPosition,
       pointerCount: 2, // Trackpad gestures are conceptually 2-finger
     );
-    
+
     onScaleStart(details);
   }
 
   // Handle trackpad pan-zoom update events
   void _handlePointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
-    
     // For trackpad pan gestures, we can apply translation directly
     // The localPanDelta represents the movement we want to apply
     if (event.localPanDelta != Offset.zero && event.scale == 1.0) {
       // Apply natural scrolling inversion if enabled
       final Offset adjustedPanDelta = widget.invertTrackpadDirection
-          ? -event.localPanDelta  // Natural scrolling: pan left moves content left
-          : event.localPanDelta; // Traditional scrolling: pan left moves content right
-      
+          ? -event
+              .localPanDelta // Natural scrolling: pan left moves content left
+          : event
+              .localPanDelta; // Traditional scrolling: pan left moves content right
+
       // Direct translation for pan-only gestures
-      _transformer.value = _matrixTranslate(_transformer.value, adjustedPanDelta);
-      
+      _transformer.value =
+          _matrixTranslate(_transformer.value, adjustedPanDelta);
+
       // Create synthetic ScaleUpdateDetails for callbacks
       final ScaleUpdateDetails details = ScaleUpdateDetails(
         focalPoint: event.position,
@@ -1121,11 +1123,11 @@ class ExtendedRawInteractiveViewerState
         verticalScale: 1.0,
         rotation: 0.0,
       );
-      
+
       widget.onInteractionUpdate?.call(details);
       return;
     }
-    
+
     // For scale gestures, use the normal flow
     final ScaleUpdateDetails details = ScaleUpdateDetails(
       focalPoint: event.position,
@@ -1136,19 +1138,18 @@ class ExtendedRawInteractiveViewerState
       verticalScale: event.scale,
       rotation: event.rotation,
     );
-    
+
     onScaleUpdate(details);
   }
 
-  // Handle trackpad pan-zoom end events  
+  // Handle trackpad pan-zoom end events
   void _handlePointerPanZoomEnd(PointerPanZoomEndEvent event) {
-    
     // Create ScaleEndDetails from the pan-zoom event
     final ScaleEndDetails details = ScaleEndDetails(
       velocity: Velocity.zero, // PointerPanZoomEndEvent doesn't have velocity
       pointerCount: 0, // Gesture has ended
     );
-    
+
     onScaleEnd(details);
   }
 

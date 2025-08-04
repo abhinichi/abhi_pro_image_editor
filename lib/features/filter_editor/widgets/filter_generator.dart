@@ -2,8 +2,8 @@
 import 'package:flutter/widgets.dart';
 
 import '../../tune_editor/models/tune_adjustment_matrix.dart';
-import '../constants/identity_matrix_constant.dart';
 import '../types/filter_matrix.dart';
+import '../utils/combine_color_matrix_utils.dart';
 
 /// A widget for applying color filters to its child widget.
 class ColorFilterGenerator extends StatefulWidget {
@@ -62,38 +62,12 @@ class ColorFilterGeneratorState extends State<ColorFilterGenerator> {
     setState(() {});
   }
 
-  /// Multiplies two 4×5 color‐matrices (each a List of length 20).
-  /// Returns the composed matrix: applying [b] then [a].
-  List<double> _multiplyMatrices(List<double> a, List<double> b) {
-    const int size = 4;
-    List<double> result = List.filled(20, 0.0);
-
-    for (int row = 0; row < size; row++) {
-      for (int col = 0; col < 5; col++) {
-        double sum = (col == 4) ? a[row * 5 + 4] : 0.0;
-        for (int k = 0; k < size; k++) {
-          sum += a[row * 5 + k] * b[k * 5 + col];
-        }
-        result[row * 5 + col] = sum;
-      }
-    }
-
-    return result;
-  }
-
   void _recomputeMatrix() {
-    List<double> combinedMatrix = List.of(identityMatrix);
-
-    // Combine filters
-    for (final filterMatrix in widget.filters) {
-      combinedMatrix = _multiplyMatrices(filterMatrix, combinedMatrix);
-    }
-    // Combine tune adjustments
-    for (final tune in widget.tuneAdjustments) {
-      combinedMatrix = _multiplyMatrices(tune.matrix, combinedMatrix);
-    }
-
-    _combinedMatrix = combinedMatrix;
+    _combinedMatrix = mergeColorMatrices(
+      filterList: widget.filters,
+      tuneAdjustmentList:
+          widget.tuneAdjustments.map((item) => item.matrix).toList(),
+    );
   }
 
   @override
