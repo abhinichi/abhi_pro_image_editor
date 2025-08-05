@@ -111,7 +111,7 @@ class ProImageEditor extends StatefulWidget
   ///
   /// Example usage:
   /// ```dart
-  /// ProImageEditor.ProImageEditor.memory(
+  /// ProImageEditor.memory(
   ///   bytes,
   /// {@template mainEditorDemoTemplateCode}
   ///   configs: ProImageEditorConfigs(),
@@ -155,7 +155,7 @@ class ProImageEditor extends StatefulWidget
   ///
   /// Example usage:
   /// ```dart
-  /// ProImageEditor.ProImageEditor.file(
+  /// ProImageEditor.file(
   ///   File(pathToMyFile),
   ///   {@macro mainEditorDemoTemplateCode}
   /// )
@@ -323,7 +323,10 @@ class ProImageEditor extends StatefulWidget
   ///
   /// Example usage:
   ///
-  /// [Example with media_kit](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/features/video_examples/pages/video_media_kit_example.dart)
+  /// - [Example with video_player](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/features/video_examples/pages/video_player_example.dart)
+  /// - [Example with media_kit](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/features/video_examples/pages/video_media_kit_example.dart)
+  /// - [Example with chewie_player](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/features/video_examples/pages/chewie_player_example.dart)
+  /// - [Example with flick_video_player](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/features/video_examples/pages/flick_video_player_example.dart)
   factory ProImageEditor.video(
     ProVideoController videoController, {
     Key? key,

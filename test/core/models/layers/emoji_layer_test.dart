@@ -13,7 +13,6 @@ void main() {
         id: 'layer1',
         flipX: true,
         flipY: false,
-        isDeleted: false,
       );
 
       expect(emojiLayer.emoji, '😀');
@@ -23,7 +22,6 @@ void main() {
       expect(emojiLayer.id, 'layer1');
       expect(emojiLayer.flipX, true);
       expect(emojiLayer.flipY, false);
-      expect(emojiLayer.isDeleted, false);
       expect(emojiLayer.isEmojiLayer, true);
     });
 

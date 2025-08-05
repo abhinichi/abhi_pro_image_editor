@@ -1,7 +1,10 @@
 # Changelog
 
+## 11.1.0
+- **FEAT**(import-export): Improved minifier with configurable decimal rounding and boolean value minification.
+
 ## 11.0.1
-**FIX**(video-editor): Resolve incorrect behavior of `maxTrimDuration`.
+- **FIX**(video-editor): Resolve incorrect behavior of `maxTrimDuration`.
 
 ## 11.0.0
 - **FEAT**(multi-select): Layers can now be selected simultaneously using Ctrl, Shift, or long-press gestures.

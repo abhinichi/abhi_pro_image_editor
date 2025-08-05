@@ -53,4 +53,18 @@ extension DoubleExtension on double {
   int toDevicePixels(BuildContext context) {
     return (this * MediaQuery.devicePixelRatioOf(context)).toInt();
   }
+
+  /// Rounds the number to the given number of decimal places.
+  ///
+  /// Example:
+  /// ```dart
+  /// 3.14159.roundToDecimals(2); // returns 3.14
+  /// ```
+  double roundToDecimals(int decimals) {
+    if (isNaN || isInfinite) return this;
+
+    final num factor = pow(10, decimals);
+
+    return (this * factor).round() / factor;
+  }
 }

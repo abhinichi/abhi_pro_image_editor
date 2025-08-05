@@ -188,7 +188,7 @@ class ImportStateHistory {
         final opacity = safeParseDouble(el['opacity'], fallback: 1.0);
 
         for (final f in rawFilters) {
-          final matrix = List<double>.from(f.map((e) => e.toDouble()));
+          final matrix = List<double>.from(f.map(safeParseDouble));
 
           if (opacity == 1.0) {
             filterMatrix.add(matrix);
@@ -205,10 +205,10 @@ class ImportStateHistory {
         ExportImportVersion.version_6_2_0.toVersionNumber()) {
       final result = <List<double>>[];
 
-      for (final matrix in filtersData) {
-        final opacity = matrix[18];
+      for (final List<dynamic> matrix in filtersData) {
+        final opacity = safeParseDouble(matrix[18]);
 
-        final originalMatrix = List<double>.from(matrix);
+        final originalMatrix = List<double>.from(matrix.map(safeParseDouble));
         if (opacity != 1) {
           var updatedMatrix =
               lerpColorMatrix(identityMatrix, originalMatrix, opacity);
@@ -224,8 +224,8 @@ class ImportStateHistory {
       // Apply opacity by blending with identity
       return result;
     } else {
-      return (filtersData as List<dynamic>)
-          .map((el) => List<double>.from(el))
+      return (filtersData as List<List<dynamic>>)
+          .map((el) => List<double>.from(el.map(safeParseDouble)))
           .toList();
     }
   }

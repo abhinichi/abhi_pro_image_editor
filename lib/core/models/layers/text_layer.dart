@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 
+import '/core/constants/int_constants.dart';
 import '/shared/extensions/color_extension.dart';
+import '/shared/extensions/num_extension.dart';
 import '/shared/utils/parser/double_parser.dart';
 import '/shared/utils/parser/int_parser.dart';
 import 'enums/layer_background_mode.dart';
@@ -42,7 +44,6 @@ class TextLayer extends Layer {
     super.flipX,
     super.flipY,
     super.interaction,
-    super.isDeleted,
     super.meta,
     super.boxConstraints,
     super.key,
@@ -124,7 +125,6 @@ class TextLayer extends Layer {
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
-      isDeleted: layer.isDeleted,
       meta: layer.meta,
       boxConstraints: layer.boxConstraints,
       groupId: layer.groupId,
@@ -206,43 +206,63 @@ class TextLayer extends Layer {
   bool get isTextLayer => true;
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap({
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     return {
-      ...super.toMap(),
+      ...super.toMap(
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
       'text': text,
       'colorMode': LayerBackgroundMode.values[colorMode.index].name,
       'color': color.toHex(),
       'background': background.toHex(),
-      'colorPickerPosition': colorPickerPosition ?? 0,
+      'colorPickerPosition':
+          colorPickerPosition?.roundSmart(maxDecimalPlaces) ?? 0,
       'align': align.name,
-      'fontScale': fontScale,
+      'fontScale': fontScale.roundSmart(maxDecimalPlaces),
       'type': 'text',
-      if (maxTextWidth != null) 'maxTextWidth': maxTextWidth,
+      if (maxTextWidth != null)
+        'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
       if (customSecondaryColor) 'customSecondaryColor': customSecondaryColor,
       if (textStyle?.fontFamily != null) 'fontFamily': textStyle?.fontFamily,
       if (textStyle?.fontStyle != null) 'fontStyle': textStyle?.fontStyle!.name,
       if (textStyle?.fontWeight != null)
         'fontWeight': textStyle?.fontWeight!.value,
       if (textStyle?.letterSpacing != null)
-        'letterSpacing': textStyle?.letterSpacing,
-      if (textStyle?.height != null) 'height': textStyle?.height,
-      if (textStyle?.wordSpacing != null) 'wordSpacing': textStyle?.wordSpacing,
+        'letterSpacing': textStyle?.letterSpacing?.roundSmart(maxDecimalPlaces),
+      if (textStyle?.height != null)
+        'height': textStyle?.height?.roundSmart(maxDecimalPlaces),
+      if (textStyle?.wordSpacing != null)
+        'wordSpacing': textStyle?.wordSpacing?.roundSmart(maxDecimalPlaces),
       if (textStyle?.decoration != null)
         'decoration': textStyle?.decoration.toString(),
     };
   }
 
   @override
-  Map<String, dynamic> toMapFromReference(Layer layer) {
+  Map<String, dynamic> toMapFromReference(
+    Layer layer, {
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     var paintLayer = layer as TextLayer;
     return {
-      ...super.toMapFromReference(layer),
+      ...super.toMapFromReference(
+        layer,
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
       if (paintLayer.text != text) 'text': text,
-      if (paintLayer.fontScale != fontScale) 'fontScale': fontScale,
+      if (paintLayer.fontScale != fontScale)
+        'fontScale': fontScale.roundSmart(maxDecimalPlaces),
       if (paintLayer.color != color) 'color': color.toHex(),
       if (paintLayer.background != background) 'background': background.toHex(),
       if (paintLayer.colorPickerPosition != colorPickerPosition)
-        'colorPickerPosition': colorPickerPosition ?? 0,
+        'colorPickerPosition':
+            colorPickerPosition?.roundSmart(maxDecimalPlaces) ?? 0,
       if (paintLayer.colorMode.name != colorMode.name)
         'colorMode': LayerBackgroundMode.values[colorMode.index].name,
       if (paintLayer.customSecondaryColor != customSecondaryColor)
@@ -254,14 +274,15 @@ class TextLayer extends Layer {
       if (paintLayer.textStyle?.fontWeight != textStyle?.fontWeight)
         'fontWeight': textStyle?.fontWeight!.value,
       if (paintLayer.textStyle?.letterSpacing != textStyle?.letterSpacing)
-        'letterSpacing': textStyle?.letterSpacing,
+        'letterSpacing': textStyle?.letterSpacing?.roundSmart(maxDecimalPlaces),
       if (paintLayer.textStyle?.height != textStyle?.height)
-        'height': textStyle?.height,
+        'height': textStyle?.height?.roundSmart(maxDecimalPlaces),
       if (paintLayer.textStyle?.wordSpacing != textStyle?.wordSpacing)
-        'wordSpacing': textStyle?.wordSpacing,
+        'wordSpacing': textStyle?.wordSpacing?.roundSmart(maxDecimalPlaces),
       if (paintLayer.textStyle?.decoration != textStyle?.decoration)
         'decoration': textStyle?.decoration.toString(),
-      if (paintLayer.maxTextWidth != maxTextWidth) 'maxTextWidth': maxTextWidth,
+      if (paintLayer.maxTextWidth != maxTextWidth)
+        'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
     };
   }
 }

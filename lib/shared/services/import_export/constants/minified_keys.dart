@@ -33,7 +33,6 @@ const Map<String, String> kMinifiedLayerKeys = {
   'scale': 's',
   'flipX': 'fx',
   'flipY': 'fy',
-  'isDeleted': 'de',
   'groupId': 'g',
   'type': 't',
   'emoji': 'e',

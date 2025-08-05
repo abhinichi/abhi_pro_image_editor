@@ -15,7 +15,6 @@ void main() {
       expect(layer.scale, 1);
       expect(layer.flipX, false);
       expect(layer.flipY, false);
-      expect(layer.isDeleted, false);
       expect(layer.meta, isNull);
       expect(layer.boxConstraints, isNull);
       expect(layer.interaction, isA<LayerInteraction>());
@@ -31,7 +30,6 @@ void main() {
         'scale': 2.0,
         'flipX': true,
         'flipY': false,
-        'isDeleted': true,
         'meta': {'key': 'value'},
         'interaction': {'movable': true},
         'boxConstraints': {
@@ -50,7 +48,6 @@ void main() {
       expect(layer.scale, 2.0);
       expect(layer.flipX, true);
       expect(layer.flipY, false);
-      expect(layer.isDeleted, true);
       expect(layer.meta, {'key': 'value'});
       expect(layer.boxConstraints, isNotNull);
       expect(layer.boxConstraints!.minWidth, 50.0);
@@ -66,7 +63,6 @@ void main() {
         scale: 2.0,
         flipX: true,
         flipY: false,
-        isDeleted: true,
         meta: {'key': 'value'},
         boxConstraints: const BoxConstraints(
           minWidth: 50.0,
@@ -84,7 +80,6 @@ void main() {
       expect(map['scale'], 2.0);
       expect(map['flipX'], true);
       expect(map['flipY'], false);
-      expect(map['isDeleted'], true);
       expect(map['meta'], {'key': 'value'});
       expect(map['boxConstraints'], isNotNull);
       expect(map['boxConstraints']['minWidth'], 50.0);
@@ -103,7 +98,6 @@ void main() {
         scale: 2.0,
         flipX: true,
         flipY: false,
-        isDeleted: true,
         meta: {'custom': 'value'},
         interaction: LayerInteraction(
           enableEdit: true,

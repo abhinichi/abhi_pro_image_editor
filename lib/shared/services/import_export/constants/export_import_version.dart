@@ -37,8 +37,15 @@ class ExportImportVersion {
   static const version_6_2_0 = '6.2.0';
 
   /// The version string representing version `6.3.0` which is used in the
-  /// editor version >= `11.0.0`.
+  /// editor version >= `11.0.0` && < `11.1.0`.
   static const version_6_3_0 = '6.3.0';
+
+  /// The version string representing version `6.4.0` which is used in the
+  /// editor version >= `11.1.0`.
+  static const version_6_4_0 = '6.4.0';
+
+  /// Represents the latest version of the export/import functionality.
+  static const latest = ExportImportVersion.version_6_4_0;
 }
 
 /// An extension on the `String` class that provides functionality
