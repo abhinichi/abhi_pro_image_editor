@@ -1479,7 +1479,6 @@ class ProImageEditorState extends State<ProImageEditor>
   /// After closing the paint editor, any changes made are applied to the
   /// image's layers.
   void openPaintEditor() async {
-    final prePaintHistoryIndex = stateManager.historyPointer;
     var paintCallbacks =
         callbacks.paintEditorCallbacks ?? const PaintEditorCallbacks();
     var overridenPaintCallbacks = paintCallbacks.copyWith(
@@ -1536,35 +1535,18 @@ class ProImageEditorState extends State<ProImageEditor>
         autoCorrectZoomOffset: false,
         autoCorrectZoomScale: false,
       );
-
-      // 🧠 (Optional) Store the paint action pointer
-      _lastPaintSessionHistoryIndex = prePaintHistoryIndex;
-
-      _selectLayerAfterHeroIsDone(newPaintLayers.last.id);
-      _takeScreenshot();
     }
-
-
-    // if (paintItemLayers != null && paintItemLayers.isNotEmpty) {
-    //   // Merge existing layers with new paint layers
-    //   final newLayers = [...activeLayers, ...paintItemLayers];
-    //
-    //   // Add a single history entry for all paint changes
-    //   addHistory(
-    //     layers: newLayers,
-    //     blockCaptureScreenshot: false,
-    //   );
-    //
-    //   _selectLayerAfterHeroIsDone(paintItemLayers.last.id);
-    //   setState(() {});
-    //   mainEditorCallbacks?.handleUpdateUI();
-    // }
+    for (Layer layer in result.removedLayers) {
+      removeLayer(layer, blockCaptureScreenshot: true);
+    }
 
     if (lastLayerId.isNotEmpty) {
       _selectLayerAfterHeroIsDone(lastLayerId);
     }
-  _takeScreenshot(replaceLastScreenshot: true);    setState(() {});
-      mainEditorCallbacks?.handleUpdateUI();
+
+    _takeScreenshot(replaceLastScreenshot: true);
+    setState(() {});
+    mainEditorCallbacks?.handleUpdateUI();
   }
 
   /// Opens the text editor.
