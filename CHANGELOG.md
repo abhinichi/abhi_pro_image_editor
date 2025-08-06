@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.1.1
+- **FIX**(web-build): Fix web-build failure caused by int64 values. This resolves issue [#612](https://github.com/hm21/pro_image_editor/issues/612).
+
 ## 11.1.0
 - **FEAT**(import-export): Improved minifier with configurable decimal rounding and boolean value minification.
 
