@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '/core/constants/int_constants.dart';
 import '/core/platform/io/io_helper.dart';
 import '/shared/services/import_export/types/widget_loader.dart';
 import '/shared/utils/parser/int_parser.dart';
@@ -38,7 +39,6 @@ class WidgetLayer extends Layer {
     super.flipY,
     super.interaction,
     this.exportConfigs = const WidgetLayerExportConfigs(),
-    super.isDeleted,
     super.meta,
     super.boxConstraints,
     super.key,
@@ -121,7 +121,6 @@ class WidgetLayer extends Layer {
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
-      isDeleted: layer.isDeleted,
       meta: layer.meta,
       groupId: layer.groupId,
       widget: widget,
@@ -149,11 +148,18 @@ class WidgetLayer extends Layer {
   /// augmented with the specified [recordPosition] indicating the position of
   /// the widget in a list.
   @override
-  Map<String, dynamic> toMap([int? recordPosition]) {
+  Map<String, dynamic> toMap({
+    int? recordPosition,
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     var exportConfigMap = exportConfigs.toMap();
 
     return {
-      ...super.toMap(),
+      ...super.toMap(
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
       if (recordPosition != null) 'recordPosition': recordPosition,
       if (exportConfigMap.isNotEmpty) 'exportConfigs': exportConfigMap,
       'type': 'widget',
@@ -161,9 +167,17 @@ class WidgetLayer extends Layer {
   }
 
   @override
-  Map<String, dynamic> toMapFromReference(Layer layer) {
+  Map<String, dynamic> toMapFromReference(
+    Layer layer, {
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     return {
-      ...super.toMapFromReference(layer),
+      ...super.toMapFromReference(
+        layer,
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
     };
   }
 

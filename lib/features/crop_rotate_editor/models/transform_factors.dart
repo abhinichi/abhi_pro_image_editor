@@ -3,9 +3,12 @@ import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 
+import '/core/constants/int_constants.dart';
 import '/features/crop_rotate_editor/enums/crop_rotate_angle_side.dart';
 import '/features/crop_rotate_editor/utils/rotate_angle.dart';
 import '/pro_image_editor.dart';
+import '/shared/extensions/export_bool_extension.dart';
+import '/shared/extensions/num_extension.dart';
 
 /// A class representing configuration settings for image transformation.
 ///
@@ -235,30 +238,34 @@ class TransformConfigs {
   ///
   /// This method returns a map representation of the transformation settings,
   /// suitable for serialization or debugging.
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap({
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     if (isEmpty) return {};
     return {
-      'angle': angle,
+      'angle': angle.roundSmart(maxDecimalPlaces),
       'cropRect': {
-        'left': cropRect.left,
-        'top': cropRect.top,
-        'right': cropRect.right,
-        'bottom': cropRect.bottom,
+        'left': cropRect.left.roundSmart(maxDecimalPlaces),
+        'top': cropRect.top.roundSmart(maxDecimalPlaces),
+        'right': cropRect.right.roundSmart(maxDecimalPlaces),
+        'bottom': cropRect.bottom.roundSmart(maxDecimalPlaces),
       },
       'originalSize': {
-        'width': originalSize.width,
-        'height': originalSize.height,
+        'width': originalSize.width.roundSmart(maxDecimalPlaces),
+        'height': originalSize.height.roundSmart(maxDecimalPlaces),
       },
-      'cropEditorScreenRatio': cropEditorScreenRatio,
-      'scaleUser': scaleUser,
-      'scaleRotation': scaleRotation,
-      'aspectRatio': aspectRatio,
-      'flipX': flipX,
-      'flipY': flipY,
+      'cropEditorScreenRatio':
+          cropEditorScreenRatio.roundSmart(maxDecimalPlaces),
+      'scaleUser': scaleUser.roundSmart(maxDecimalPlaces),
+      'scaleRotation': scaleRotation.roundSmart(maxDecimalPlaces),
+      'aspectRatio': aspectRatio.roundSmart(maxDecimalPlaces),
+      'flipX': flipX.minify(enableMinify),
+      'flipY': flipY.minify(enableMinify),
       'cropMode': (cropMode ?? CropMode.rectangular).name,
       'offset': {
-        'dx': offset.dx,
-        'dy': offset.dy,
+        'dx': offset.dx.roundSmart(maxDecimalPlaces),
+        'dy': offset.dy.roundSmart(maxDecimalPlaces),
       },
     };
   }

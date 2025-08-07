@@ -330,7 +330,6 @@ class LayerInteractionManager {
         scale: originalLayer.scale,
         flipX: originalLayer.flipX,
         flipY: originalLayer.flipY,
-        isDeleted: originalLayer.isDeleted,
         meta: originalLayer.meta,
         boxConstraints: originalLayer.boxConstraints,
       )..groupId = originalLayer.groupId;
@@ -345,7 +344,6 @@ class LayerInteractionManager {
         scale: originalLayer.scale,
         flipX: originalLayer.flipX,
         flipY: originalLayer.flipY,
-        isDeleted: originalLayer.isDeleted,
         meta: originalLayer.meta,
         boxConstraints: originalLayer.boxConstraints,
       )..groupId = originalLayer.groupId;
@@ -362,7 +360,6 @@ class LayerInteractionManager {
         scale: originalLayer.scale,
         flipX: originalLayer.flipX,
         flipY: originalLayer.flipY,
-        isDeleted: originalLayer.isDeleted,
         meta: originalLayer.meta,
         boxConstraints: originalLayer.boxConstraints,
       )..groupId = originalLayer.groupId;
@@ -378,7 +375,6 @@ class LayerInteractionManager {
         scale: originalLayer.scale,
         flipX: originalLayer.flipX,
         flipY: originalLayer.flipY,
-        isDeleted: originalLayer.isDeleted,
         meta: originalLayer.meta,
         boxConstraints: originalLayer.boxConstraints,
       )..groupId = originalLayer.groupId;
@@ -394,7 +390,6 @@ class LayerInteractionManager {
       scale: originalLayer.scale,
       flipX: originalLayer.flipX,
       flipY: originalLayer.flipY,
-      isDeleted: originalLayer.isDeleted,
       meta: originalLayer.meta,
       boxConstraints: originalLayer.boxConstraints,
       groupId: originalLayer.groupId,

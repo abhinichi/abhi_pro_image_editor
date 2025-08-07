@@ -1,6 +1,10 @@
 import 'package:flutter/widgets.dart';
 
+import '/core/constants/int_constants.dart';
 import '/shared/extensions/color_extension.dart';
+import '/shared/extensions/export_bool_extension.dart';
+import '/shared/extensions/num_extension.dart';
+import '/shared/utils/parser/bool_parser.dart';
 import '/shared/utils/parser/double_parser.dart';
 import '/shared/utils/unique_id_generator.dart';
 import '../enums/paint_editor_enum.dart';
@@ -36,7 +40,7 @@ class PaintedModel {
       color: Color(map[keyConverter('color')]),
       strokeWidth:
           safeParseDouble(map[keyConverter('strokeWidth')], fallback: 1),
-      fill: map[keyConverter('fill')] ?? false,
+      fill: safeParseBool(map[keyConverter('fill')]),
       opacity: safeParseDouble(map[keyConverter('opacity')], fallback: 1),
     );
   }
@@ -140,14 +144,20 @@ class PaintedModel {
   }
 
   /// Converts the PaintedModel instance into a map.
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap({
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     /// List to hold the offset points as maps.
-    List<Map<String, double>> offsetMaps = [];
+    List<Map<String, num>> offsetMaps = [];
 
     /// Iterate over the offsets and add them to the list as maps.
     for (var offset in offsets) {
       if (offset != null) {
-        offsetMaps.add({'x': offset.dx, 'y': offset.dy});
+        offsetMaps.add({
+          'x': offset.dx.roundSmart(maxDecimalPlaces),
+          'y': offset.dy.roundSmart(maxDecimalPlaces),
+        });
       }
     }
 
@@ -156,9 +166,9 @@ class PaintedModel {
       'mode': mode.name,
       'offsets': offsetMaps,
       'color': color.toHex(),
-      'strokeWidth': strokeWidth,
-      'opacity': opacity,
-      'fill': fill,
+      'strokeWidth': strokeWidth.roundSmart(maxDecimalPlaces),
+      'opacity': opacity.roundSmart(maxDecimalPlaces),
+      'fill': fill.minify(enableMinify),
     };
   }
 
