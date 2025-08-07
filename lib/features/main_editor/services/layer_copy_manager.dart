@@ -123,7 +123,6 @@ class LayerCopyManager {
         alpha: layer.color.a,
       ),
       colorMode: layer.colorMode,
-      colorPickerPosition: layer.colorPickerPosition,
       offset: Offset(
         layer.offset.dx + offset.dx,
         layer.offset.dy + offset.dy,

@@ -43,8 +43,6 @@ class BarColorPicker extends StatefulWidget {
     this.thumbRadius = 6,
     this.color = const Color(0xffff0000),
     this.thumbColor = Colors.black,
-    this.onPositionChange,
-    this.initPosition,
     this.padding = const EdgeInsets.only(left: 10, right: 5),
     this.animationDuration = const Duration(milliseconds: 200),
     required this.colorListener,
@@ -74,13 +72,6 @@ class BarColorPicker extends StatefulWidget {
 
   /// The color to be displayed.
   final Color color;
-
-  /// Callback function that is called when the thumb position changes.
-  final ValueChanged<double>? onPositionChange;
-
-  /// The initial position of the thumb in the bar. If not provided, it will be
-  /// estimated based on the gradient and an initial color.
-  final double? initPosition;
 
   /// Image editor configurations.
   final ProImageEditorConfigs configs;
@@ -177,8 +168,7 @@ class _BarColorPickerState extends State<BarColorPicker>
     }
 
     // Initialize 'percent' based on 'initPosition' or target 'initialColor'.
-    percent = widget.initPosition ??
-        _estimateColorPositionInGradient(colors, widget.color);
+    percent = _estimateColorPositionInGradient(colors, widget.color);
   }
 
   /// Estimates the position of a color within the gradient.
@@ -245,7 +235,6 @@ class _BarColorPickerState extends State<BarColorPicker>
   /// Gets the color at a specific position within the gradient.
   Color _getColorAtPosition(Gradient gradient, double position) {
     // Ensure the position is within the valid range
-    widget.onPositionChange?.call(position);
     position = position.clamp(0.0, 1.0);
 
     if (position < 0) {

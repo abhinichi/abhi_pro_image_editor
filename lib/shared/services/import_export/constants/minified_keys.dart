@@ -45,7 +45,6 @@ const Map<String, String> kMinifiedLayerKeys = {
   'colorMode': 'cm',
   'color': 'c',
   'background': 'b',
-  'colorPickerPosition': 'cp',
   'align': 'a',
   'fontScale': 'f',
   'customSecondaryColor': 'cs',
