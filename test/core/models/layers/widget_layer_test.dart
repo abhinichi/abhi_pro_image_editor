@@ -27,7 +27,7 @@ void main() {
         offset: const Offset(10, 20),
       );
 
-      final map = layer.toMap(1);
+      final map = layer.toMap(recordPosition: 1);
 
       expect(map['type'], 'widget');
       expect(map['recordPosition'], 1);

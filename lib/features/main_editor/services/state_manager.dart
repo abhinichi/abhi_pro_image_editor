@@ -89,14 +89,6 @@ class StateManager {
         .tuneAdjustments;
 
     activeLayers = _stateHistory[historyPointer].layers;
-    /* activeHistory.where((item) => item.layers != null).forEach((entry) {
-      for (var layer in entry.layers!) {
-        _activeLayers.removeWhere((el) => el.id == layer.id);
-        if (!layer.isDeleted) {
-          _activeLayers.add(layer);
-        }
-      }
-    }); */
 
     _transformConfigs = activeHistory
             .lastWhere((item) => item.transformConfigs != null,

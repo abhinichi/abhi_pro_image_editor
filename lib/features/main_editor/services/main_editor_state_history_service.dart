@@ -100,7 +100,6 @@ class MainEditorStateHistoryService {
       editorConfigs: this.configs,
       stateHistory: stateManager.stateHistory,
       imageInfos: imageInfos,
-      imgSize: sizesManager.decodedImageSize,
       editorPosition: stateManager.historyPointer,
       configs: configs,
       contentRecorderCtrl: controllers.screenshot,

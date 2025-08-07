@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:pro_image_editor/core/constants/int_constants.dart';
 import 'package:pro_image_editor/core/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/core/models/history/state_history.dart';
 import 'package:pro_image_editor/core/models/layers/layer.dart';
@@ -21,10 +22,19 @@ class DummyLayer extends Layer {
   DummyLayer(String id) : super(id: id, scale: 1.0);
 
   @override
-  Map<String, dynamic> toMap() => {'id': id, 'scale': scale};
+  Map<String, dynamic> toMap({
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) =>
+      {'id': id, 'scale': scale};
 
   @override
-  Map<String, dynamic> toMapFromReference(Layer reference) => toMap();
+  Map<String, dynamic> toMapFromReference(
+    Layer reference, {
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) =>
+      toMap();
 }
 
 void main() {
@@ -32,7 +42,6 @@ void main() {
     late ProImageEditorConfigs editorConfigs;
     late List<EditorStateHistory> stateHistory;
     late ImageInfos imageInfos;
-    late Size imgSize;
     late int editorPosition;
     late MockContentRecorderController contentRecorderCtrl;
     late MockBuildContext context;
@@ -62,7 +71,6 @@ void main() {
         pixelRatio: 1,
         isRotated: false,
       );
-      imgSize = const Size(100, 200);
       editorPosition = 1;
       contentRecorderCtrl = MockContentRecorderController();
       context = MockBuildContext();
@@ -73,7 +81,6 @@ void main() {
         editorConfigs: editorConfigs,
         stateHistory: stateHistory,
         imageInfos: imageInfos,
-        imgSize: imgSize,
         editorPosition: editorPosition,
         contentRecorderCtrl: contentRecorderCtrl,
         context: context,
@@ -89,7 +96,6 @@ void main() {
         editorConfigs: editorConfigs,
         stateHistory: stateHistory,
         imageInfos: imageInfos,
-        imgSize: imgSize,
         editorPosition: editorPosition,
         contentRecorderCtrl: contentRecorderCtrl,
         context: context,
@@ -108,7 +114,6 @@ void main() {
         editorConfigs: editorConfigs,
         stateHistory: stateHistory,
         imageInfos: imageInfos,
-        imgSize: imgSize,
         editorPosition: editorPosition,
         contentRecorderCtrl: contentRecorderCtrl,
         context: context,
@@ -127,7 +132,6 @@ void main() {
         editorConfigs: editorConfigs,
         stateHistory: stateHistory,
         imageInfos: imageInfos,
-        imgSize: imgSize,
         editorPosition: editorPosition,
         contentRecorderCtrl: contentRecorderCtrl,
         context: context,
@@ -145,7 +149,6 @@ void main() {
         editorConfigs: editorConfigs,
         stateHistory: stateHistory,
         imageInfos: imageInfos,
-        imgSize: imgSize,
         editorPosition: editorPosition,
         contentRecorderCtrl: contentRecorderCtrl,
         context: context,

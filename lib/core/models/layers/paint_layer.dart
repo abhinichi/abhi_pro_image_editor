@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 
+import '/core/constants/int_constants.dart';
 import '/features/paint_editor/models/painted_model.dart';
+import '/shared/extensions/num_extension.dart';
 import '/shared/services/import_export/utils/key_minifier.dart';
 import '/shared/utils/parser/double_parser.dart';
 import 'layer.dart';
@@ -38,7 +40,6 @@ class PaintLayer extends Layer {
     super.flipX,
     super.flipY,
     super.interaction,
-    super.isDeleted,
     super.meta,
     super.boxConstraints,
     super.key,
@@ -64,7 +65,6 @@ class PaintLayer extends Layer {
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
-      isDeleted: layer.isDeleted,
       meta: layer.meta,
       groupId: layer.groupId,
       opacity: safeParseDouble(map[keyConverter('opacity')], fallback: 1.0),
@@ -96,29 +96,50 @@ class PaintLayer extends Layer {
   bool get isPaintLayer => true;
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap({
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     return {
-      ...super.toMap(),
-      'item': item.toMap(),
+      ...super.toMap(
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
+      'item': item.toMap(
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
       'rawSize': {
-        'w': rawSize.width,
-        'h': rawSize.height,
+        'w': rawSize.width.roundSmart(maxDecimalPlaces),
+        'h': rawSize.height.roundSmart(maxDecimalPlaces),
       },
-      'opacity': opacity,
+      'opacity': opacity.roundSmart(maxDecimalPlaces),
       'type': 'paint',
     };
   }
 
   @override
-  Map<String, dynamic> toMapFromReference(Layer layer) {
+  Map<String, dynamic> toMapFromReference(
+    Layer layer, {
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     var paintLayer = layer as PaintLayer;
     return {
-      ...super.toMapFromReference(layer),
-      if (paintLayer.item != item) 'item': item.toMap(),
+      ...super.toMapFromReference(
+        layer,
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
+      if (paintLayer.item != item)
+        'item': item.toMap(
+          maxDecimalPlaces: maxDecimalPlaces,
+          enableMinify: enableMinify,
+        ),
       if (paintLayer.rawSize != rawSize)
         'rawSize': {
-          'w': rawSize.width,
-          'h': rawSize.height,
+          'w': rawSize.width.roundSmart(maxDecimalPlaces),
+          'h': rawSize.height.roundSmart(maxDecimalPlaces),
         },
       if (paintLayer.opacity != opacity) 'opacity': opacity,
     };
