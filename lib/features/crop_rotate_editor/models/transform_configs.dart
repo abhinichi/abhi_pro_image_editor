@@ -48,7 +48,7 @@ class TransformConfigs {
     required this.flipX,
     required this.flipY,
     required this.offset,
-    this.cropMode,
+    this.cropMode = CropMode.rectangular,
   });
 
   /// Creates a [TransformConfigs] instance from a map.
@@ -102,6 +102,7 @@ class TransformConfigs {
       flipX: false,
       flipY: false,
       offset: const Offset(0, 0),
+      cropMode: CropMode.rectangular,
     );
   }
 
@@ -109,7 +110,7 @@ class TransformConfigs {
   ///
   /// This determines how the crop operation behaves, such as oval or
   /// rectangular.
-  final CropMode? cropMode;
+  final CropMode cropMode;
 
   /// Returns `true` if the current crop mode is set to rectangular cropping.
   ///
@@ -263,7 +264,7 @@ class TransformConfigs {
       'aspectRatio': aspectRatio.roundSmart(maxDecimalPlaces),
       'flipX': flipX.minify(enableMinify),
       'flipY': flipY.minify(enableMinify),
-      'cropMode': (cropMode ?? CropMode.rectangular).name,
+      'cropMode': cropMode.name,
       'offset': {
         'dx': offset.dx.roundSmart(maxDecimalPlaces),
         'dy': offset.dy.roundSmart(maxDecimalPlaces),
@@ -324,6 +325,37 @@ class TransformConfigs {
           originalHeight / heightScale,
         ) /
         scaleUser;
+  }
+
+  /// Creates a copy of this [TransformConfigs] object with the given fields
+  /// replaced by new values.
+  TransformConfigs copyWith({
+    CropMode? cropMode,
+    Offset? offset,
+    double? angle,
+    double? scaleUser,
+    double? scaleRotation,
+    double? aspectRatio,
+    bool? flipX,
+    bool? flipY,
+    Rect? cropRect,
+    Size? originalSize,
+    double? cropEditorScreenRatio,
+  }) {
+    return TransformConfigs(
+      cropMode: cropMode ?? this.cropMode,
+      offset: offset ?? this.offset,
+      angle: angle ?? this.angle,
+      scaleUser: scaleUser ?? this.scaleUser,
+      scaleRotation: scaleRotation ?? this.scaleRotation,
+      aspectRatio: aspectRatio ?? this.aspectRatio,
+      flipX: flipX ?? this.flipX,
+      flipY: flipY ?? this.flipY,
+      cropRect: cropRect ?? this.cropRect,
+      originalSize: originalSize ?? this.originalSize,
+      cropEditorScreenRatio:
+          cropEditorScreenRatio ?? this.cropEditorScreenRatio,
+    );
   }
 
   @override
