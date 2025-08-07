@@ -675,6 +675,8 @@ class ProImageEditorState extends State<ProImageEditor>
     double? blur,
     bool heroScreenshotRequired = false,
     bool blockCaptureScreenshot = false,
+    bool isBGRemoved = false,
+    bool isAutoTuned = false,
   }) {
     List<Layer> activeLayerList = _layerCopyManager.copyLayerList(activeLayers);
 
@@ -688,6 +690,8 @@ class ProImageEditorState extends State<ProImageEditor>
                 : activeLayerList),
         filters: filters ?? [],
         tuneAdjustments: tuneAdjustments ?? [],
+        isBGRemoved: isBGRemoved,
+        isAutoTuned: isAutoTuned,
       ),
       historyLimit: stateHistoryConfigs.stateHistoryLimit,
       enableScreenshotLimit: imageGenerationConfigs.enableBackgroundGeneration,
