@@ -161,19 +161,16 @@ class _RoundedBackgroundTextFieldState
       left: 0,
       right: 0,
       child: IgnorePointer(
-        child: Padding(
-          padding: _padding,
-          child: RoundedBackgroundText.rich(
-            text: _textController.buildTextSpan(
-              context: context,
-              withComposing: true,
-              style: style,
-            ),
-            maxTextWidth: widget.maxTextWidth,
-            cursorWidth: widget.cursorWidth,
-            textAlign: widget.textAlign,
-            backgroundColor: widget.backgroundColor,
+        child: RoundedBackgroundText.rich(
+          text: _textController.buildTextSpan(
+            context: context,
+            withComposing: true,
+            style: style,
           ),
+          maxTextWidth: widget.maxTextWidth - widget.cursorWidth,
+          cursorWidth: widget.cursorWidth,
+          textAlign: widget.textAlign,
+          backgroundColor: widget.backgroundColor,
         ),
       ),
     );
@@ -236,7 +233,7 @@ class _RoundedBackgroundTextFieldState
     }
 
     return Padding(
-      padding: _padding,
+      padding: EdgeInsets.zero,
       child: Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: _textController.text.isEmpty
