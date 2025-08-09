@@ -20,6 +20,7 @@ class RoundedBackgroundTextField extends StatefulWidget {
     required this.backgroundColor,
     required this.textAlign,
     required this.focusNode,
+    this.maxTextWidth = double.infinity,
     this.cursorWidth = 2.0,
     this.cursorHeight,
     this.cursorRadius,
@@ -69,6 +70,10 @@ class RoundedBackgroundTextField extends StatefulWidget {
 
   /// {@macro flutter.widgets.editableText.cursorHeight}
   final double? cursorHeight;
+
+  /// The maximum width the text is allowed to occupy. If null, the text can
+  /// expand freely.
+  final double maxTextWidth;
 
   /// {@macro flutter.widgets.editableText.cursorRadius}
   final Radius? cursorRadius;
@@ -164,6 +169,7 @@ class _RoundedBackgroundTextFieldState
               withComposing: true,
               style: style,
             ),
+            maxTextWidth: widget.maxTextWidth,
             cursorWidth: widget.cursorWidth,
             textAlign: widget.textAlign,
             backgroundColor: widget.backgroundColor,

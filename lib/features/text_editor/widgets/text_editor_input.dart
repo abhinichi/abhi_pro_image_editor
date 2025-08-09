@@ -157,6 +157,7 @@ class _TextEditorInputState extends State<TextEditorInput> {
         tag: widget.heroTag ?? 'Text-Image-Editor-Empty-Hero',
         child: RoundedBackgroundTextField(
           key: const ValueKey('rounded-background-text-editor-field'),
+          maxTextWidth: widget.maxWidth - 16,
           controller: widget.textCtrl,
           focusNode: widget.focusNode,
           onChanged: (value) {
