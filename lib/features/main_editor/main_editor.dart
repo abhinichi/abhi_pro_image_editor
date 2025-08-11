@@ -554,7 +554,9 @@ class ProImageEditorState extends State<ProImageEditor>
     } else {
       stateManager.addHistory(
         EditorStateHistory(
-          transformConfigs: TransformConfigs.empty(),
+          transformConfigs: TransformConfigs.empty().copyWith(
+            cropMode: cropRotateEditorConfigs.initialCropMode,
+          ),
           blur: 0,
           layers: [],
           filters: [],
@@ -1274,7 +1276,7 @@ class ProImageEditorState extends State<ProImageEditor>
     TextLayer? updatedLayer = await openPage(
       TextEditor(
         key: textEditor,
-        layer: layerData,
+        layer: _layerCopyManager.copyLayer(layerData) as TextLayer,
         heroTag: layerData.id,
         configs: configs,
         theme: _theme,
@@ -1288,15 +1290,21 @@ class ProImageEditorState extends State<ProImageEditor>
       duration: const Duration(milliseconds: 250),
     );
 
-    if (updatedLayer == null || !mounted) return;
+    if (!mounted || updatedLayer == null) return;
 
     updatedLayer
       ..id = layerData.id
+      ..key = layerData.key
+      ..keyInternalSize = layerData.keyInternalSize
       ..flipX = layerData.flipX
       ..flipY = layerData.flipY
       ..offset = layerData.offset
       ..scale = layerData.scale
-      ..rotation = layerData.rotation;
+      ..rotation = layerData.rotation
+      ..boxConstraints = layerData.boxConstraints
+      ..groupId = layerData.groupId
+      ..interaction = layerData.interaction
+      ..meta = layerData.meta;
 
     if (updatedLayer.text.isEmpty) {
       removeLayer(layerData);
@@ -1304,10 +1312,7 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     int i = activeLayers.indexWhere((element) => element.id == layerData.id);
-    if (i >= 0) activeLayers[i] = updatedLayer;
-
-    setState(() {});
-    mainEditorCallbacks?.handleUpdateUI();
+    replaceLayer(index: i, layer: updatedLayer);
   }
 
   void _editPaintLayer(PaintLayer layer) async {

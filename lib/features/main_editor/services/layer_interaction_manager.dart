@@ -317,7 +317,6 @@ class LayerInteractionManager {
         colorMode: originalLayer.colorMode,
         color: originalLayer.color,
         background: originalLayer.background,
-        colorPickerPosition: originalLayer.colorPickerPosition,
         align: originalLayer.align,
         fontScale: originalLayer.fontScale,
         customSecondaryColor: originalLayer.customSecondaryColor,

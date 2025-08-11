@@ -14,8 +14,6 @@ class TextLayer extends Layer {
   ///
   /// The [text] parameter specifies the text content of the layer.
   /// The [colorMode] parameter sets the color mode for the text.
-  /// The [colorPickerPosition] parameter sets the position of the color picker
-  /// (if applicable).
   /// The [color] parameter specifies the text color (default is Colors.white).
   /// The [background] parameter defines the background color for the text
   /// (default is Colors.transparent).
@@ -31,7 +29,6 @@ class TextLayer extends Layer {
     this.hit = false,
     this.textStyle,
     this.colorMode = LayerBackgroundMode.backgroundAndColor,
-    this.colorPickerPosition,
     this.color = const Color(0xFF000000),
     this.background = const Color(0xFFFFFFFF),
     this.align = TextAlign.left,
@@ -109,8 +106,6 @@ class TextLayer extends Layer {
     double? height = tryParseDouble(map[keyConverter('height')]);
     double? letterSpacing = tryParseDouble(map[keyConverter('letterSpacing')]);
     double? fontScale = tryParseDouble(map[keyConverter('fontScale')]) ?? 1.0;
-    double? colorPickerPosition =
-        tryParseDouble(map[keyConverter('colorPickerPosition')]) ?? 0.0;
     int? fontWeight = tryParseInt(map[keyConverter('fontWeight')]);
     String? fontStyle = map[keyConverter('fontStyle')] as String?;
     String? decoration = map[keyConverter('decoration')] as String?;
@@ -158,7 +153,6 @@ class TextLayer extends Layer {
           (element) => element.name == map[keyConverter!('colorMode')]),
       color: Color(map[keyConverter('color')]),
       background: Color(map[keyConverter('background')]),
-      colorPickerPosition: colorPickerPosition,
       align: TextAlign.values
           .firstWhere((element) => element.name == map[keyConverter!('align')]),
       customSecondaryColor: map[keyConverter('customSecondaryColor')] ?? false,
@@ -182,9 +176,6 @@ class TextLayer extends Layer {
 
   /// This flag define if the secondary color is manually set.
   bool customSecondaryColor;
-
-  /// The position of the color picker (if applicable).
-  double? colorPickerPosition;
 
   /// The text alignment within the layer.
   TextAlign align;
@@ -219,8 +210,6 @@ class TextLayer extends Layer {
       'colorMode': LayerBackgroundMode.values[colorMode.index].name,
       'color': color.toHex(),
       'background': background.toHex(),
-      'colorPickerPosition':
-          colorPickerPosition?.roundSmart(maxDecimalPlaces) ?? 0,
       'align': align.name,
       'fontScale': fontScale.roundSmart(maxDecimalPlaces),
       'type': 'text',
@@ -260,9 +249,6 @@ class TextLayer extends Layer {
         'fontScale': fontScale.roundSmart(maxDecimalPlaces),
       if (paintLayer.color != color) 'color': color.toHex(),
       if (paintLayer.background != background) 'background': background.toHex(),
-      if (paintLayer.colorPickerPosition != colorPickerPosition)
-        'colorPickerPosition':
-            colorPickerPosition?.roundSmart(maxDecimalPlaces) ?? 0,
       if (paintLayer.colorMode.name != colorMode.name)
         'colorMode': LayerBackgroundMode.values[colorMode.index].name,
       if (paintLayer.customSecondaryColor != customSecondaryColor)

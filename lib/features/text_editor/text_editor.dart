@@ -79,9 +79,6 @@ class TextEditorState extends State<TextEditor>
   /// Mode for managing the background color of the text layer.
   late LayerBackgroundMode backgroundColorMode;
 
-  /// Position of the color picker.
-  double colorPosition = 0;
-
   /// Represents the dimensions of the body.
   Size editorBodySize = Size.infinite;
 
@@ -158,7 +155,6 @@ class TextEditorState extends State<TextEditor>
             ? widget.layer!.background
             : widget.layer!.color;
       }
-      colorPosition = widget.layer!.colorPickerPosition ?? 0;
     }
   }
 
@@ -312,7 +308,6 @@ class TextEditorState extends State<TextEditor>
         align: align,
         fontScale: _fontScale,
         colorMode: backgroundColorMode,
-        colorPickerPosition: colorPosition,
         textStyle: selectedTextStyle,
         customSecondaryColor: _secondaryColor != null,
         maxTextWidth:
@@ -427,18 +422,15 @@ class TextEditorState extends State<TextEditor>
 
   Widget _buildColorPicker() {
     return TextEditorColorPicker(
-        state: this,
-        configs: configs,
-        colorPosition: colorPosition,
-        primaryColor: primaryColor,
-        rebuildController: _rebuildController,
-        selectedTextStyle: selectedTextStyle,
-        onUpdateColor: (color) {
-          primaryColor = color;
-        },
-        onPositionChange: (value) {
-          colorPosition = value;
-        });
+      state: this,
+      configs: configs,
+      primaryColor: primaryColor,
+      rebuildController: _rebuildController,
+      selectedTextStyle: selectedTextStyle,
+      onUpdateColor: (color) {
+        primaryColor = color;
+      },
+    );
   }
 
   /// Builds the text field for text input.

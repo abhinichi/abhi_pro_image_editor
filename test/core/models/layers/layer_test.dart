@@ -166,7 +166,6 @@ void main() {
         boxConstraints: const BoxConstraints(minWidth: 1, maxWidth: 500),
         color: Colors.blue,
         colorMode: LayerBackgroundMode.backgroundAndColor,
-        colorPickerPosition: 10,
         customSecondaryColor: true,
         flipX: true,
         flipY: false,
