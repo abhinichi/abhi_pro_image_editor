@@ -1023,11 +1023,11 @@ class ProImageEditorState extends State<ProImageEditor>
       }
       stateManager.activeBackgroundImage = image;
     } else {
+      addHistory();
       stateManager.updateBackgroundImages(
         oldImage: editorImage ?? widget.editorImage!,
         newImage: image,
       );
-      addHistory();
     }
 
     await decodeImage();
