@@ -1,5 +1,14 @@
 # Changelog
 
+## 11.3.0
+- **FEAT**(text-editor): Replace `EditableText` with `TextField` to enhance text selection and overall input handling.
+
+## 11.2.3
+- **FIX**(multiselect): Resolve issue where layers could still be selected even when `enableSelection` for the layer was set to `false`. This resolves issue [#628](https://github.com/hm21/pro_image_editor/issues/628).
+
+## 11.2.2
+- **FIX**(main-editor): Resolve issue where the `replaceLayer` function broke the logic that ensured layers resized correctly when the screen size changed. This resolves issue [#624](https://github.com/hm21/pro_image_editor/issues/624) and issue [#626](https://github.com/hm21/pro_image_editor/issues/626).
+
 ## 11.2.1
 - **FIX**(state-history): Resolve issue where updating the background-image overwrote previous states.
 
