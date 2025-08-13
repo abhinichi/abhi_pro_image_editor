@@ -1354,9 +1354,9 @@ class ProImageEditorState extends State<ProImageEditor>
     if (layerInteractionManager.layersAreSelectable(configs) &&
         layerInteraction.initialSelected) {
       if (isSubEditorOpen) await _pageOpenCompleter.future;
-        layerInteractionManager.addSelectedLayer(id);
-        _checkInteractiveViewer();
-        _controllers.uiLayerCtrl.add(null);
+      layerInteractionManager.addSelectedLayer(id);
+      _checkInteractiveViewer();
+      _controllers.uiLayerCtrl.add(null);
     }
   }
 
@@ -2360,7 +2360,7 @@ class ProImageEditorState extends State<ProImageEditor>
   Layer? selectLayerById(String id, {bool enableMultiSelect = false}) {
     int index = activeLayers.indexWhere((layer) => layer.id == id);
     if (index == -1) return null;
-    
+
     Layer? layer = activeLayers[index];
 
     // Check if the layer allows selection
