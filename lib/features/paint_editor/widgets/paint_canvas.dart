@@ -1,5 +1,6 @@
 // Dart imports:
 import 'dart:async';
+import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
@@ -216,6 +217,21 @@ class PaintCanvasState extends State<PaintCanvas> {
     _createPainting(offsets);
   }
 
+  Offset _rotatePoint(Offset point, Offset center, double angle) {
+    if (angle == 0) return point;
+
+    final double cosAngle = cos(angle);
+    final double sinAngle = sin(angle);
+
+    final Offset translated = point - center;
+
+    return Offset(
+          translated.dx * cosAngle - translated.dy * sinAngle,
+          translated.dx * sinAngle + translated.dy * cosAngle,
+        ) +
+        center;
+  }
+
   void _processEraserInput(ScaleUpdateDetails details) {
     List<String> removeIds = [];
     final Offset focalPoint = details.localFocalPoint;
@@ -230,7 +246,6 @@ class PaintCanvasState extends State<PaintCanvas> {
 
     for (var layer in widget.layers) {
       if (!layer.isPaintLayer) continue;
-
       final paintLayer = layer as PaintLayer;
       final layerScale = paintLayer.scale;
       Offset position = focalPoint - editorHalfSize;
@@ -241,8 +256,15 @@ class PaintCanvasState extends State<PaintCanvas> {
       position -= paintLayer.offset * stackScale;
 
       if (_isPartialEraser) {
+        // Apply inverse rotation to get the correct position in layer space
+        final double rotation = paintLayer.rotation;
+        final Offset center =
+            Offset(scaledRawSize.width, scaledRawSize.height) / 2;
+        final Offset rotatedPosition =
+            _rotatePoint(position, center, -rotation);
+
         layer.item.erasedOffsets
-          ..add(position)
+          ..add(rotatedPosition / layerScale)
           ..toSet()
           ..toList();
         layer.item = layer.item.copy();
