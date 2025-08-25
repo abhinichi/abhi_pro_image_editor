@@ -1248,6 +1248,14 @@ class ProImageEditorState extends State<ProImageEditor>
       if (!_layerDragSelectionService.isActive) {
         interactiveViewer.currentState?.onScaleEnd(details);
       }
+
+      /// On mobile when layers are not selectable we check if a layer was
+      /// transformed.
+      if (!isDesktop &&
+          layerInteractionManager.layerWasTransformed &&
+          layerInteraction.selectable != LayerInteractionSelectable.enabled) {
+        _takeScreenshot(replaceLastScreenshot: true);
+      }
     } else {
       /// At this point, we only create a screenshot since the new history
       /// entry was already added in [_onScaleStart].
@@ -1316,6 +1324,8 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   void _editPaintLayer(PaintLayer layer) async {
+    if (layer.isPaintLayer && layer.item.isCensorArea) return;
+
     PaintLayer? result = await showModalBottomSheet<PaintLayer>(
       context: context,
       backgroundColor: paintEditorConfigs.style.editSheetBackgroundColor,
@@ -1535,6 +1545,8 @@ class ProImageEditorState extends State<ProImageEditor>
     String lastLayerId = '';
     for (var i = 0; i < result.layers.length; i++) {
       final layer = result.layers[i];
+      final oldIndex = activeLayers.indexWhere((el) => el.id == layer.id);
+
       final duplicatedLayer = _layerCopyManager.duplicateLayer(
         layer,
         offset: Offset.zero,
@@ -1542,6 +1554,7 @@ class ProImageEditorState extends State<ProImageEditor>
       lastLayerId = duplicatedLayer.id;
       addLayer(
         duplicatedLayer,
+        removeLayerIndex: oldIndex,
         blockSelectLayer: true,
         blockCaptureScreenshot: true,
         autoCorrectZoomOffset: false,
