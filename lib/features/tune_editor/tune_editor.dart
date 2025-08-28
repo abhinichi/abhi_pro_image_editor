@@ -610,10 +610,10 @@ class TuneEditorState extends State<TuneEditor>
       onSelect: (index) {
         setState(() {
           selectedIndex = index;
-          // if (selectedIndex == 0) {
-          //   showLoader = true;
-          //   Future.delayed(const Duration(milliseconds: 600), applyAutoTune);
-          // }
+          if (selectedIndex == 0) {
+            showLoader = true;
+            Future.delayed(const Duration(milliseconds: 600), applyAutoTune);
+          }
         });
       },
       selectedIndex: selectedIndex,
