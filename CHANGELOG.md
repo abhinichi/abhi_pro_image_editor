@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.5.5
+- **FIX**(video-trim-bar): Resolve issue where `maxDuration` displayed an incorrect time span when its value exceeded the video duration. Resolves issue [#648](https://github.com/hm21/pro_image_editor/issues/648).
+
 ## 11.5.4
 - **FIX**(iOS): Fixes scroll glitch in the bottom bar. Resolves issue [#640](https://github.com/hm21/pro_image_editor/issues/640).
 
