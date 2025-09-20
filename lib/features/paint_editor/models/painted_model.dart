@@ -226,6 +226,7 @@ class PaintedModel {
         other.strokeWidth == strokeWidth &&
         other.opacity == opacity &&
         other.fill == fill &&
+        other.id == id &&
         areOffsetsEqual(other.offsets, offsets) &&
         areOffsetsEqual(other.erasedOffsets, erasedOffsets);
   }
