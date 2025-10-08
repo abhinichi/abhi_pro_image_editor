@@ -1358,22 +1358,25 @@ class ProImageEditorState extends State<ProImageEditor>
   void _editPaintLayer(PaintLayer layer) async {
     if (layer.isPaintLayer && layer.item.isCensorArea) return;
 
-    PaintLayer? result = await showModalBottomSheet<PaintLayer>(
-      context: context,
-      backgroundColor: paintEditorConfigs.style.editSheetBackgroundColor,
-      showDragHandle: paintEditorConfigs.style.editSheetShowDragHandle,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (context) =>
-          paintEditorConfigs.widgets.editBottomSheet?.call(layer) ??
-          SafeArea(
-            child: PaintEditorLayerEditor(
-              layer: _layerCopyManager.duplicateLayer(layer,
-                  offset: Offset.zero) as PaintLayer,
-              configs: configs,
-            ),
-          ),
-    );
+    PaintLayer? result =
+        await (callbacks.paintEditorCallbacks?.onEditLayer?.call(layer) ??
+            showModalBottomSheet<PaintLayer>(
+              context: context,
+              backgroundColor:
+                  paintEditorConfigs.style.editSheetBackgroundColor,
+              showDragHandle: paintEditorConfigs.style.editSheetShowDragHandle,
+              isScrollControlled: true,
+              useSafeArea: true,
+              builder: (context) =>
+                  paintEditorConfigs.widgets.editBottomSheet?.call(layer) ??
+                  SafeArea(
+                    child: PaintEditorLayerEditor(
+                      layer: _layerCopyManager.duplicateLayer(layer,
+                          offset: Offset.zero) as PaintLayer,
+                      configs: configs,
+                    ),
+                  ),
+            ));
 
     if (result == null) return;
 
