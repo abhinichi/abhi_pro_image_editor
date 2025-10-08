@@ -1,4 +1,7 @@
 # Changelog
+## 11.8.0
+- **FEAT**(callbacks): Add `onEditLayer` to `PaintEditorCallbacks`, allowing custom paint-layer editing logic (e.g., via a side menu). This was requested in [#673](https://github.com/hm21/pro_image_editor/issues/673).
+- **FEAT**(layers): Add `copyWith` method to all layer classes for easier cloning and modification.
 
 ## 11.7.0
 - **FEAT**(sub-editors): Add `enableGesturePop` config to all sub-editors to control whether user back navigation (hardware back button, predictive back swipe) is allowed.
