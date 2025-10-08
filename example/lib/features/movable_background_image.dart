@@ -320,6 +320,17 @@ class _MovableBackgroundImageExampleState
                   MediaQuery.devicePixelRatioOf(context)),
             ),
             mainEditor: MainEditorConfigs(
+              /// Crop-Rotate, Filter, Tune and Blur editors are not supported
+              tools: [
+                SubEditorMode.paint,
+                SubEditorMode.text,
+                // SubEditorMode.cropRotate,
+                // SubEditorMode.tune,
+                // SubEditorMode.filter,
+                // SubEditorMode.blur,
+                SubEditorMode.emoji,
+                // SubEditorMode.sticker,
+              ],
               enableCloseButton: !isDesktopMode(context),
               widgets: MainEditorWidgets(
                 bodyItems: (editor, rebuildStream) {
@@ -378,14 +389,7 @@ class _MovableBackgroundImageExampleState
                 background: Colors.transparent,
               ),
             ),
-
-            /// Crop-Rotate, Filter and Blur editors are not supported
-            cropRotateEditor: const CropRotateEditorConfigs(enabled: false),
-            filterEditor: const FilterEditorConfigs(enabled: false),
-            blurEditor: const BlurEditorConfigs(enabled: false),
-
             stickerEditor: StickerEditorConfigs(
-              enabled: false,
               initWidth: (_editorSize.aspectRatio > _imgRatio
                       ? _editorSize.height
                       : _editorSize.width) /

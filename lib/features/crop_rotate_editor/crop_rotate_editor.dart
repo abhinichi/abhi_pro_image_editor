@@ -1,3 +1,6 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+// TODO: Remove the deprecated values when releasing version 12.0.0.
+
 // Dart imports:
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -378,6 +381,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   bool _isVideoPlayerReady = true;
 
+  /// Defines which crop-rotate tools are available in the editor.
+  late List<CropRotateTool> tools = [...cropRotateEditorConfigs.tools];
+
   @override
   void initState() {
     super.initState();
@@ -460,6 +466,21 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     // Perform post-frame initialization
     cropRotateEditorCallbacks?.onInit?.call();
+
+    // TODO: Remove when releasing version 12.0.0.
+    tools.removeWhere((el) {
+      switch (el) {
+        case CropRotateTool.rotate:
+          return !cropRotateEditorConfigs.showRotateButton;
+        case CropRotateTool.flip:
+          return !cropRotateEditorConfigs.showFlipButton;
+        case CropRotateTool.aspectRatio:
+          return !cropRotateEditorConfigs.showAspectRatioButton;
+        case CropRotateTool.reset:
+          return !cropRotateEditorConfigs.showResetButton;
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       cropRotateEditorCallbacks?.onAfterViewInit?.call();
       initialized = true;
@@ -2183,15 +2204,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
           .call(this, rebuildController.stream);
     }
 
-    return cropRotateEditorConfigs.showRotateButton ||
-            cropRotateEditorConfigs.showFlipButton ||
-            cropRotateEditorConfigs.showAspectRatioButton ||
-            cropRotateEditorConfigs.showResetButton
+    return tools.isNotEmpty
         ? CropEditorBottombar(
             bottomBarScrollCtrl: _bottomBarScrollCtrl,
             i18n: i18n.cropRotateEditor,
             configs: cropRotateEditorConfigs,
             theme: theme,
+            tools: tools,
             onRotate: rotate,
             onFlip: flip,
             onOpenAspectRatioOptions: openAspectRatioOptions,
