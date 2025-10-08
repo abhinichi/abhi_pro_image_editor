@@ -309,14 +309,12 @@ void main() {
               onImageEditingComplete: (Uint8List bytes) async {},
             ),
             configs: ProImageEditorConfigs(
-              paintEditor: const PaintEditorConfigs(enabled: false),
-              textEditor: const TextEditorConfigs(enabled: false),
-              cropRotateEditor: const CropRotateEditorConfigs(enabled: false),
-              emojiEditor: const EmojiEditorConfigs(
-                enabled: false,
+              mainEditor: const MainEditorConfigs(
+                tools: [
+                  SubEditorMode.sticker,
+                ],
               ),
               stickerEditor: StickerEditorConfigs(
-                enabled: true,
                 builder: (setLayer, scrollController) =>
                     Container(key: widgetKey),
                 style: StickerEditorStyle(

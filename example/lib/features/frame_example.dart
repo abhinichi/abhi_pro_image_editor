@@ -306,6 +306,17 @@ class _FrameExampleState extends State<FrameExample>
             selectable: LayerInteractionSelectable.disabled,
           ),
           mainEditor: MainEditorConfigs(
+            /// Crop-Rotate, Filter, Tune and Blur editors are not supported
+            tools: [
+              SubEditorMode.paint,
+              SubEditorMode.text,
+              // SubEditorMode.cropRotate,
+              // SubEditorMode.tune,
+              // SubEditorMode.filter,
+              // SubEditorMode.blur,
+              SubEditorMode.emoji,
+              // SubEditorMode.sticker,
+            ],
             enableCloseButton: !isDesktopMode(context),
             widgets: MainEditorWidgets(
               bodyItemsRecorded: (editor, rebuildStream) => [
@@ -338,46 +349,36 @@ class _FrameExampleState extends State<FrameExample>
                   SystemUiOverlayStyle(statusBarColor: Colors.black),
             ),
           ),
-
-          /// Crop-Rotate, Filter, Tune and Blur editors are not supported
           cropRotateEditor: const CropRotateEditorConfigs(
-            enabled: false,
 
-            /// widgets: CropRotateEditorWidgets(
-            ///   bodyItems: (editor, rebuildStream) => [
-            ///     _buildFrame(editor.editorBodySize, rebuildStream),
-            ///   ],
-            /// ),
-          ),
+              /// widgets: CropRotateEditorWidgets(
+              ///   bodyItems: (editor, rebuildStream) => [
+              ///     _buildFrame(editor.editorBodySize, rebuildStream),
+              ///   ],
+              /// ),
+              ),
           filterEditor: const FilterEditorConfigs(
-            enabled: false,
-
-            /// widgets: FilterEditorWidgets(
-            ///   bodyItemsRecorded: (editor, rebuildStream) => [
-            ///     _buildFrame(editor.editorBodySize, rebuildStream),
-            ///   ],
-            /// ),
-          ),
+              // widgets: FilterEditorWidgets(
+              //   bodyItemsRecorded: (editor, rebuildStream) => [
+              //     _buildFrame(editor.editorBodySize, rebuildStream),
+              //   ],
+              // ),
+              ),
           blurEditor: const BlurEditorConfigs(
-            enabled: false,
-
-            /// widgets: BlurEditorWidgets(
-            ///   bodyItemsRecorded: (editor, rebuildStream) => [
-            ///     _buildFrame(editor.editorBodySize, rebuildStream),
-            ///   ],
-            /// ),
-          ),
+              // widgets: BlurEditorWidgets(
+              //   bodyItemsRecorded: (editor, rebuildStream) => [
+              //     _buildFrame(editor.editorBodySize, rebuildStream),
+              //   ],
+              // ),
+              ),
           tuneEditor: const TuneEditorConfigs(
-            enabled: false,
-
-            /// widgets: TuneEditorWidgets(
-            ///   bodyItemsRecorded: (editor, rebuildStream) => [
-            ///     _buildFrame(editor.editorBodySize, rebuildStream),
-            ///   ],
-            /// ),
-          ),
+              // widgets: TuneEditorWidgets(
+              //   bodyItemsRecorded: (editor, rebuildStream) => [
+              //     _buildFrame(editor.editorBodySize, rebuildStream),
+              //   ],
+              // ),
+              ),
           stickerEditor: StickerEditorConfigs(
-            enabled: false,
             initWidth: _layerInitWidth / _initScale,
             builder: (setLayer, scrollController) {
               // Optionally your code to pick layers

@@ -15,7 +15,6 @@ import '/shared/factories/editor_mapper.dart';
 import '/shared/services/content_recorder/controllers/content_recorder_controller.dart';
 import '/shared/utils/decode_image.dart';
 import '/shared/widgets/overlays/loading_dialog/loading_dialog.dart';
-import '../enums/editor_mode.dart';
 import '../models/editor_callbacks/pro_image_editor_callbacks.dart';
 import '../models/editor_configs/pro_image_editor_configs.dart';
 import '../models/editor_image.dart';

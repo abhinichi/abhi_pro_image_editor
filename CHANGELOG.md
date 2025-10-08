@@ -1,4 +1,10 @@
 # Changelog
+
+## 11.9.0
+- **FEAT**(main-editor): Introduced `tools` in `MainEditorConfigs` to configure available sub-editors and their order, replacing old `enableModeX` flags with a cleaner list-based API.  
+- **FEAT**(paint-editor): Introduced `tools` in `PaintEditorConfigs` to define available paint modes and their order, deprecating individual `enableModeX` flags.  
+- **FEAT**(crop-rotate-editor): Introduced `tools` in `CropRotateEditorConfigs` with a new `CropRotateTool` enum for rotate, flip, aspect ratio, and reset actions, deprecating the old `showXButton` flags.  
+
 ## 11.8.0
 - **FEAT**(callbacks): Add `onEditLayer` to `PaintEditorCallbacks`, allowing custom paint-layer editing logic (e.g., via a side menu). This was requested in [#673](https://github.com/hm21/pro_image_editor/issues/673).
 - **FEAT**(layers): Add `copyWith` method to all layer classes for easier cloning and modification.
