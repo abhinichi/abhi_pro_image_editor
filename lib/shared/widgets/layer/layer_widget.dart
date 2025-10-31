@@ -412,7 +412,6 @@ class _LayerWidgetState extends State<LayerWidget>
       case LayerWidgetType.canvas:
         content = LayerWidgetPaintItem(
           layer: _layer as PaintLayer,
-          scale: _layer.scale,
           isSelected: _isSelected,
           enableHitDetection:
               _layerInteractionManager?.enabledHitDetection ?? false,
