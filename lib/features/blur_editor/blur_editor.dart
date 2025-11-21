@@ -19,8 +19,9 @@ import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
-import '../crop_rotate_editor/models/transform_factors.dart';
+import '../crop_rotate_editor/models/transform_configs.dart';
 import '../filter_editor/widgets/filtered_widget.dart';
+import '../tune_editor/models/tune_adjustment_matrix.dart';
 import 'widgets/blur_editor_appbar.dart';
 
 /// The `BlurEditor` widget allows users to apply blur to images.
@@ -205,10 +206,9 @@ class BlurEditorState extends State<BlurEditor>
       returnValue: blurFactor,
       editorImage: widget.editorImage,
       blur: blurFactor,
-      colorFilters: [
-        ...appliedFilters,
-        ...appliedTuneAdjustments.map((item) => item.matrix),
-      ],
+      matrixFilterList: appliedFilters,
+      matrixTuneAdjustmentsList:
+          appliedTuneAdjustments.map((item) => item.matrix).toList(),
       transform: initialTransformConfigs,
     );
     blurEditorCallbacks?.handleDone();
@@ -365,5 +365,35 @@ class BlurEditorState extends State<BlurEditor>
       onChanged: _onChanged,
       onChangedEnd: _onChangedEnd,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<BlurEditorInitConfigs>(
+        'initConfigs',
+        widget.initConfigs,
+      ))
+      ..add(DiagnosticsProperty<EditorImage?>(
+        'editorImage',
+        widget.editorImage,
+      ))
+      ..add(DiagnosticsProperty<ProVideoController?>(
+        'videoController',
+        widget.videoController,
+      ))
+      ..add(DoubleProperty(
+        'blurFactor',
+        blurFactor,
+      ))
+      ..add(IterableProperty<List<double>>(
+        'appliedFilters',
+        appliedFilters,
+      ))
+      ..add(IterableProperty<TuneAdjustmentMatrix>(
+        'appliedTuneAdjustments',
+        appliedTuneAdjustments,
+      ));
   }
 }

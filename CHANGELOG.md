@@ -1,5 +1,121 @@
 # Changelog
 
+## 11.5.6
+- **FIX**(image-generation): Resolve issue where updating the background image could throw an error when exporting the image. Resolves issue [#652](https://github.com/hm21/pro_image_editor/issues/652).
+
+## 11.5.5
+- **FIX**(video-trim-bar): Resolve issue where `maxDuration` displayed an incorrect time span when its value exceeded the video duration. Resolves issue [#648](https://github.com/hm21/pro_image_editor/issues/648).
+
+## 11.5.4
+- **FIX**(iOS): Fixes scroll glitch in the bottom bar. Resolves issue [#640](https://github.com/hm21/pro_image_editor/issues/640).
+
+## 11.5.3
+- **FIX**(video-editor): Fixed issue where state history import didn't work in the video editor. Resolves video-editor discussion [#50](https://github.com/hm21/pro_video_editor/discussions/50).
+
+## 11.5.2
+- **FEAT**(style): Add missing `editSheetColor` to paint-editor styles.
+
+## 11.5.1
+- **FIX**(recorder): Fix slow image generation after transforming layers when layer-selection is disabled.
+- **FIX**(emoji-picker): Fix null error in the console from the emoji picker. Resolves issue [#642](https://github.com/hm21/pro_image_editor/issues/642).
+- **FEAT**(debug): Add extensive `debugFillProperties` for better debugging.
+
+## 11.5.0
+- **FEAT**(eraser): The eraser in the PaintEditor now removes only partial areas of the painting by default, instead of the entire object. This behavior can be adjusted in the PaintEditorConfigs using `eraserMode` and `eraserSize`.
+
+## 11.4.1
+- **REFACTOR**(flutter): Fix deprecated APIs after upgrading to flutter `3.35.0`.
+
+## 11.4.0
+- **REFACTOR**(flutter): Adapt the code to make it compatible with Flutter `3.35.0`.
+
+## 11.3.0
+- **FEAT**(text-editor): Replace `EditableText` with `TextField` to enhance text selection and overall input handling.
+
+## 11.2.3
+- **FIX**(multiselect): Resolve issue where layers could still be selected even when `enableSelection` for the layer was set to `false`. This resolves issue [#628](https://github.com/hm21/pro_image_editor/issues/628).
+
+## 11.2.2
+- **FIX**(main-editor): Resolve issue where the `replaceLayer` function broke the logic that ensured layers resized correctly when the screen size changed. This resolves issue [#624](https://github.com/hm21/pro_image_editor/issues/624) and issue [#626](https://github.com/hm21/pro_image_editor/issues/626).
+
+## 11.2.1
+- **FIX**(state-history): Resolve issue where updating the background-image overwrote previous states.
+
+## 11.2.0
+- **FEAT**(state-history): Added support for undo and redo when the background image is changed in the state history.
+
+## 11.1.3
+- **FIX**(text-editor): Fixed an issue where long text didn’t wrap correctly.
+- **FIX**(video-editor): Fixed display issues with the trim bar, especially for maximum and minimum durations.
+
+## 11.1.2
+- **REFACTOR**(text-layer): Remove `colorPickerPosition` from `TextLayer` and related widgets.
+- **FIX**(import/export): Resolve issue of import/export crashing when the minifier is enabled. This resolves issue [#613](https://github.com/hm21/pro_image_editor/issues/613).
+- **FIX**(text-layer): Fixed lag in hero animation.
+- **FIX**(text-layer): Fixed issue where edited text layers didn't update the state history.
+
+## 11.1.1
+- **FIX**(web-build): Fix web-build failure caused by int64 values. This resolves issue [#612](https://github.com/hm21/pro_image_editor/issues/612).
+
+## 11.1.0
+- **FEAT**(import-export): Improved minifier with configurable decimal rounding and boolean value minification.
+
+## 11.0.1
+- **FIX**(video-editor): Resolve incorrect behavior of `maxTrimDuration`.
+
+## 11.0.0
+- **FEAT**(multi-select): Layers can now be selected simultaneously using Ctrl, Shift, or long-press gestures.
+- **FEAT**(grouping): Layers can be grouped for unified selection and movement.
+- **FEAT**(main-editor): Added `selectAllLayers` and `unselectAllLayers` methods for bulk selection control.
+- **FEAT**(main-editor): Introduced `enableMultiSelectMode` to allow instant multi-selection without modifier keys.
+- **FEAT**(drag-selection): Added support for selecting multiple layers by dragging a rectangle around them.
+- **FEAT**(mouse-actions): Added support for different mouse button actions such as pan, multi-select, and drag-select.
+- **FEAT**(layer-configs): Added `enableKeyboardMultiSelection` and `enableLongPressMultiSelection` to `LayerInteractionConfigs` for dynamically enabling or disabling multi-selection via keyboard or long press.
+- **FEAT**(remove-area): Applied `AnimatedSwitcher` to the remove area for smooth fade-in/out transitions.
+- **FEAT**(crop-rotate-editor): Add `enableFlipAnimation` to `CropRotateEditorConfigs`, which enables flip animation by default.
+
+<br/>
+
+- **PERF**(GPU): Improved GPU performance by optimizing transformation and color filter matrices, especially beneficial when multiple filters or tune adjustments are applied.
+- **PERF**(CPU): Replace the `rounded_background_text` package-code with a custom solution that significantly improves the CPU usage required for drawing calculations.
+- **PERF**(RAM): Use cached sizes in the filter editor to display filter previews which reduce RAM usage. 
+
+<br/>
+
+- **FIX**(rounded_background_text): Resolved issue where two text lines with nearly identical widths would not render with correct rounding; now ensures both lines are treated as equally long.
+- **FIX**(crop-rotate-editor): Resolve broken undo/redo functionality in the `CropRotateEditor`.
+
+<br/>
+
+#### Breaking Changes
+- Removed `layerIndex` from `onTapEditSticker` in `StickerEditorCallbacks`.
+- Removed `selectedLayerIndex` from `MainEditor`.
+- Remove `ColorFilterAddons.opacity`.
+- The way the editor handles multiple filters and tune adjustments has changed, so combinations might now appear slightly differently.
+- Removed `enableFreeStyleHighPerformanceScaling`, `enableFreeStyleHighPerformanceMoving` and `enableFreeStyleHighPerformanceHero` from `PaintEditorConfigs`.
+
+## 10.5.4
+- **FEAT**(text-layers): Delete the edited 'TextLayers' if the new text is empty.
+
+## 10.5.3
+- **FIX**(helper-lines): Resolve lint issues after upgrading to `flutter_lints: ^6.0.0`.
+
+## 10.5.2
+- **FIX**(helper-lines): Resolve issue where helper lines are visible when hovering over the layer remove zone. This resolves issue [#561](https://github.com/hm21/pro_image_editor/issues/561).
+
+## 10.5.1
+- **FIX**(import-export): Resolve issue where importing from text layers throws an error and fails.
+
+## 10.5.0
+- **FEAT**(text-editor): Add `enableAutoOverflow` property to `TextEditorConfigs` to automatically wrap text when it exceeds the editor's visible area.
+
+## 10.4.1
+- **FIX**(paint-editor): Resolve issue where custom widgets weren't working in the new paint-layer editor.
+
+## 10.4.0
+- **FEAT**(paint-layer): PaintLayers can now be edited in the main-editor. This adds various new configurations to `I18nPaintEditor`, `PaintEditorConfigs`, `PaintEditorStyle`, and `PaintEditorWidgets`.
+- **FIX**(paint-editor): Resolve issue where setting a color programmatically didn't update the color bar. This resolves issue [#552](https://github.com/hm21/pro_image_editor/issues/552).
+
 ## 10.3.2
 - **FIX**(helper-lines): Resolve issue where layers wouldn't release when positioned very close (1–3 pixels) on the same axis.
 - **FIX**(screen-resize): Resolve issue where layers resize incorrectly after image transformation. This resolves issue [#547](https://github.com/hm21/pro_image_editor/issues/547).

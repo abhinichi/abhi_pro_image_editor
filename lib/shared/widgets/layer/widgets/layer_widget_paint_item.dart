@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '/core/models/layers/paint_layer.dart';
 import '/features/paint_editor/enums/paint_editor_enum.dart';
 import '/features/paint_editor/widgets/draw_paint_item.dart';
-import '/shared/utils/platform_info.dart';
 
 /// A widget representing a paint layer in the sticker editor.
 class LayerWidgetPaintItem extends StatelessWidget {
@@ -12,11 +13,12 @@ class LayerWidgetPaintItem extends StatelessWidget {
   const LayerWidgetPaintItem({
     super.key,
     required this.layer,
-    required this.scale,
-    required this.isSelected,
-    required this.enableHitDetection,
-    required this.isHighPerformanceMode,
-    required this.onHitChanged,
+    this.scale = 1.0,
+    this.isSelected = false,
+    this.enableHitDetection = false,
+    this.willChange = false,
+    this.onHitChanged,
+    required this.paintEditorConfigs,
   });
 
   /// The paint layer represented by this widget.
@@ -28,41 +30,46 @@ class LayerWidgetPaintItem extends StatelessWidget {
   /// Whether the paint layer is currently selected.
   final bool isSelected;
 
+  /// Indicates whether the widget will change frequently, which can be used
+  /// to optimize rendering performance by enabling or disabling certain
+  /// optimizations in the rendering pipeline.
+  final bool willChange;
+
   /// Whether hit detection is enabled for this layer.
   final bool enableHitDetection;
 
-  /// Whether high-performance mode is enabled for free-style drawing.
-  final bool isHighPerformanceMode;
+  /// Configuration settings for the paint editor.
+  final PaintEditorConfigs paintEditorConfigs;
 
   /// Callback function that is triggered when a hit status changes.
   ///
   /// The [onHitChanged] function takes a boolean parameter [hasHit] which
   /// indicates whether a hit has occurred (true) or not (false).
-  final Function(bool hasHit) onHitChanged;
+  final Function(bool hasHit)? onHitChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      // Improves hit detection for mobile devices by adding padding.
-      padding: EdgeInsets.all(isDesktop ? 0 : 15),
-      child: RepaintBoundary(
-        child: Opacity(
-          opacity: layer.opacity,
-          child: CustomPaint(
-            size: layer.size,
-            willChange: false,
-            isComplex: layer.item.mode == PaintMode.freeStyle,
-            painter: DrawPaintItem(
-              item: layer.item,
-              scale: scale,
-              selected: isSelected,
-              enabledHitDetection: enableHitDetection,
-              freeStyleHighPerformance: isHighPerformanceMode,
-              onHitChanged: onHitChanged,
-            ),
-          ),
+    return Opacity(
+      opacity: layer.opacity,
+      child: CustomPaint(
+        size: layer.size,
+        willChange: willChange,
+        isComplex: layer.item.mode == PaintMode.freeStyle,
+        painter: DrawPaintItem(
+          item: layer.item,
+          scale: scale,
+          selected: isSelected,
+          enabledHitDetection: enableHitDetection,
+          onHitChanged: onHitChanged,
+          paintEditorConfigs: paintEditorConfigs,
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    layer.debugFillProperties(properties);
   }
 }

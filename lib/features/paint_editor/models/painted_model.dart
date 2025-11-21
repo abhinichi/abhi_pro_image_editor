@@ -1,6 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '/core/constants/int_constants.dart';
 import '/shared/extensions/color_extension.dart';
+import '/shared/extensions/export_bool_extension.dart';
+import '/shared/extensions/num_extension.dart';
+import '/shared/utils/parser/bool_parser.dart';
 import '/shared/utils/parser/double_parser.dart';
 import '/shared/utils/unique_id_generator.dart';
 import '../enums/paint_editor_enum.dart';
@@ -15,17 +20,13 @@ class PaintedModel {
     keyConverter ??= (String key) => key;
 
     /// List to hold offset points for the paint.
-    List<Offset> offsets = [];
+    final offsets = List.from(map[keyConverter('offsets')] ?? [])
+        .map((el) => Offset(safeParseDouble(el['x']), safeParseDouble(el['y'])))
+        .toList();
 
-    /// Iterate over the offsets in the map and add them to the list.
-    for (var el in List.from(map[keyConverter('offsets')])) {
-      offsets.add(
-        Offset(
-          safeParseDouble(el['x']),
-          safeParseDouble(el['y']),
-        ),
-      );
-    }
+    final erasedOffsets = List.from(map[keyConverter('erasedOffsets')] ?? [])
+        .map((el) => Offset(safeParseDouble(el['x']), safeParseDouble(el['y'])))
+        .toList();
 
     /// Constructs and returns a PaintedModel instance with properties
     /// derived from the map.
@@ -33,10 +34,11 @@ class PaintedModel {
       mode: PaintMode.values
           .firstWhere((element) => element.name == map[keyConverter!('mode')]),
       offsets: offsets,
+      erasedOffsets: erasedOffsets,
       color: Color(map[keyConverter('color')]),
       strokeWidth:
           safeParseDouble(map[keyConverter('strokeWidth')], fallback: 1),
-      fill: map[keyConverter('fill')] ?? false,
+      fill: safeParseBool(map[keyConverter('fill')]),
       opacity: safeParseDouble(map[keyConverter('opacity')], fallback: 1),
     );
   }
@@ -55,6 +57,7 @@ class PaintedModel {
     GlobalKey? key,
     required this.mode,
     required this.offsets,
+    required this.erasedOffsets,
     required this.color,
     required this.strokeWidth,
     required this.opacity,
@@ -77,18 +80,25 @@ class PaintedModel {
   final PaintMode mode;
 
   /// The color used for drawing or filling the shape.
-  final Color color;
+  Color color;
 
   /// The width of the stroke used for drawing.
-  final double strokeWidth;
+  double strokeWidth;
 
   /// The opacity for the drawing.
-  final double opacity;
+  double opacity;
 
   /// A list of offsets representing the points of the shape or drawing.
   /// For shapes like circles and rectangles, it contains two points.
   /// For [FreeStyle], it contains a list of points.
   List<Offset?> offsets;
+
+  /// A list of offset points that have been erased from the painted content.
+  ///
+  /// This list contains the coordinates where eraser tool operations have been
+  /// applied, allowing the system to track which areas of the painted content
+  /// have been removed.
+  List<Offset> erasedOffsets;
 
   /// A boolean indicating whether the drawn shape should be filled.
   bool fill;
@@ -105,18 +115,43 @@ class PaintedModel {
 
   /// Determines whether the shape should be filled based on the paint mode.
   bool get shouldFill {
-    if (mode == PaintMode.circle || mode == PaintMode.rect) {
+    if (canBeFilled) {
       return fill;
     } else {
       return false;
     }
   }
 
+  /// Returns `true` if the current paint mode represents a censoring area.
+  ///
+  /// This getter checks if the painting mode is either blur or pixelate,
+  /// which are typically used for censoring or obscuring content in images.
+  ///
+  /// Returns:
+  ///   - `true` if mode is [PaintMode.blur] or [PaintMode.pixelate]
+  ///   - `false` for all other paint modes
+  bool get isCensorArea => mode == PaintMode.blur || mode == PaintMode.pixelate;
+
+  /// Determines whether the current paint mode supports being filled.
+  ///
+  /// This getter returns `true` if the [mode] is one of the following:
+  /// - [PaintMode.circle]: A circular shape that can be filled.
+  /// - [PaintMode.rect]: A rectangular shape that can be filled.
+  /// - [PaintMode.polygon]: A polygonal shape that can be filled.
+  ///
+  /// Returns `false` for other paint modes that do not support filling.
+  bool get canBeFilled {
+    return mode == PaintMode.circle ||
+        mode == PaintMode.rect ||
+        mode == PaintMode.polygon;
+  }
+
   /// Creates a copy of this PaintedModel instance.
   PaintedModel copy() {
     return PaintedModel(
       mode: mode,
-      offsets: offsets,
+      offsets: [...offsets],
+      erasedOffsets: [...erasedOffsets],
       color: color,
       strokeWidth: strokeWidth,
       fill: fill,
@@ -126,25 +161,33 @@ class PaintedModel {
   }
 
   /// Converts the PaintedModel instance into a map.
-  Map<String, dynamic> toMap() {
-    /// List to hold the offset points as maps.
-    List<Map<String, double>> offsetMaps = [];
-
-    /// Iterate over the offsets and add them to the list as maps.
-    for (var offset in offsets) {
-      if (offset != null) {
-        offsetMaps.add({'x': offset.dx, 'y': offset.dy});
-      }
-    }
+  Map<String, dynamic> toMap({
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
+    final offsetMaps = offsets
+        .whereType<Offset>() // filters out nulls if offsets is List<Offset?>
+        .map((o) => {
+              'x': o.dx.roundSmart(maxDecimalPlaces),
+              'y': o.dy.roundSmart(maxDecimalPlaces),
+            })
+        .toList();
+    final erasedOffsetsMaps = erasedOffsets
+        .map((o) => {
+              'x': o.dx.roundSmart(maxDecimalPlaces),
+              'y': o.dy.roundSmart(maxDecimalPlaces),
+            })
+        .toList();
 
     /// Returns a map representation of the PaintedModel instance.
     return {
       'mode': mode.name,
       'offsets': offsetMaps,
+      'erasedOffsets': erasedOffsetsMaps,
       'color': color.toHex(),
-      'strokeWidth': strokeWidth,
-      'opacity': opacity,
-      'fill': fill,
+      'strokeWidth': strokeWidth.roundSmart(maxDecimalPlaces),
+      'opacity': opacity.roundSmart(maxDecimalPlaces),
+      'fill': fill.minify(enableMinify),
     };
   }
 
@@ -155,13 +198,16 @@ class PaintedModel {
         strokeWidth,
         opacity,
         fill,
-        offsets,
         hit,
         id,
+        Object.hashAll(offsets),
+        Object.hashAll(erasedOffsets),
       );
 
   @override
   bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
     bool areOffsetsEqual(List<Offset?> list1, List<Offset?> list2) {
       if (list1.length != list2.length) return false;
 
@@ -174,14 +220,70 @@ class PaintedModel {
       return true;
     }
 
-    if (identical(this, other)) return true;
-
     return other is PaintedModel &&
         other.mode == mode &&
         other.color == color &&
         other.strokeWidth == strokeWidth &&
         other.opacity == opacity &&
         other.fill == fill &&
-        areOffsetsEqual(other.offsets, offsets);
+        areOffsetsEqual(other.offsets, offsets) &&
+        areOffsetsEqual(other.erasedOffsets, erasedOffsets);
+  }
+
+  /// Creates a copy of this `PaintedModel` with the given fields replaced by
+  /// new values.
+  PaintedModel copyWith({
+    GlobalKey? key,
+    PaintMode? mode,
+    Color? color,
+    double? strokeWidth,
+    double? opacity,
+    List<Offset?>? offsets,
+    List<Offset>? erasedOffsets,
+    bool? fill,
+    bool? hit,
+  }) {
+    return PaintedModel(
+      key: key ?? this.key,
+      mode: mode ?? this.mode,
+      color: color ?? this.color,
+      offsets: offsets ?? this.offsets,
+      erasedOffsets: erasedOffsets ?? this.erasedOffsets,
+      opacity: opacity ?? this.opacity,
+      strokeWidth: strokeWidth ?? this.strokeWidth,
+      fill: fill ?? this.fill,
+      hit: hit ?? this.hit,
+    );
+  }
+
+  /// Fills the given [DiagnosticPropertiesBuilder] with properties of this
+  /// PaintedModel for debugging and development tools.
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    // Core identity
+    properties
+      ..add(StringProperty('id', id))
+      ..add(EnumProperty<PaintMode>('mode', mode))
+
+      // Paint attributes
+      ..add(ColorProperty('color', color))
+      ..add(DoubleProperty('strokeWidth', strokeWidth))
+      ..add(DoubleProperty('opacity', opacity))
+
+      // Flags
+      ..add(DiagnosticsProperty<bool>('fill', fill))
+      ..add(DiagnosticsProperty<bool>('hit', hit))
+      ..add(DiagnosticsProperty<bool>('isCensorArea', isCensorArea))
+      ..add(DiagnosticsProperty<bool>('canBeFilled', canBeFilled))
+
+      // Collections (show sizes instead of dumping all Offsets)
+      ..add(IntProperty('offsetsCount', offsets.length))
+      ..add(IntProperty('erasedOffsetsCount', erasedOffsets.length));
+
+    if (offsets.isNotEmpty && offsets.first != null) {
+      properties.add(DiagnosticsProperty<Offset>('firstOffset', offsets.first));
+    }
+    if (offsets.isNotEmpty && offsets.last != null) {
+      properties.add(DiagnosticsProperty<Offset>('lastOffset', offsets.last));
+    }
   }
 }

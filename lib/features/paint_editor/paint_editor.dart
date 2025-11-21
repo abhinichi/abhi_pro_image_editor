@@ -27,6 +27,7 @@ import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/slider_bottom_sheet.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/filtered_widget.dart';
+import '../main_editor/services/layer_copy_manager.dart';
 import 'controllers/paint_controller.dart';
 import 'models/paint_editor_response_model.dart';
 import 'services/paint_desktop_interaction_manager.dart';
@@ -224,9 +225,6 @@ class PaintEditorState extends State<PaintEditor>
 
   /// A boolean flag representing whether the fill mode is enabled or disabled.
   bool _isFillMode = false;
-
-  /// Controls high-performance for free-style drawing.
-  bool _freeStyleHighPerformance = false;
 
   /// Get the fillBackground status.
   bool get fillBackground => _isFillMode;
@@ -439,9 +437,9 @@ class PaintEditorState extends State<PaintEditor>
       builder: (BuildContext context) => SliderBottomSheet<PaintEditorState>(
         title: i18n.paintEditor.lineWidth,
         headerTextStyle: paintEditorConfigs.style.lineWidthBottomSheetTitle,
-        min: 2,
-        max: 40,
-        divisions: 19,
+        max: configs.paintEditor.maxStrokeWidth,
+        min: configs.paintEditor.minStrokeWidth,
+        divisions: configs.paintEditor.divisionsStrokeWidth,
         closeButton: paintEditorConfigs.widgets.lineWidthCloseButton,
         customSlider: paintEditorConfigs.widgets.sliderLineWidth,
         state: this,
@@ -464,9 +462,9 @@ class PaintEditorState extends State<PaintEditor>
       builder: (BuildContext context) => SliderBottomSheet<PaintEditorState>(
         title: i18n.paintEditor.changeOpacity,
         headerTextStyle: paintEditorConfigs.style.opacityBottomSheetTitle,
-        max: 1,
-        min: 0,
-        divisions: 100,
+        max: paintEditorConfigs.maxOpacity,
+        min: paintEditorConfigs.minOpacity,
+        divisions: paintEditorConfigs.divisionsOpacity,
         closeButton: paintEditorConfigs.widgets.changeOpacityCloseButton,
         customSlider: paintEditorConfigs.widgets.sliderChangeOpacity,
         state: this,
@@ -568,9 +566,17 @@ class PaintEditorState extends State<PaintEditor>
 
         final scale = _layerStackTransformHelper.scale;
 
-        final originalLayers = widget.initConfigs.layers ?? [];
-        final newLayers = activeHistory.layers.where((layer) =>
-            originalLayers.indexWhere((el) => el.id == layer.id) < 0);
+        final originalLayers =
+            (widget.initConfigs.layers ?? []).whereType<PaintLayer>().toList();
+        final newLayers =
+            activeHistory.layers.whereType<PaintLayer>().where((layer) {
+          return originalLayers.indexWhere(
+                (el) =>
+                    el.id == layer.id &&
+                    listEquals(el.item.erasedOffsets, layer.item.erasedOffsets),
+              ) <
+              0;
+        });
         final transformedLayers = newLayers.map((layer) {
           return layer
             ..offset *= scale
@@ -582,10 +588,9 @@ class PaintEditorState extends State<PaintEditor>
         ));
       },
       blur: appliedBlurFactor,
-      colorFilters: [
-        ...appliedFilters,
-        ...appliedTuneAdjustments.map((item) => item.matrix),
-      ],
+      matrixFilterList: appliedFilters,
+      matrixTuneAdjustmentsList:
+          appliedTuneAdjustments.map((item) => item.matrix).toList(),
       transform: initialTransformConfigs,
     );
     paintEditorCallbacks?.handleDone();
@@ -663,6 +668,7 @@ class PaintEditorState extends State<PaintEditor>
     PaintedModel layer = PaintedModel(
       mode: rawLayer.mode,
       offsets: [...rawLayer.offsets],
+      erasedOffsets: [...rawLayer.erasedOffsets],
       color: rawLayer.color,
       strokeWidth: rawLayer.strokeWidth,
       fill: rawLayer.fill,
@@ -732,10 +738,24 @@ class PaintEditorState extends State<PaintEditor>
   }
 
   /// Handles changes in the selected color.
+  @Deprecated('Use [setColor] instead')
   void colorChanged(Color color) {
+    setColor(color);
+  }
+
+  /// Sets the current color for the paint editor.
+  ///
+  /// This method updates the color in the paint controller, triggers the
+  /// UI picker stream to notify listeners, and invokes the callback
+  /// for handling color changes if it is defined.
+  ///
+  /// - Parameters:
+  ///   - color: The new color to be set.
+  void setColor(Color color) {
     paintCtrl.setColor(color);
     uiPickerStream.add(null);
     paintEditorCallbacks?.handleColorChanged();
+    setState(() {});
   }
 
   @override
@@ -844,71 +864,60 @@ class PaintEditorState extends State<PaintEditor>
 
   List<Widget> _buildInteractiveContent() {
     return [
-      Padding(
-        padding: configs.paintEditor.colorPickerPadding ?? EdgeInsets.zero,
-        child: Listener(
-          behavior: HitTestBehavior.translucent,
-          onPointerDown: (details) {
-            bool isDoubleTap = detectDoubleTap(details);
-            if (!isDoubleTap) return;
+      Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (details) {
+          bool isDoubleTap = detectDoubleTap(details);
+          if (!isDoubleTap) return;
 
-            handleDoubleTap(context, details, paintEditorConfigs);
-            paintEditorCallbacks?.onDoubleTap?.call();
+          handleDoubleTap(context, details, paintEditorConfigs);
+          paintEditorCallbacks?.onDoubleTap?.call();
+        },
+        onPointerUp: onPointerUp,
+        child: ExtendedInteractiveViewer(
+          key: interactiveViewer,
+          initialMatrix4: paintEditorConfigs.enableShareZoomMatrix
+              ? initConfigs.initialZoomMatrix
+              : null,
+          zoomConfigs: paintEditorConfigs,
+          enableInteraction: paintMode == PaintMode.moveAndZoom,
+          onInteractionStart: (details) {
+            callbacks.paintEditorCallbacks?.onEditorZoomScaleStart
+                ?.call(details);
+            setState(() {});
           },
-          onPointerUp: onPointerUp,
-          child: ExtendedInteractiveViewer(
-            key: interactiveViewer,
-            initialMatrix4: paintEditorConfigs.enableShareZoomMatrix
-                ? initConfigs.initialZoomMatrix
-                : null,
-            zoomConfigs: paintEditorConfigs,
-            enableInteraction: paintMode == PaintMode.moveAndZoom,
-            onInteractionStart: (details) {
-              _freeStyleHighPerformance = (paintEditorConfigs
-                          .enableFreeStyleHighPerformanceMoving ??
-                      !isDesktop) ||
-                  (paintEditorConfigs.enableFreeStyleHighPerformanceScaling ??
-                      !isDesktop);
+          onInteractionUpdate:
+              callbacks.paintEditorCallbacks?.onEditorZoomScaleUpdate,
+          onInteractionEnd: (details) {
+            callbacks.paintEditorCallbacks?.onEditorZoomScaleEnd?.call(details);
+            setState(() {});
+          },
+          onMatrix4Change:
+              callbacks.paintEditorCallbacks?.onEditorZoomMatrix4Change,
+          child: Stack(
+            alignment: Alignment.center,
+            fit: StackFit.expand,
+            children: [
+              if (initConfigs.convertToUint8List && isVideoEditor)
+                _buildBackground(),
+              ContentRecorder(
+                autoDestroyController: false,
+                controller: screenshotCtrl,
+                child: Stack(
+                  alignment: Alignment.center,
+                  fit: StackFit.expand,
+                  children: [
+                    if (!widget.paintOnly)
+                      if (!initConfigs.convertToUint8List || !isVideoEditor)
+                        _buildBackground()
+                      else
+                        SizedBox(
+                          width: configs.imageGeneration.maxOutputSize.width,
+                          height: configs.imageGeneration.maxOutputSize.height,
+                        ),
 
-              callbacks.paintEditorCallbacks?.onEditorZoomScaleStart
-                  ?.call(details);
-              setState(() {});
-            },
-            onInteractionUpdate:
-                callbacks.paintEditorCallbacks?.onEditorZoomScaleUpdate,
-            onInteractionEnd: (details) {
-              _freeStyleHighPerformance = false;
-              callbacks.paintEditorCallbacks?.onEditorZoomScaleEnd
-                  ?.call(details);
-              setState(() {});
-            },
-            onMatrix4Change:
-                callbacks.paintEditorCallbacks?.onEditorZoomMatrix4Change,
-            child: Stack(
-              alignment: Alignment.center,
-              fit: StackFit.expand,
-              children: [
-                if (initConfigs.convertToUint8List && isVideoEditor)
-                  _buildBackground(),
-                ContentRecorder(
-                  autoDestroyController: false,
-                  controller: screenshotCtrl,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    fit: StackFit.expand,
-                    children: [
-                      if (!widget.paintOnly)
-                        if (!initConfigs.convertToUint8List || !isVideoEditor)
-                          _buildBackground()
-                        else
-                          SizedBox(
-                            width: configs.imageGeneration.maxOutputSize.width,
-                            height:
-                                configs.imageGeneration.maxOutputSize.height,
-                          ),
-
-                      /// Build layers
-  StreamBuilder(
+                    /// Build layers
+                    StreamBuilder(
                       stream: _layerStackStream.stream,
                       builder: (context, asyncSnapshot) {
                         if (!paintEditorConfigs.showLayers ||
@@ -920,21 +929,20 @@ class PaintEditorState extends State<PaintEditor>
                           configs: configs,
                           layers: activeHistory.layers,
                           transformHelper: _layerStackTransformHelper,
-                            overlayColor: paintEditorConfigs.style.background,
-                                clipBehavior: Clip.none,
-                            enableLayerKey: true,
-                                );
-                            },
-                        ),
-                      _buildPainter(),
-                      if (paintEditorConfigs.widgets.bodyItemsRecorded != null)
-                        ...paintEditorConfigs.widgets.bodyItemsRecorded!(
-                            this, rebuildController.stream),
-                    ],
-                  ),
+                          overlayColor: paintEditorConfigs.style.background,
+                          clipBehavior: Clip.none,
+                          enableLayerKey: true,
+                        );
+                      },
+                    ),
+                    _buildPainter(),
+                    if (paintEditorConfigs.widgets.bodyItemsRecorded != null)
+                      ...paintEditorConfigs.widgets.bodyItemsRecorded!(
+                          this, rebuildController.stream),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1001,7 +1009,6 @@ class PaintEditorState extends State<PaintEditor>
       drawAreaSize: mainBodySize ?? editorBodySize,
       editorBodySize: editorBodySize,
       layerStackScaleFactor: _layerStackTransformHelper.scale,
-      freeStyleHighPerformance: _freeStyleHighPerformance,
       layers: activeHistory.layers,
       onTap: (details) =>
           callbacks.paintEditorCallbacks?.onTap?.call(this, details),
@@ -1035,8 +1042,38 @@ class PaintEditorState extends State<PaintEditor>
           takeScreenshot();
         });
       },
-      onStart: () {
+      onRemovePartialStart: () {
+        LayerCopyManager copyManager = LayerCopyManager();
+
+        final updatedList =
+            activeHistory.layers.whereType<PaintLayer>().map((layer) {
+          return copyManager.createCopyPaintLayer(layer);
+        });
+
+        while (canRedo) {
+          stateHistory.removeLast();
+        }
+        stateHistory.add(PaintEditorResponse(
+          layers: [...updatedList],
+          removedLayers: [...activeHistory.removedLayers],
+        ));
+        historyPointer++;
+        setState(() {});
+        WidgetsBinding.instance.drawFrame();
+      },
+      onRemovePartialEnd: (hasRemovedAreas) {
+        if (!hasRemovedAreas) {
+          historyPointer--;
+          stateHistory.removeLast();
+          return;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          takeScreenshot();
+        });
+      },
+      onRefresh: () {
         rebuildController.add(null);
+        _layerStackStream.add(null);
       },
       onCreated: (rawLayer) {
         _uiAppbarStream.add(null);
@@ -1051,5 +1088,36 @@ class PaintEditorState extends State<PaintEditor>
         });
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+
+    properties
+      ..add(
+          DiagnosticsProperty<EditorImage?>('editorImage', widget.editorImage))
+      ..add(DiagnosticsProperty<ProVideoController?>(
+          'videoController', widget.videoController))
+      ..add(DiagnosticsProperty<PaintEditorInitConfigs>(
+          'initConfigs', widget.initConfigs))
+      ..add(FlagProperty('paintOnly',
+          value: widget.paintOnly, ifTrue: 'paint-only mode'))
+      ..add(DiagnosticsProperty<PaintController>('paintCtrl', paintCtrl))
+      ..add(FlagProperty('_isFillMode',
+          value: _isFillMode, ifTrue: 'fill mode enabled'))
+      ..add(FlagProperty('isActive', value: isActive, ifTrue: 'drawing active'))
+      ..add(EnumProperty<PaintMode>('paintMode', paintMode))
+      ..add(ColorProperty('activeColor', activeColor))
+      ..add(DoubleProperty('strokeWidth', strokeWidth))
+      ..add(DoubleProperty('opacity', opacity))
+      ..add(IntProperty('historyPointer', historyPointer))
+      ..add(IntProperty('stateHistoryLength', stateHistory.length))
+      ..add(FlagProperty('canUndo', value: canUndo, ifTrue: 'can undo'))
+      ..add(FlagProperty('canRedo', value: canRedo, ifTrue: 'can redo'))
+      ..add(FlagProperty('_enableZoom',
+          value: _enableZoom, ifTrue: 'zoom enabled'))
+      ..add(FlagProperty('hasFakeHeroBytes',
+          value: _fakeHeroBytes != null, ifTrue: 'fake hero set'));
   }
 }

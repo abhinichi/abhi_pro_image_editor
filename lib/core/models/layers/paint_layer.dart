@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '/core/constants/int_constants.dart';
 import '/features/paint_editor/models/painted_model.dart';
+import '/shared/extensions/num_extension.dart';
 import '/shared/services/import_export/utils/key_minifier.dart';
 import '/shared/utils/parser/double_parser.dart';
 import 'layer.dart';
@@ -38,10 +41,10 @@ class PaintLayer extends Layer {
     super.flipX,
     super.flipY,
     super.interaction,
-    super.isDeleted,
     super.meta,
     super.boxConstraints,
     super.key,
+    super.groupId,
   });
 
   /// Factory constructor for creating a PaintLayer instance from a
@@ -63,8 +66,8 @@ class PaintLayer extends Layer {
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
-      isDeleted: layer.isDeleted,
       meta: layer.meta,
+      groupId: layer.groupId,
       opacity: safeParseDouble(map[keyConverter('opacity')], fallback: 1.0),
       rawSize: Size(
         safeParseDouble(map[keyConverter('rawSize')]?['w'], fallback: 0),
@@ -79,13 +82,13 @@ class PaintLayer extends Layer {
   }
 
   /// The custom-painted item to display on the layer.
-  final PaintedModel item;
+  PaintedModel item;
 
   /// The raw size of the painted item before applying scaling.
   final Size rawSize;
 
   /// The opacity level of the drawing.
-  final double opacity;
+  double opacity;
 
   /// Returns the size of the layer after applying the scaling factor.
   Size get size => Size(rawSize.width * scale, rawSize.height * scale);
@@ -94,31 +97,62 @@ class PaintLayer extends Layer {
   bool get isPaintLayer => true;
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap({
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     return {
-      ...super.toMap(),
-      'item': item.toMap(),
+      ...super.toMap(
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
+      'item': item.toMap(
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
       'rawSize': {
-        'w': rawSize.width,
-        'h': rawSize.height,
+        'w': rawSize.width.roundSmart(maxDecimalPlaces),
+        'h': rawSize.height.roundSmart(maxDecimalPlaces),
       },
-      'opacity': opacity,
+      'opacity': opacity.roundSmart(maxDecimalPlaces),
       'type': 'paint',
     };
   }
 
   @override
-  Map<String, dynamic> toMapFromReference(Layer layer) {
+  Map<String, dynamic> toMapFromReference(
+    Layer layer, {
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     var paintLayer = layer as PaintLayer;
     return {
-      ...super.toMapFromReference(layer),
-      if (paintLayer.item != item) 'item': item.toMap(),
+      ...super.toMapFromReference(
+        layer,
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
+      if (paintLayer.item != item)
+        'item': item.toMap(
+          maxDecimalPlaces: maxDecimalPlaces,
+          enableMinify: enableMinify,
+        ),
       if (paintLayer.rawSize != rawSize)
         'rawSize': {
-          'w': rawSize.width,
-          'h': rawSize.height,
+          'w': rawSize.width.roundSmart(maxDecimalPlaces),
+          'h': rawSize.height.roundSmart(maxDecimalPlaces),
         },
       if (paintLayer.opacity != opacity) 'opacity': opacity,
     };
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('opacity', opacity))
+      ..add(DiagnosticsProperty<Size>('rawSize', rawSize))
+      ..add(DiagnosticsProperty<Size>('size', size));
+    item.debugFillProperties(properties);
   }
 }

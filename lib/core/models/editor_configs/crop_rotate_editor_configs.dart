@@ -7,9 +7,8 @@ import '../custom_widgets/crop_rotate_editor_widgets.dart';
 import '../icons/crop_rotate_editor_icons.dart';
 import '../styles/crop_rotate_editor_style.dart';
 import 'utils/editor_safe_area.dart';
-
 export '/features/crop_rotate_editor/models/rotate_direction.dart';
-export '/features/crop_rotate_editor/models/transform_factors.dart';
+export '/features/crop_rotate_editor/models/transform_configs.dart';
 export '../custom_widgets/crop_rotate_editor_widgets.dart';
 export '../icons/crop_rotate_editor_icons.dart';
 export '../styles/crop_rotate_editor_style.dart';
@@ -49,11 +48,13 @@ class CropRotateEditorConfigs {
     this.enableTransformLayers = true,
     this.enableProvideImageInfos = false,
     this.enableDoubleTap = true,
+    this.enableFlipAnimation = true,
     this.showLayers = true,
     this.initAspectRatio,
     this.rotateAnimationCurve = Curves.decelerate,
     this.scaleAnimationCurve = Curves.decelerate,
     this.cropDragAnimationCurve = Curves.decelerate,
+    this.flipAnimationCurve = Curves.decelerate,
     this.fadeInOutsideCropAreaAnimationCurve = Curves.decelerate,
     this.rotateDirection = RotateDirection.left,
     this.opacityOutsideCropAreaDuration = const Duration(milliseconds: 100),
@@ -113,6 +114,9 @@ class CropRotateEditorConfigs {
 
   /// Enables double-tap zoom functionality when set to true.
   final bool enableDoubleTap;
+
+  /// Enables flip-animation when set to true.
+  final bool enableFlipAnimation;
 
   /// Determines if the mouse scroll direction should be inverted.
   final bool invertMouseScroll;
@@ -183,6 +187,9 @@ class CropRotateEditorConfigs {
   /// The curve used for the rotation animation.
   final Curve rotateAnimationCurve;
 
+  /// The curve used for the flip animation.
+  final Curve flipAnimationCurve;
+
   /// The curve used for the scale animation, which is triggered when the
   /// image needs to resize due to rotation.
   final Curve scaleAnimationCurve;
@@ -232,10 +239,11 @@ class CropRotateEditorConfigs {
     bool? showLayers,
     bool? enableTransformLayers,
     bool? enableDoubleTap,
+    bool? enableFlipAnimation,
     bool? invertMouseScroll,
     bool? invertDragDirection,
-    bool? enableProvideImageInfos,
     CropMode? initialCropMode,
+    bool? enableProvideImageInfos,
     double? initAspectRatio,
     double? maxScale,
     double? mouseScaleFactor,
@@ -247,6 +255,7 @@ class CropRotateEditorConfigs {
     Duration? fadeInOutsideCropAreaAnimationDuration,
     Duration? opacityOutsideCropAreaDuration,
     Curve? rotateAnimationCurve,
+    Curve? flipAnimationCurve,
     Curve? scaleAnimationCurve,
     Curve? cropDragAnimationCurve,
     Curve? fadeInOutsideCropAreaAnimationCurve,
@@ -269,6 +278,7 @@ class CropRotateEditorConfigs {
       enableTransformLayers:
           enableTransformLayers ?? this.enableTransformLayers,
       enableDoubleTap: enableDoubleTap ?? this.enableDoubleTap,
+      enableFlipAnimation: enableFlipAnimation ?? this.enableFlipAnimation,
       invertMouseScroll: invertMouseScroll ?? this.invertMouseScroll,
       invertDragDirection: invertDragDirection ?? this.invertDragDirection,
       initialCropMode: initialCropMode ?? this.initialCropMode,
@@ -289,6 +299,7 @@ class CropRotateEditorConfigs {
       opacityOutsideCropAreaDuration:
           opacityOutsideCropAreaDuration ?? this.opacityOutsideCropAreaDuration,
       rotateAnimationCurve: rotateAnimationCurve ?? this.rotateAnimationCurve,
+      flipAnimationCurve: flipAnimationCurve ?? this.flipAnimationCurve,
       scaleAnimationCurve: scaleAnimationCurve ?? this.scaleAnimationCurve,
       cropDragAnimationCurve:
           cropDragAnimationCurve ?? this.cropDragAnimationCurve,

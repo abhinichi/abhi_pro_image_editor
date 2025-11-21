@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart';
+
+import '/core/constants/int_constants.dart';
 import 'layer.dart';
 
 /// A class representing a layer with emoji content.
@@ -28,10 +31,10 @@ class EmojiLayer extends Layer {
     super.flipX,
     super.flipY,
     super.interaction,
-    super.isDeleted,
     super.meta,
     super.boxConstraints,
     super.key,
+    super.groupId,
   });
 
   /// Factory constructor for creating an EmojiLayer instance from a Layer
@@ -53,8 +56,8 @@ class EmojiLayer extends Layer {
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
-      isDeleted: layer.isDeleted,
       meta: layer.meta,
+      groupId: layer.groupId,
       emoji: map[keyConverter('emoji')],
       boxConstraints: layer.boxConstraints,
     );
@@ -67,19 +70,39 @@ class EmojiLayer extends Layer {
   bool get isEmojiLayer => true;
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap({
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     return {
-      ...super.toMap(),
+      ...super.toMap(
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
       'emoji': emoji,
       'type': 'emoji',
     };
   }
 
   @override
-  Map<String, dynamic> toMapFromReference(Layer layer) {
+  Map<String, dynamic> toMapFromReference(
+    Layer layer, {
+    int maxDecimalPlaces = kMaxSafeDecimalPlaces,
+    bool enableMinify = false,
+  }) {
     return {
-      ...super.toMapFromReference(layer),
+      ...super.toMapFromReference(
+        layer,
+        maxDecimalPlaces: maxDecimalPlaces,
+        enableMinify: enableMinify,
+      ),
       if ((layer as EmojiLayer).emoji != emoji) 'emoji': emoji,
     };
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('emoji', emoji));
   }
 }

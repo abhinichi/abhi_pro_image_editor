@@ -1,9 +1,10 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
+import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '../models/painted_model.dart';
+import '../models/path_builder/path_builder_base.dart';
 import '../services/paint_item_hit_test_manager.dart';
-import '../utils/paint_element.dart';
 
 /// Handles the paint ongoing on the canvas.
 class DrawPaintItem extends CustomPainter {
@@ -11,22 +12,20 @@ class DrawPaintItem extends CustomPainter {
   DrawPaintItem({
     this.selected = false,
     required this.item,
+    this.paintEditorConfigs = const PaintEditorConfigs(),
     this.onHitChanged,
     this.scale = 1,
     this.enabledHitDetection = false,
-    this.freeStyleHighPerformance = false,
   });
 
   /// The model containing information about the painting.
   final PaintedModel item;
 
-  final PaintElement _paintModeHelper = PaintElement();
-
   /// The scaling factor applied to the canvas.
   final double scale;
 
-  /// Controls high-performance for free-style drawing.
-  bool freeStyleHighPerformance = false;
+  /// The current erasing behavior applied by the tool.
+  final PaintEditorConfigs paintEditorConfigs;
 
   /// Enables or disables hit detection.
   /// When `true`, allows detecting user interactions with the interface.
@@ -45,19 +44,19 @@ class DrawPaintItem extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    _paintModeHelper.drawElement(
-      canvas: canvas,
-      size: size,
+    PathBuilderBase.fromMode(
       item: item,
       scale: scale,
-      freeStyleHighPerformance: freeStyleHighPerformance,
+    ).draw(
+      canvas: canvas,
+      size: size,
+      configs: paintEditorConfigs,
     );
   }
 
   @override
   bool shouldRepaint(DrawPaintItem oldDelegate) {
-    return oldDelegate.item != item ||
-        oldDelegate.freeStyleHighPerformance != freeStyleHighPerformance;
+    return oldDelegate.item != item;
   }
 
   @override

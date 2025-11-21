@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '/core/models/editor_callbacks/text_editor_callbacks.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/layers/layer.dart';
-import '/plugins/rounded_background_text/src/rounded_background_text_field.dart';
+import 'rounded_background_text/rounded_background_text_field.dart';
 
 /// A widget for managing the text input in the text editor, providing a
 /// customizable input area with styling and configuration options.
@@ -38,6 +38,8 @@ class TextEditorInput extends StatefulWidget {
     required this.backgroundColor,
     required this.layer,
     required this.textCtrl,
+    required this.maxWidth,
+    required this.cursorWidth,
   });
 
   /// Optional callbacks for text editor interactions.
@@ -60,6 +62,13 @@ class TextEditorInput extends StatefulWidget {
 
   /// The font size of the input text.
   final double textFontSize;
+
+  /// The width of the text cursor in the text editor input, measured in
+  /// logical pixels.
+  final double cursorWidth;
+
+  /// The maximum width available for the text before the text will overflow.
+  final double maxWidth;
 
   /// The scale factor to transform the textfield
   final double scaleFactor;
@@ -112,7 +121,10 @@ class _TextEditorInputState extends State<TextEditorInput> {
             clipBehavior: Clip.none,
             scrollDirection: Axis.horizontal,
             child: IntrinsicWidth(
-              child: toHero.child,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: widget.maxWidth),
+                child: toHero.child,
+              ),
             ),
           )
         : toHero.child;
@@ -127,8 +139,14 @@ class _TextEditorInputState extends State<TextEditorInput> {
         padding: widget.configs.style.textFieldMargin,
         child: IntrinsicWidth(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildInputField(),
+            clipBehavior: Clip.none,
+            padding: widget.configs.enableAutoOverflow
+                ? null
+                : const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: widget.maxWidth),
+              child: _buildInputField(),
+            ),
           ),
         ),
       ),
@@ -143,6 +161,7 @@ class _TextEditorInputState extends State<TextEditorInput> {
         tag: widget.heroTag ?? 'Text-Image-Editor-Empty-Hero',
         child: RoundedBackgroundTextField(
           key: const ValueKey('rounded-background-text-editor-field'),
+          maxTextWidth: widget.maxWidth,
           controller: widget.textCtrl,
           focusNode: widget.focusNode,
           onChanged: (value) {
@@ -151,29 +170,21 @@ class _TextEditorInputState extends State<TextEditorInput> {
           },
           onEditingComplete: widget.callbacks?.handleEditingComplete,
           onSubmitted: widget.callbacks?.handleSubmitted,
-          autocorrect: widget.configs.enableAutocorrect,
-          enableSuggestions: widget.configs.enableSuggestions,
-          keyboardType: TextInputType.multiline,
-          textInputAction: TextInputAction.newline,
-          textCapitalization: TextCapitalization.sentences,
           textAlign:
               widget.textCtrl.text.isEmpty ? TextAlign.center : widget.align,
-          maxLines: null,
-          cursorColor: widget.configs.style.inputCursorColor,
-          cursorHeight: widget.textFontSize * 1.2,
-          scrollPhysics: const NeverScrollableScrollPhysics(),
-          hint: widget.textCtrl.text.isEmpty ? widget.i18n.inputHintText : '',
+          configs: widget.configs,
+          cursorHeight: widget.textFontSize,
+          cursorWidth: widget.cursorWidth,
+          hint: widget.i18n.inputHintText,
           hintStyle: widget.selectedTextStyle.copyWith(
             color: widget.configs.style.inputHintColor,
             fontSize: widget.textFontSize,
-            height: 1.35,
             shadows: [],
           ),
           backgroundColor: widget.backgroundColor,
           style: widget.selectedTextStyle.copyWith(
             color: widget.textColor,
             fontSize: widget.textFontSize,
-            height: 1.35,
             letterSpacing: 0,
             decoration: TextDecoration.none,
             shadows: [],
