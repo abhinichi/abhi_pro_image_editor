@@ -93,6 +93,8 @@ class LayerStack extends StatelessWidget {
           : null;
   @override
   Widget build(BuildContext context) {
+    debugPrint ('configs.imageGeneration.cropToImageBounds: ${configs.imageGeneration.cropToImageBounds}'
+        '_cutOutsideImageArea : $_cutOutsideImageArea');
     return IgnorePointer(
       child: Stack(
         children: [
@@ -128,7 +130,12 @@ class LayerStack extends StatelessWidget {
   }
 
   CustomPainter _buildCropPainter() {
-    final imgRatio = _transformConfigs?.cropRect.size.aspectRatio ??
+    debugPrint(' _transformConfigs.aspectRatio: ${ _transformConfigs?.aspectRatio}');
+    debugPrint(' transformHelper.aspectRatio: ${ transformHelper.mainImageSize.aspectRatio}');
+    debugPrint(' configs.paintEditor.initAspectRatio: ${ configs.paintEditor.initAspectRatio}');
+    /// check how to pass
+    final imgRatio = configs.paintEditor.initAspectRatio ??
+        _transformConfigs?.cropRect.size.aspectRatio ??
         transformHelper.mainImageSize.aspectRatio;
     final isRoundCropper = _transformConfigs?.isOvalCropper ??
         configs.cropRotateEditor.initialCropMode == CropMode.oval;
@@ -136,6 +143,7 @@ class LayerStack extends StatelessWidget {
     return CropLayerPainter(
       opacity: configs.mainEditor.style.outsideCaptureAreaLayerOpacity,
       backgroundColor: overlayColor,
+      /// need to change this aspect ratio change the paint visibility
       imgRatio: imgRatio,
       isRoundCropper: isRoundCropper,
       is90DegRotated: _transformConfigs?.is90DegRotated ?? false,

@@ -491,6 +491,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         calcCropRect(onlyViewRect: initialTransformConfigs?.isEmpty == false);
         aspectRatio = -1;
       } else {
+        // 1st comes here and for calling calcCropRect
         calcCropRect(onlyViewRect: initialTransformConfigs?.isEmpty == false);
       }
 
@@ -1082,6 +1083,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
         translate.dx * scaleFactor,
         translate.dy * scaleFactor,
       );
+
+      debugPrint('scale facter: $scaleFactor\ninside _setCropRectBounding border translate : $translate');
+
       if (translate.dx.isNaN || translate.dx.isInfinite) {
         throw ArgumentError('Hmmm');
       }
@@ -1438,7 +1442,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     final RenderBox renderBox =
         _editorContentKey.currentContext!.findRenderObject() as RenderBox;
     final Offset position = renderBox.localToGlobal(Offset.zero);
-
+    debugPrint('_calculateEditorScreenOffset : $position');
     return position;
   }
 
@@ -1459,6 +1463,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       // Update translation and zoom values
       translate = _startingTranslate - _startingCenterOffset + centerZoomOffset;
+      debugPrint('inside _onScaleUpdate translate : $translate');
+
       userScaleFactor = newZoom;
 
       // Set offset limits and trigger widget rebuild
@@ -1536,6 +1542,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   translate.dy * userScaleFactor);
         }
 
+        // here scaling is done
         Size realViewRectSize = _viewRect.size * scaleAnimation.value;
         if (_rotated90deg) {
           realViewRectSize =
@@ -1793,6 +1800,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
                     (targetCropRect.height / cropRect.height) *
                     curveT,
           );
+          debugPrint('inside _onScaleEnd loopWithTransitionTiming '
+              'translate : $translate');
 
           cropRect = interpolatedRect(startCropRect, targetCropRect, curveT);
           _setOffsetLimits(
@@ -1808,6 +1817,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       cropRect = targetCropRect;
       translate = targetOffset;
+      debugPrint('inside _onScaleEnd translate : $translate');
+
       userScaleFactor = targetZoom;
 
       _setOffsetLimits();
@@ -1880,6 +1891,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 targetZoom /
                 userScaleFactor *
                 curveT;
+        debugPrint('inside _handleDoubleTap loopWithTransitionTiming'
+            'translate : $translate');
+
       },
       mounted: mounted,
       duration: cropRotateEditorConfigs.animationDuration,
@@ -1888,6 +1902,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     userScaleFactor = targetZoom;
     translate = targetOffset;
+    debugPrint('inside _handleDoubleTap translate : $translate');
+
     _setOffsetLimits();
     addHistory();
     _blockInteraction = false;
@@ -2222,6 +2238,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             editorBodySize.height - _screenPadding * 2,
           ).aspectRatio;
         },
+        // Here we are getting the rect val
         onResizeEnd: (event) {
           if (_imageNeedDecode) _decodeImage();
           WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -2253,8 +2270,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 enabled: false,
                 child: _buildMouseCursor(
                   child: DeferredPointerHandler(
+                    /// Add this two at the bottom to make the frame fix
                     child: _buildRotationTransform(
                       child: _buildFlipTransform(
+                        /// just at the top of _buildIMage
                         child: _buildRotationScaleTransform(
                           child: _buildPaintContainer(
                             child: _buildCropPainter(
@@ -2411,6 +2430,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     );
   }
 
+  //  Widget to make the rect
   Widget _buildCropPainter({required Widget child}) {
     return ExtendedCustomPaint(
       key: cropPainterKey,

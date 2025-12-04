@@ -72,7 +72,7 @@ class CropLayerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (opacity == 0 || imgRatio <= 0) return;
+    // if (opacity == 0 || imgRatio <= 0) return;
     _drawDarkenOutside(canvas: canvas, rawSize: size);
   }
 
@@ -80,6 +80,7 @@ class CropLayerPainter extends CustomPainter {
     required Canvas canvas,
     required Size rawSize,
   }) {
+    debugPrint('interactiveViewerOffset: $interactiveViewerOffset}');
     Size size = rawSize * interactiveViewerScale;
     var center = Offset(
           size.width / 2,
@@ -87,6 +88,7 @@ class CropLayerPainter extends CustomPainter {
         ) +
         interactiveViewerOffset;
 
+    debugPrint('center: $center');
     Path path = Path()
       // FillType "evenOdd" is important for the canvas web renderer
       ..fillType = PathFillType.evenOdd
@@ -138,7 +140,7 @@ class CropLayerPainter extends CustomPainter {
       /// entire canvas
       path = Path.combine(PathOperation.difference, path, rectPath);
     }
-
+debugPrint('draw dark area $backgroundColor & opacity $opacity');
     /// Draw the darkened area
     canvas.drawPath(
       path,
@@ -150,6 +152,15 @@ class CropLayerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    debugPrint('inside should repaint: \noldDelegate & CropLayer changed ${ oldDelegate is! CropLayerPainter ||
+        oldDelegate.imgRatio != imgRatio ||
+        oldDelegate.is90DegRotated != is90DegRotated ||
+        oldDelegate.backgroundColor != backgroundColor ||
+        oldDelegate.opacity != opacity ||
+        oldDelegate.interactiveViewerScale != interactiveViewerScale ||
+        oldDelegate.interactiveViewerOffset != interactiveViewerOffset ||
+        oldDelegate.is90DegRotated != is90DegRotated} '
+        '\nimgRatio: $imgRatio is90DegRotated: $is90DegRotated & backgroundColor: $backgroundColor & opacity: $opacity');
     return oldDelegate is! CropLayerPainter ||
         oldDelegate.imgRatio != imgRatio ||
         oldDelegate.is90DegRotated != is90DegRotated ||

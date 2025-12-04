@@ -261,6 +261,7 @@ class TransformConfigs {
           cropEditorScreenRatio.roundSmart(maxDecimalPlaces),
       'scaleUser': scaleUser.roundSmart(maxDecimalPlaces),
       'scaleRotation': scaleRotation.roundSmart(maxDecimalPlaces),
+      /// need to change this
       'aspectRatio': aspectRatio.roundSmart(maxDecimalPlaces),
       'flipX': flipX.minify(enableMinify),
       'flipY': flipY.minify(enableMinify),
@@ -348,7 +349,8 @@ class TransformConfigs {
       angle: angle ?? this.angle,
       scaleUser: scaleUser ?? this.scaleUser,
       scaleRotation: scaleRotation ?? this.scaleRotation,
-      aspectRatio: aspectRatio ?? this.aspectRatio,
+      /// check this also
+      aspectRatio: 0.6 ?? aspectRatio ?? this.aspectRatio,
       flipX: flipX ?? this.flipX,
       flipY: flipY ?? this.flipY,
       cropRect: cropRect ?? this.cropRect,
