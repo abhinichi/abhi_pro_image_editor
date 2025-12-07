@@ -109,6 +109,7 @@ class PaintEditorConfigs extends ZoomConfigs
     this.dashDotLineSpacingFactor = 2,
     this.dashDotLineWidthFactor = 2.5,
     this.initAspectRatio = 1.0,
+    this.showCutOutFrame = false,
     this.censorConfigs = const CensorConfigs(),
     this.safeArea = const EditorSafeArea(),
     this.style = const PaintEditorStyle(),
@@ -346,7 +347,10 @@ class PaintEditorConfigs extends ZoomConfigs
   final EdgeInsets? colorPickerPadding;
 
   /// The initial aspect ratio for cropping paint.
-  final double? initAspectRatio;
+  final double initAspectRatio;
+
+  /// Whether to show cut out frame
+  final bool showCutOutFrame;
 
   /// Creates a copy of this `PaintEditorConfigs` object with the given fields
   /// replaced with new values.
@@ -423,6 +427,7 @@ class PaintEditorConfigs extends ZoomConfigs
     double? dashDotLineSpacingFactor,
     double? dashDotLineWidthFactor,
     double? initAspectRatio,
+    bool? showcutOutFrame,
   }) {
     return PaintEditorConfigs(
       layerFractionalOffset:
@@ -494,6 +499,7 @@ class PaintEditorConfigs extends ZoomConfigs
         isColorPickerHorizontal:
         isColorPickerHorizontal ?? this.isColorPickerHorizontal,
       initAspectRatio: initAspectRatio ?? this.initAspectRatio,
+      showCutOutFrame: showcutOutFrame ?? showCutOutFrame,
     );
   }
 }

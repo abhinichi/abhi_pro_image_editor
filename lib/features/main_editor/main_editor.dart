@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../crop_rotate_editor/widgets/crop_layer_painter.dart';
 import '/core/constants/editor_various_constants.dart';
 import '/core/constants/image_constants.dart';
 import '/core/mixins/converted_configs.dart';
@@ -560,6 +561,9 @@ class ProImageEditorState extends State<ProImageEditor>
 
   PointerEvent? _lastDownEvent;
   DateTime _tapDownTimestamp = DateTime.now();
+
+  /// For showing or hiding the frame around the image/video.
+  bool showFrame = false;
 
   @override
   void initState() {
@@ -1591,6 +1595,7 @@ class ProImageEditorState extends State<ProImageEditor>
           appliedFilters: stateManager.activeFilters,
           appliedTuneAdjustments: stateManager.activeTuneAdjustments,
           initialZoomMatrix: interactiveViewer.currentState?.transformMatrix4,
+          showCutOutFrame: true
         ),
       ),
       duration: const Duration(milliseconds: 150),

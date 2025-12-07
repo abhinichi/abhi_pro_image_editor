@@ -262,9 +262,6 @@ class MainEditorInteractiveContent extends StatelessWidget {
       imgRatio: configs.paintEditor.initAspectRatio
           ?? configs.cropRotateEditor.initAspectRatio
           ?? transformConfigs.cropRect.size.aspectRatio,
-          // hasTransformChanges
-          // ? transformConfigs.cropRect.size.aspectRatio
-          // : sizesManager.decodedImageSize.aspectRatio,
       isRoundCropper: cropMode == CropMode.oval,
       is90DegRotated: transformConfigs.is90DegRotated,
       interactiveViewerScale:

@@ -93,7 +93,8 @@ class LayerStack extends StatelessWidget {
           : null;
   @override
   Widget build(BuildContext context) {
-    debugPrint ('configs.imageGeneration.cropToImageBounds: ${configs.imageGeneration.cropToImageBounds}'
+    debugPrint('show cut out frame value : ${configs.paintEditor.showCutOutFrame}');
+    debugPrint ('configs.imageGeneration.cropToImageBounds: ${configs.imageGeneration.cropToImageBounds}\n'
         '_cutOutsideImageArea : $_cutOutsideImageArea');
     return IgnorePointer(
       child: Stack(
@@ -119,7 +120,7 @@ class LayerStack extends StatelessWidget {
                 tag: 'crop_layer_painter_hero',
                 child: CustomPaint(
                   foregroundPainter:
-                      _cutOutsideImageArea ? _buildCropPainter() : null,
+                  configs.paintEditor.showCutOutFrame ? _buildCropPainter() : null,
                   child: const SizedBox.expand(),
                 ),
               ),
@@ -147,6 +148,7 @@ class LayerStack extends StatelessWidget {
       imgRatio: imgRatio,
       isRoundCropper: isRoundCropper,
       is90DegRotated: _transformConfigs?.is90DegRotated ?? false,
+      showCutOutFrame: configs.paintEditor.showCutOutFrame
     );
   }
 }

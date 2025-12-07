@@ -31,6 +31,7 @@ class CropLayerPainter extends CustomPainter {
     required this.opacity,
     this.interactiveViewerScale = 1,
     this.interactiveViewerOffset = Offset.zero,
+    this.showCutOutFrame = false,
   });
 
   /// The aspect ratio of the image.
@@ -69,6 +70,9 @@ class CropLayerPainter extends CustomPainter {
   /// The current offset of the InteractiveViewer relative to its
   /// initial position.
   final Offset interactiveViewerOffset;
+
+  /// Whether to show cut out frame
+  final bool showCutOutFrame;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -169,12 +173,14 @@ class CropLayerPainter extends CustomPainter {
           ..color = backgroundColor.withValues(alpha:opacity)
           ..style = PaintingStyle.fill,
       );
+      debugPrint('show cut off frame : $showCutOutFrame');
+      if(showCutOutFrame)
       _drawCornerHandles(canvas, cropRect);
     }
     debugPrint('draw dark area $backgroundColor & opacity $opacity');
   }
 
-  // -------- Corner Lines (Same style as CornerHandlePainter) -------- //
+  /// Draw corner handles for the crop rectangle.
   void _drawCornerHandles(Canvas canvas, Rect rect) {
     final paint = Paint()
       ..color = Colors.blueAccent
@@ -182,7 +188,7 @@ class CropLayerPainter extends CustomPainter {
       ..strokeCap = StrokeCap.square;
 
     double L = 22;
-    double t = 5 / 2; // shift inside boundary
+    double t = 2.5;
 
     // Top Left
     canvas..drawLine(
