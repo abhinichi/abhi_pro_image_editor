@@ -2136,6 +2136,8 @@ class ProImageEditorState extends State<ProImageEditor>
       );
 
       if (callbacks.onThumbnailGenerated != null) {
+
+        debugPrint('onThumbnailGenerated callbacks not null');
         if (_imageInfos == null) await decodeImage();
 
         final results = await Future.wait([
@@ -2151,6 +2153,7 @@ class ProImageEditorState extends State<ProImageEditor>
           results[1] as ui.Image,
         );
       } else {
+        debugPrint('onThumbnailGenerated callbacks null');
         Uint8List? bytes = await captureEditorImage();
         await onImageEditingComplete?.call(bytes);
 
@@ -2205,6 +2208,7 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// Returns an empty [Uint8List] if the screenshot capture fails.
   Future<Uint8List> captureEditorImage() async {
+    debugPrint('captureEditorImage called');
     if (isSubEditorOpen) {
       Navigator.pop(context);
       if (!_pageOpenCompleter.isCompleted) await _pageOpenCompleter.future;
@@ -2216,6 +2220,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (!mounted) return Uint8List.fromList([]);
 
     bool hasChanges = stateManager.canUndo;
+    debugPrint('hasChanges : $hasChanges');
     bool useOriginalImage = !_isVideoEditor &&
         !hasChanges &&
         imageGenerationConfigs.enableUseOriginalBytes;
@@ -2223,6 +2228,9 @@ class ProImageEditorState extends State<ProImageEditor>
     if (!hasChanges && !imageGenerationConfigs.enableUseOriginalBytes) {
       addHistory();
     }
+    debugPrint('_imageInfos: $_imageInfos\n'
+        'useOriginalImage: $useOriginalImage\n'
+        'hasChanges: $hasChanges');
 
     return await _controllers.screenshot.captureFinalScreenshot(
           imageInfos: _imageInfos!,

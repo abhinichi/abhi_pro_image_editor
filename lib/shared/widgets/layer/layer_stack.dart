@@ -30,7 +30,7 @@ class LayerStack extends StatelessWidget {
   ///   transformHelper: myTransformHelper,
   /// )
   /// ```
-  const LayerStack({
+  LayerStack({
     super.key,
     required this.configs,
     required this.layers,
@@ -43,6 +43,7 @@ class LayerStack extends StatelessWidget {
       mainImageSize: Size.zero,
     ),
     this.clipBehavior = Clip.hardEdge,
+    this.showCutOff = false,
   });
 
   /// The outside overlay color for layers.
@@ -91,6 +92,8 @@ class LayerStack extends StatelessWidget {
       transformHelper.transformConfigs?.isNotEmpty == true
           ? transformHelper.transformConfigs
           : null;
+  /// check for showing cut out frame
+  bool showCutOff;
   @override
   Widget build(BuildContext context) {
     debugPrint('show cut out frame value : ${configs.paintEditor.showCutOutFrame}');
@@ -114,13 +117,12 @@ class LayerStack extends StatelessWidget {
                   );
                 }).toList()),
           ),
-          if (configs.imageGeneration.cropToImageBounds)
-            RepaintBoundary(
+          if(showCutOff)
+          RepaintBoundary(
               child: Hero(
                 tag: 'crop_layer_painter_hero',
                 child: CustomPaint(
-                  foregroundPainter:
-                  configs.paintEditor.showCutOutFrame ? _buildCropPainter() : null,
+                  foregroundPainter: _buildCropPainter(),
                   child: const SizedBox.expand(),
                 ),
               ),
@@ -135,9 +137,7 @@ class LayerStack extends StatelessWidget {
     debugPrint('transform helper aspectRatio: ${ transformHelper.mainImageSize.aspectRatio}');
     debugPrint('image init aspect ratio: ${ configs.paintEditor.initAspectRatio}');
     /// check how to pass
-    final imgRatio = configs.paintEditor.initAspectRatio ??
-        _transformConfigs?.cropRect.size.aspectRatio ??
-        transformHelper.mainImageSize.aspectRatio;
+    final imgRatio = configs.paintEditor.initAspectRatio;
     final isRoundCropper = _transformConfigs?.isOvalCropper ??
         configs.cropRotateEditor.initialCropMode == CropMode.oval;
 
@@ -148,7 +148,7 @@ class LayerStack extends StatelessWidget {
       imgRatio: imgRatio,
       isRoundCropper: isRoundCropper,
       is90DegRotated: _transformConfigs?.is90DegRotated ?? false,
-      showCutOutFrame: configs.paintEditor.showCutOutFrame
+      showCutOutFrame: showCutOff
     );
   }
 }

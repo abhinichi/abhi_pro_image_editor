@@ -999,6 +999,7 @@ class PaintEditorState extends State<PaintEditor>
                           overlayColor: paintEditorConfigs.style.background,
                           clipBehavior: Clip.none,
                           enableLayerKey: true,
+                          showCutOff: true,
                         );
                       },
                     ),
